@@ -37,28 +37,14 @@ export class TotpKeyring {
   }
 
   /**
-   * Open a sealed value (`v1.` legacy-no-id or `v2.` keyed), trying only the key(s) it could
-   * plausibly be under. Fail-closed: a `v2.` value naming a key id that is neither the current nor
-   * the previous key throws — it is never tried against the wrong key "just in case".
+   * Open a sealed value under the key its id names. Fail-closed: a value without a key id, or naming
+   * a key that is neither the current nor the previous key, throws — it is never tried against the
+   * wrong key "just in case".
    * @param {string} sealed
    */
   open(sealed) {
     const keyId = SecretBox.peekKeyId(sealed);
-    if (keyId === null) {
-      // v1: no id was ever recorded. Trying current then previous is not a guess — AES-GCM's
-      // authentication tag makes a wrong-key attempt fail deterministically, it cannot silently
-      // "succeed" with the wrong plaintext. This is how a v1 value's key is ever identified at all.
-      try {
-        return this.#currentBox.open(sealed);
-      } catch (currentErr) {
-        if (this.#previousBox) {
-          try {
-            return this.#previousBox.open(sealed);
-          } catch { /* falls through to the error below */ }
-        }
-        throw currentErr;
-      }
-    }
+    if (keyId === null) throw new Error('sealed value carries no key id');
     if (keyId === this.currentId) return this.#currentBox.open(sealed);
     if (keyId === this.previousId) return /** @type {SecretBox} */ (this.#previousBox).open(sealed);
     throw new Error(`sealed value was sealed under key "${keyId}", which is neither the configured current ("${this.currentId}") nor previous ("${this.previousId ?? 'none'}") key`);

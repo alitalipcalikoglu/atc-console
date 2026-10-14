@@ -23,16 +23,9 @@ test('TotpKeyring: seals only with the current key; opens a current-key value di
   assert.equal(keyring.open(sealed), 'secret');
 });
 
-test('TotpKeyring: opens a v1 legacy (no key id) value by trying current then previous', () => {
-  const legacyBox = new SecretBox(K1); // no keyId -- exactly Stage 4's original format
-  const sealed = legacyBox.seal('secret');
-  assert.match(sealed, /^v1\./);
-
-  const keyringCurrentMatches = new TotpKeyring({ current: K1 });
-  assert.equal(keyringCurrentMatches.open(sealed), 'secret');
-
-  const keyringPreviousMatches = new TotpKeyring({ current: K2, previous: K1 });
-  assert.equal(keyringPreviousMatches.open(sealed), 'secret', 'tried current (K2, fails) then previous (K1, succeeds)');
+test('TotpKeyring: a value without a key id is rejected, never tried against a key', () => {
+  const sealed = new SecretBox(K1).seal('secret');
+  assert.throws(() => new TotpKeyring({ current: K1 }).open(sealed), /no key id/);
 });
 
 test('TotpKeyring.isCurrent: true only for a v2 value whose embedded id matches the current key; v1 and previous-key values are not current', () => {

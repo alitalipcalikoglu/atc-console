@@ -31,7 +31,7 @@ export class ConsoleAuth {
    * @param {TotpKeyring|null} deps.keyring
    *   Opens a sealed `totp_secret` for verification (current key, or previous during a rotation).
    *   `null` when `SECRETS_KEY` is not configured — verification then works only for admins whose
-   *   secret is still legacy plaintext (not yet sealed); a sealed admin's TOTP step throws
+   *   secret is still plaintext (not yet sealed); a sealed admin's TOTP step throws
    *   `TOTP_UNAVAILABLE` instead of silently failing as a wrong code. Enrollment (`startTotp`) needs
    *   no keyring here — `AdminStore.setTotpSecret` seals on write and enforces this itself.
    * @param {boolean} [deps.strictSealing] Set once `AdminStore.reseal` has ever confirmed every
@@ -55,8 +55,7 @@ export class ConsoleAuth {
   }
 
   /**
-   * Plaintext TOTP secret for verification — transparent whether the stored value is sealed (v1
-   * legacy-no-id or v2 keyed, current or previous key) or, before this database's first successful
+   * Plaintext TOTP secret for verification — transparent whether the stored value is sealed (current or previous key) or, before this database's first successful
    * {@link AdminStore.reseal}, still plaintext. @param {AdminRow} admin @returns {string|null}
    */
   #totpSecret(admin) {

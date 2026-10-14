@@ -16,7 +16,7 @@ The service worker caches only generated immutable JS/CSS assets plus public ico
 
 After a deployment the service worker downloads the new bundle in the background and shows "A new version is ready" with a **Reload** button. Reloading switches to the new version immediately. The worker also checks for updates once an hour while the app is open.
 
-Hashed asset files are immutable; HTML and the service worker remain network-owned, so a deploy is visible on the next load. Upgrade activation also deletes caches created by the removed legacy SPA worker.
+Hashed asset files are immutable; HTML and the service worker remain network-owned, so a deploy is visible on the next load. Upgrade activation deletes the Console's own older caches and leaves every other cache alone.
 
 ## Auto-refresh numbers
 

@@ -49,7 +49,7 @@ export class AdminStore {
    * Startup migration/rotation pass, safe and idempotent to call on every start. Three things a row
    * can need:
    * - **plaintext → current key** (Stage 4, upgrading from before sealing existed at all), or
-   * - **sealed under a *different* key (`v1.` legacy-no-id, or `v2.` under the previous key) →
+   * - **sealed under a *different* key (under the previous key) →
    *   current key** (Stage 4.1, completing or continuing a `SECRETS_KEY` rotation) —
    *
    * both go through the same "decrypt with whatever key can, re-seal with the current key" path.

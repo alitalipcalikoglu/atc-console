@@ -41,10 +41,10 @@ test('M7 canonical service worker caches only explicit public/build assets', () 
   assert.doesNotMatch(worker, /cache\.addAll\(ASSETS\)/);
 });
 
-test('M7 cache migration removes only canonical and legacy Console cache families', () => {
+test('the worker removes only its own Console cache family', () => {
   assert.equal(CACHE_PREFIX, 'atc-console-static-');
   assert.equal(isOwnedCache('atc-console-static-new'), true);
-  assert.equal(isOwnedCache('console-legacy-build'), true);
+  assert.equal(isOwnedCache('console-legacy-build'), false);
   assert.equal(isOwnedCache('unrelated-application-cache'), false);
 });
 

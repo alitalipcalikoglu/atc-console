@@ -67,7 +67,7 @@ test('canonical source has no custom router, App switch or SPA fallback dependen
   assert.doesNotMatch(source, /export\s+const\s+ssr\s*=\s*false/);
 });
 
-test('canonical PWA caches assets only and retains legacy-cache cleanup', async () => {
+test('canonical PWA caches assets only and owns only its own caches', async () => {
   const manifest = JSON.parse(readFileSync(new URL('../../static/manifest.webmanifest', import.meta.url), 'utf8'));
   assert.deepEqual({ id: manifest.id, start_url: manifest.start_url, scope: manifest.scope, display: manifest.display }, { id: '/', start_url: '/', scope: '/', display: 'standalone' });
   assert.ok(manifest.icons.some((/** @type {{ src: string }} */ icon) => icon.src === '/icons/icon.svg'));
@@ -76,7 +76,7 @@ test('canonical PWA caches assets only and retains legacy-cache cleanup', async 
   const worker = readFileSync(new URL('../../src/service-worker.ts', import.meta.url), 'utf8');
   const policy = readFileSync(new URL('../../src/lib/service-worker-policy.js', import.meta.url), 'utf8');
   assert.match(worker, /isCacheableAssetRequest/);
-  assert.match(policy, /LEGACY_CACHE_PREFIX\s*=\s*'console-'/);
+  assert.doesNotMatch(policy, /LEGACY_CACHE_PREFIX/);
   assert.match(policy, /request\.mode === 'navigate'/);
   assert.match(policy, /url\.pathname\.startsWith\('\/api\/'\)/);
   assert.doesNotMatch(worker, /index\.html|respondWith\([^)]*navigate/s);

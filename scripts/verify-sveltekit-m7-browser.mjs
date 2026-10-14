@@ -254,20 +254,19 @@ try {
   console.log('M7 browser: canonical SW activation/static cache/API+binary bypass OK');
 
   await evaluate(`(async () => {
-    await (await caches.open('console-legacy-m7')).put('/legacy-sensitive', new Response('legacy'));
+    await (await caches.open('atc-console-static-old-m7')).put('/old-asset', new Response('old'));
     await (await caches.open('unrelated-m7')).put('/keep', new Response('keep'));
     const previous = await navigator.serviceWorker.getRegistration('/');
     await previous.unregister();
-    const next = await navigator.serviceWorker.register('/service-worker.js?migration=m7', { scope: '/' });
+    const next = await navigator.serviceWorker.register('/service-worker.js?update=m7', { scope: '/' });
     const worker = next.installing || next.waiting || next.active;
     const state = (wanted) => worker.state === wanted ? Promise.resolve() : new Promise((resolveState) => worker.addEventListener('statechange', () => worker.state === wanted && resolveState()));
     if (worker.state === 'installing') await state('installed');
     if (worker.state === 'installed') worker.postMessage('skipWaiting');
     if (worker.state !== 'activated') await state('activated');
   })()`);
-  await waitJs(`caches.keys().then((keys) => !keys.includes('console-legacy-m7') && keys.includes('unrelated-m7'))`, 'legacy cache migration');
-  assert.equal(await evaluate(`navigator.serviceWorker.getRegistration('/').then((registration) => !registration.active.scriptURL.includes('/sw.js'))`), true);
-  console.log('M7 browser: legacy worker/cache migration ownership OK');
+  await waitJs(`caches.keys().then((keys) => !keys.includes('atc-console-static-old-m7') && keys.includes('unrelated-m7'))`, 'old cache cleanup');
+  console.log('M7 browser: worker update cache ownership OK');
 
   await navigate('/account');
   await waitJs(`document.querySelector('#cp') !== null`, 'account hydration');

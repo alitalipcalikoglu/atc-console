@@ -125,13 +125,9 @@ bytes hex) and is never stored in the database; a leaked database file alone rev
 step happens entirely outside that function, at the point the secret is written or read, so
 verification behaves exactly as it always did once it has the plaintext secret.
 
-Two sealed formats, both opened transparently by `TotpKeyring` (`src/crypto/totp-keyring.js`):
-
-- `v1.<iv>.<ciphertext>.<tag>` — no key id recorded (Stage 4's original format; a console with only
-  ever one `SECRETS_KEY` never sees anything else).
-- `v2.<keyId>.<iv>.<ciphertext>.<tag>` — a value's own key id, so `TotpKeyring` knows which of the
-  current or previous key it needs without guessing (Stage 4.1, written whenever a value is
-  (re)sealed from this point on — a `v1.` value gets upgraded to `v2.` the first time it's resealed).
+Sealed values use `v2.<keyId>.<iv>.<ciphertext>.<tag>`: the value carries its own key id, so
+`TotpKeyring` (`src/crypto/totp-keyring.js`) opens it with exactly the current or previous key it
+names, and rejects anything else.
 
 **Existing plaintext rows** (from before sealing existed at all) are re-sealed automatically, once,
 on the first start after upgrading: `AdminStore.reseal()` runs before the server starts accepting
@@ -161,7 +157,7 @@ Unlike Stage 4, rotation **is** supported — no admin needs to disable and re-e
 1. Generate a new key: `openssl rand -hex 32`. Call it K2; the currently configured `SECRETS_KEY` is K1.
 2. Set `SECRETS_KEY=<K2>` and `SECRETS_PREVIOUS_KEY=<K1>`, restart the console.
 3. On that start, `AdminStore.reseal()` runs automatically: every `totp_secret` sealed under K1 (or
-   still-legacy plaintext, if any) is resealed under K2, in one transaction. TOTP verification keeps
+   still plaintext, if any) is resealed under K2, in one transaction. TOTP verification keeps
    working throughout — a value not yet resealed still opens via `SECRETS_PREVIOUS_KEY` in the
    meantime; nothing about this is disruptive to a signed-in admin mid-rotation.
 4. Confirm the reseal completed: `GET /api/me` or any TOTP verification exercises the code path, or
@@ -191,7 +187,7 @@ for a single key, extended to "whichever key was current when that backup's data
 
 ## PWA
 
-Installable (manifest, icons for iOS and Android, standalone display). The service worker caches only generated immutable build assets and explicitly public static assets. Navigations, authenticated SSR HTML and `/api` always use the network; protected content is unavailable offline. It retains the old cache-name prefix only so upgrades can delete legacy SPA caches. A new deployment still produces the "new version ready" prompt.
+Installable (manifest, icons for iOS and Android, standalone display). The service worker caches only generated immutable build assets and explicitly public static assets. Navigations, authenticated SSR HTML and `/api` always use the network; protected content is unavailable offline. It owns only its own `atc-console-static-` caches. A new deployment still produces the "new version ready" prompt.
 
 ## Visual checks
 

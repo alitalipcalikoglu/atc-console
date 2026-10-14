@@ -157,8 +157,7 @@ deployment model this service is built for.
   forwarder's in-memory buffer (≤5000) and are dropped, oldest first, if it stays down long enough
   — the console's *local* audit log (its own `audit` table) is unaffected either way.
 - Process killed without SIGTERM: any buffered-but-unsent audit-forwarding events for the console's
-  own log are lost (not written anywhere durable before being sent — see the outbox discussion in
-  `atc-stack/docs/ARCHITECTURE_AUDIT.md` §4.4, planned for a later stage, not this one).
+  own log are lost (not written anywhere durable before being sent; there is no outbox).
 - Two instances on one database file: unverified; avoid.
 - `SECRETS_KEY` missing while a sealed `totp_secret` exists: that one admin's second factor throws
   `TOTP_UNAVAILABLE` (503) instead of a wrong-code error — a config problem, not a client error, and
@@ -170,10 +169,7 @@ deployment model this service is built for.
   the affected count), not a runtime failure mode — see README.md's "Rotating SECRETS_KEY".
 - A `v2.`-format `totp_secret` naming a key id this instance doesn't recognise (neither current nor
   previous): `TotpKeyring.open` refuses outright rather than trying it against the wrong key anyway —
-  fail-closed. AES-GCM's authentication tag makes a wrong-key attempt fail deterministically in any
-  case, so even the one case this *does* try more than one key (`v1.` legacy values, which carry no
-  id at all, tried against current then previous) can never "succeed" with the wrong key and wrong
-  plaintext — a wrong key is always caught, never silently accepted.
+  fail-closed. A sealed value without a key id is refused the same way.
 - A plaintext `totp_secret` found *after* `totp_seal_state` confirms this database has completed
   sealing: `TOTP_SECRET_CORRUPT` (500), not accepted as a valid secret — see README.md's "Once fully
   sealed, plaintext is no longer tolerated".

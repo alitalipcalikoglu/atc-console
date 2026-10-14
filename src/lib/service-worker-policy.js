@@ -1,5 +1,4 @@
 export const CACHE_PREFIX = 'atc-console-static-';
-export const LEGACY_CACHE_PREFIX = 'console-';
 
 /** Only explicitly public static files join SvelteKit's generated immutable build assets. */
 /** @param {string} pathname */
@@ -9,10 +8,10 @@ export function isPublicStaticFile(pathname) {
     || pathname.startsWith('/icons/');
 }
 
-/** Delete only caches owned by this application, including the legacy SPA cache family. */
+/** Delete only caches owned by this application. */
 /** @param {string} name */
 export function isOwnedCache(name) {
-  return name.startsWith(CACHE_PREFIX) || name.startsWith(LEGACY_CACHE_PREFIX);
+  return name.startsWith(CACHE_PREFIX);
 }
 
 /**
