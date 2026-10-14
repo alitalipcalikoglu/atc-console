@@ -30,6 +30,8 @@
   "/atc-geo/:sid/collections/:id",
   "/atc-content/:sid",
   "/atc-content/:sid/namespaces/:id",
+  "/atc-export/:sid",
+  "/atc-export/:sid/exports/:id",
   "/audit",
   "/admins",
   "/docs",

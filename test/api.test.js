@@ -46,6 +46,22 @@ const fake = createServer((req, res) => {
     if (p === '/v1/events' && req.method === 'GET') return json(200, { items: [{ id: 'e1', seq: 42, action: 'atc-auth.login', outcome: 'failure', source: 'atc-auth' }], nextCursor: null });
     if (p === '/v1/events/export') return res.writeHead(200, { 'content-type': 'application/x-ndjson; charset=utf-8', 'content-disposition': 'attachment; filename="audit-x.ndjson"' }).end('{"seq":1}\n{"seq":2}\n');
     if (p === '/v1/events/e1') return json(200, { event: { id: 'e1', seq: 42, action: 'atc-auth.login', meta: { k: 1 } } });
+    if (p === '/media/csv') return res.writeHead(200, { 'content-type': 'text/csv', 'content-length': '12', 'content-disposition': `attachment; filename="auth-export.csv"; filename*=UTF-8''auth-export%20%C3%A7.csv` }).end("id,name\r\n1,a\r\n".slice(0, 12));
+    if (p === '/media/evil') return res.writeHead(200, { 'content-type': 'text/html', 'content-disposition': 'attachment; filename="../../x\"; <b>.html"' }).end('<script>alert(1)</script>');
+    if (p === '/media/gone') return res.writeHead(404).end('{}');
+    if (p === '/media/redirect') return res.writeHead(302, { location: 'http://example.com/' }).end();
+    if (String(req.headers.authorization).endsWith('x'.repeat(40))) {
+      const E = 'exp_0000000000123456789ab';
+      if (p === '/v1/stats') return json(200, { queued: 1, running: 0, total: 5, last24h: { succeeded: 3, failed: 1, cancelled: 0, rows: 90, bytes: 2048 }, storedBytes: 4096, bySource: {}, sources: ['atc-auth'], retentionDays: 7 });
+      if (p === '/v1/sources') return json(200, { items: [{ id: 'atc-auth', label: 'Users', formats: ['csv', 'ndjson'], columns: ['id'], filters: { email: { type: 'string' } } }] });
+      if (p === '/v1/exports' && req.method === 'GET') return json(200, { items: [{ id: E, source: 'atc-auth', status: 'succeeded' }], nextCursor: null });
+      if (p === '/v1/exports' && req.method === 'POST') return json(202, { export: { id: E, ...JSON.parse(body), status: 'queued' } });
+      if (p === `/v1/exports/${E}` && req.method === 'GET') return json(200, { export: { id: E, status: 'succeeded' } });
+      if (p === `/v1/exports/${E}` && req.method === 'DELETE') return res.writeHead(204).end();
+      if (p === `/v1/exports/${E}/cancel`) return json(200, { export: { id: E, status: 'cancelled' } });
+      if (p === `/v1/exports/${E}/retry`) return json(200, { export: { id: E, status: 'queued' } });
+      if (p === `/v1/exports/${E}/download`) return json(200, { url: exportFileVariant === 'remote' ? 'https://media.test/files/f1/original?sig=x' : `http://127.0.0.1:${/** @type {any} */ (fake.address()).port}/media/${exportFileVariant}?sig=x`, expiresAt: '2030-01-01T00:00:00.000Z' });
+    }
     if (String(req.headers.authorization).endsWith('c'.repeat(40))) {
       if (p === '/v1/stats') return json(200, { namespaces: 2, keys: 40, locales: 5, missing: 7, mismatched: 1, releases: 3, lastPublish: { namespace: 'web', release: 3, at: '2026-10-14T09:00:00.000Z', by: 'atc-console' }, items: [] });
       if (p === '/v1/namespaces' && req.method === 'GET') return json(200, { items: [{ name: 'web', defaultLocale: 'en', locales: [{ locale: 'en', fallback: null, chain: ['en'] }], keys: 1, missing: { en: 0 }, mismatched: 0, release: null, unpublishedChanges: true }] });
@@ -168,13 +184,15 @@ const fake = createServer((req, res) => {
     json(404, { error: { code: 'NOT_FOUND', message: 'nope' } });
   });
 });
+/** Which fixture the fake export service's download URL points at. */
+let exportFileVariant = 'remote';
 /** @type {Awaited<ReturnType<typeof testConsole>>} */
 let t;
 let origin = '';
 before(async () => {
   await new Promise((r) => fake.listen(0, '127.0.0.1', () => r(undefined)));
   origin = `http://127.0.0.1:${/** @type {any} */ (fake.address()).port}`;
-  t = await testConsole({ urls: { notify: origin, auth: origin, media: origin, gateway: origin, audit: origin, shortlink: origin, flags: origin, scheduler: origin, 'webhook-out': origin, search: origin, ratelimit: origin, geo: origin, content: origin }, env: { RATE_LIMIT_MAX: '60' } });
+  t = await testConsole({ urls: { notify: origin, auth: origin, media: origin, gateway: origin, audit: origin, shortlink: origin, flags: origin, scheduler: origin, 'webhook-out': origin, search: origin, ratelimit: origin, geo: origin, content: origin, export: origin }, env: { RATE_LIMIT_MAX: '60' } });
 });
 after(async () => { await t.app.close(); fake.close(); });
 
@@ -203,7 +221,7 @@ test('documentation API is authenticated, allowlisted and serves local and upstr
   const headers = { cookie };
   const list = await t.app.inject({ url: '/api/docs/services', headers });
   assert.equal(list.statusCode, 200);
-  assert.equal(list.json().items.length, 14);
+  assert.equal(list.json().items.length, 15);
   assert.deepEqual(list.json().items[0], { id: 'atc-console', type: 'atc-console', label: 'Console' });
   assert.equal(list.body.includes('apiKey'), false, 'registry secrets are never serialized');
 
@@ -321,7 +339,9 @@ test('overview aggregates health and parsed metrics per service', async () => {
   const res = await t.app.inject({ url: '/api/services/overview', headers: { cookie } });
   assert.equal(res.statusCode, 200);
   const items = res.json().items;
-  assert.equal(items.length, 13);
+  assert.equal(items.length, 14);
+  const exs = items.find((/** @type {any} */ i) => i.id === 'atc-export').summary;
+  assert.deepEqual([exs.queued, exs.running, exs.succeeded24h, exs.failed24h, exs.bytes24h], [1, 0, 3, 1, 2048]);
   const cts = items.find((/** @type {any} */ i) => i.id === 'atc-content').summary;
   assert.deepEqual([cts.namespaces, cts.keys, cts.missing, cts.lastPublish], [2, 40, 7, 'web #3']);
   const geo = items.find((/** @type {any} */ i) => i.id === 'atc-geo').summary;
@@ -356,7 +376,7 @@ test('about aggregates /v1/info per service; unreachable and malformed responses
   const res = await t.app.inject({ url: '/api/services/about', headers: { cookie } });
   assert.equal(res.statusCode, 200);
   const items = res.json().items;
-  assert.equal(items.length, 13);
+  assert.equal(items.length, 14);
   const notify = items.find((/** @type {any} */ i) => i.id === 'atc-notify');
   assert.equal(notify.ok, true);
   assert.deepEqual(notify.data, { service: 'fake', version: '1.2.3', apiVersion: 'v1', capabilities: ['x'], schemaVersion: 4, serviceCore: '1.10.0' });
@@ -792,4 +812,61 @@ test('content: namespaces, locales, keys, import/export, publish/rollback, relea
   assert.equal((await t.app.inject({ method: 'DELETE', url: `${B}/namespaces/web`, headers: { cookie, ...CSRF } })).statusCode, 204);
   const log = await t.app.inject({ url: '/api/audit?action=atc-content.', headers: { cookie } });
   assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-content.namespace.delete', 'atc-content.release.rollback', 'atc-content.release.publish', 'atc-content.translations.import', 'atc-content.key.delete', 'atc-content.key.upsert', 'atc-content.locale.delete', 'atc-content.locale.upsert', 'atc-content.namespace.update', 'atc-content.namespace.create']);
+});
+
+test('export: sources, list, create, get, cancel, retry, download, delete (audited)', async () => {
+  const { cookie } = await signIn(t);
+  const viewer = await signIn(t, { username: 'viewer10', role: 'viewer' });
+  seen.length = 0;
+  const B = '/api/services/atc-export/atc-export';
+  const E = 'exp_0000000000123456789ab';
+  let res = await t.app.inject({ url: `${B}/sources`, headers: { cookie: viewer.cookie } });
+  assert.deepEqual([res.statusCode, res.json().items[0].id], [200, 'atc-auth']);
+  assert.equal(seen.at(-1)?.headers.authorization, `Bearer ${'x'.repeat(40)}`, 'export key injected');
+  assert.equal((await t.app.inject({ url: `${B}/stats`, headers: { cookie } })).json().queued, 1);
+  res = await t.app.inject({ url: `${B}/exports?status=succeeded&source=atc-auth&limit=20`, headers: { cookie } });
+  assert.deepEqual([res.json().items[0].id, seen.at(-1)?.url], [E, '/v1/exports?status=succeeded&source=atc-auth&limit=20']);
+  assert.equal((await t.app.inject({ url: `${B}/exports?status=done`, headers: { cookie } })).statusCode, 400);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/exports`, headers: { cookie: viewer.cookie, ...CSRF }, payload: { source: 'atc-auth', format: 'csv' } })).statusCode, 403);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/exports`, headers: { cookie, ...CSRF }, payload: { source: 'atc-auth', format: 'xlsx' } })).statusCode, 400);
+  res = await t.app.inject({ method: 'POST', url: `${B}/exports`, headers: { cookie, ...CSRF }, payload: { source: 'atc-auth', format: 'csv', filters: { email: 'a@b.co' }, notifyEmail: 'ops@example.com' } });
+  assert.deepEqual([res.statusCode, res.json().export.id, JSON.parse(seen.at(-1)?.body ?? '{}').filters], [202, E, { email: 'a@b.co' }]);
+  assert.equal((await t.app.inject({ url: `${B}/exports/${E}`, headers: { cookie } })).json().export.status, 'succeeded');
+  assert.equal((await t.app.inject({ url: `${B}/exports/not-an-id`, headers: { cookie } })).statusCode, 400);
+  res = await t.app.inject({ method: 'POST', url: `${B}/exports/${E}/cancel`, headers: { cookie, ...CSRF } });
+  assert.equal(res.json().export?.status, 'cancelled', res.body);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/exports/${E}/retry`, headers: { cookie, ...CSRF } })).json().export.status, 'queued');
+  res = await t.app.inject({ url: `${B}/exports/${E}/download`, headers: { cookie: viewer.cookie } });
+  assert.equal(res.json().url, 'https://media.test/files/f1/original?sig=x', 'viewers may download');
+  assert.equal((await t.app.inject({ method: 'DELETE', url: `${B}/exports/${E}`, headers: { cookie: viewer.cookie, ...CSRF } })).statusCode, 403);
+  assert.equal((await t.app.inject({ method: 'DELETE', url: `${B}/exports/${E}`, headers: { cookie, ...CSRF } })).statusCode, 204);
+  const log = await t.app.inject({ url: '/api/audit?action=atc-export.', headers: { cookie } });
+  assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-export.export.delete', 'atc-export.export.download', 'atc-export.export.retry', 'atc-export.export.cancel', 'atc-export.export.create']);
+});
+
+test('export file relay: streamed attachment, fixed types, sanitised name, errors mapped (audited)', async () => {
+  const { cookie } = await signIn(t);
+  const viewer = await signIn(t, { username: 'viewer11', role: 'viewer' });
+  const F = '/api/services/atc-export/atc-export/exports/exp_0000000000123456789ab/file';
+  exportFileVariant = 'csv';
+  let res = await t.app.inject({ url: F, headers: { cookie: viewer.cookie } });
+  assert.equal(res.statusCode, 200, res.body);
+  assert.equal(res.body, 'id,name\r\n1,a');
+  assert.equal(res.headers['content-type'], 'text/csv; charset=utf-8');
+  assert.equal(res.headers['content-disposition'], 'attachment; filename="auth-export_.csv"', 'filename* decoded, then reduced to safe characters');
+  assert.equal(res.headers['content-security-policy'], "default-src 'none'; sandbox");
+  assert.equal(res.headers['cache-control'], 'no-store');
+  assert.equal(res.headers['content-length'], '12');
+  exportFileVariant = 'evil';
+  res = await t.app.inject({ url: F, headers: { cookie } });
+  assert.deepEqual([res.statusCode, res.headers['content-type']], [200, 'application/octet-stream']);
+  assert.match(String(res.headers['content-disposition']), /^attachment; filename="[A-Za-z0-9._-]+"$/);
+  exportFileVariant = 'gone';
+  assert.equal((await t.app.inject({ url: F, headers: { cookie } })).statusCode, 404);
+  exportFileVariant = 'redirect';
+  assert.equal((await t.app.inject({ url: F, headers: { cookie } })).statusCode, 502, 'redirects are not followed');
+  exportFileVariant = 'remote';
+  assert.equal((await t.app.inject({ url: '/api/services/atc-export/atc-export/exports/nope/file', headers: { cookie } })).statusCode, 400);
+  const log = await t.app.inject({ url: '/api/audit?action=atc-export.export.download', headers: { cookie } });
+  assert.ok(log.json().items.length >= 2);
 });

@@ -1,0 +1,4 @@
+import { ExportClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, number, record, text } from '#lib/server/m4.js';
+export const GET = jsonRoute({ auth: 'session', params: Schemas.serviceParams, query: Schemas.exportListQuery, handler: ({ runtime, params, query }) => runtime.clients.get(params.sid, ExportClient).list({ status: text(query.status), source: text(query.source), limit: number(query.limit), cursor: text(query.cursor) }) });
+export const POST = jsonRoute({ auth: 'admin', params: Schemas.serviceParams, body: Schemas.exportCreate, status: 202, handler: async (context) => { const output = await context.runtime.clients.get(context.params.sid, ExportClient).create(context.body) as any; record(context, 'atc-export.export.create', output.export.id, { service: context.params.sid, source: context.body.source, format: context.body.format, notify: Boolean(context.body.notifyEmail) }); return output; } });

@@ -10,7 +10,7 @@ info:
 
     Two things shape the whole document. First, authentication is a **cookie session**
     (`console_session`) plus an `x-console-request: 1` CSRF header on mutations, not the
-    `Authorization: Bearer` API key the thirteen backend services use — and downstream calls are made
+    `Authorization: Bearer` API key the fourteen backend services use — and downstream calls are made
     with console's own per-service API key, never the administrator's identity. Second, console
     declares **no Fastify `response:` schema anywhere**: request shapes are real, enforced Ajv
     schemas and are documented here exactly, while the body of a pass-through route is the target
@@ -66,6 +66,8 @@ tags:
     description: Pass-through to a geo instance.
   - name: atc-content
     description: Pass-through to a content instance.
+  - name: atc-export
+    description: Pass-through to an export instance.
 paths:
   /openapi.yaml:
     get:
@@ -127,7 +129,7 @@ paths:
         - operational
       summary: Service identity and capabilities.
       description: The one operational route console takes from the shared `registerInfo` helper, so its shape is
-        identical across all 14 services.
+        identical across all 15 services.
       security: []
       x-stack-visibility: public
       responses:
@@ -8498,6 +8500,431 @@ paths:
         "200":
           description: Pass-through of the content service's own `GET /v1/namespaces/{ns}/releases/{number}` response body, relayed
             unchanged. See the content service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-export/stats:
+    get:
+      operationId: atc-console.atc-export.stats.get
+      tags:
+        - atc-export
+      summary: "Export queue and last-24h counters."
+      description: >-
+        Typed pass-through to the **export** service instance named by `sid` — console relays this to its `GET
+        /v1/stats`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the export service's own `GET /v1/stats` response body, relayed
+            unchanged. See the export service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-export/sources:
+    get:
+      operationId: atc-console.atc-export.sources.list
+      tags:
+        - atc-export
+      summary: "Configured sources with their filters."
+      description: >-
+        Typed pass-through to the **export** service instance named by `sid` — console relays this to its `GET
+        /v1/sources`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the export service's own `GET /v1/sources` response body, relayed
+            unchanged. See the export service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-export/exports:
+    get:
+      operationId: atc-console.atc-export.exports.list
+      tags:
+        - atc-export
+      summary: "List export jobs, newest first."
+      description: >-
+        Typed pass-through to the **export** service instance named by `sid` — console relays this to its `GET
+        /v1/exports`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - name: status
+          in: query
+          required: false
+          schema: {"type":"string","enum":["queued","running","succeeded","failed","cancelled"]}
+        - name: source
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^atc-[a-z][a-z0-9-]{0,30}$"}
+        - name: limit
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^([1-9]|[1-9][0-9]|100)$"}
+        - name: cursor
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^exp_[0-9a-z]{9}[0-9a-f]{12}$"}
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the export service's own `GET /v1/exports` response body, relayed
+            unchanged. See the export service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    post:
+      operationId: atc-console.atc-export.exports.create
+      tags:
+        - atc-export
+      summary: "Queue an export."
+      description: >-
+        Typed pass-through to the **export** service instance named by `sid` — console relays this to its `POST
+        /v1/exports`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["source","format"],"properties":{"source":{"type":"string","pattern":"^atc-[a-z][a-z0-9-]{0,30}$"},"format":{"type":"string","enum":["csv","ndjson"]},"filters":{"type":"object","maxProperties":20,"additionalProperties":{"type":"string","maxLength":254}},"notifyEmail":{"type":"string","format":"email","maxLength":254}}}
+      responses:
+        "202":
+          description: Pass-through of the export service's own `POST /v1/exports` response body, relayed
+            unchanged. See the export service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-export/exports/{id}:
+    get:
+      operationId: atc-console.atc-export.exports.get
+      tags:
+        - atc-export
+      summary: "Get one export job with progress."
+      description: >-
+        Typed pass-through to the **export** service instance named by `sid` — console relays this to its `GET
+        /v1/exports/{id}`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the export service's own `GET /v1/exports/{id}` response body, relayed
+            unchanged. See the export service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    delete:
+      operationId: atc-console.atc-export.exports.delete
+      tags:
+        - atc-export
+      summary: "Delete an export job and its file."
+      description: >-
+        Typed pass-through to the **export** service instance named by `sid` — console relays this to its
+        `DELETE /v1/exports/{id}`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "204":
+          description: Done. console discards export's response body.
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-export/exports/{id}/cancel:
+    post:
+      operationId: atc-console.atc-export.exports.cancel
+      tags:
+        - atc-export
+      summary: "Cancel a queued or running export."
+      description: >-
+        Typed pass-through to the **export** service instance named by `sid` — console relays this to its `POST
+        /v1/exports/{id}/cancel`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the export service's own `POST /v1/exports/{id}/cancel` response body, relayed
+            unchanged. See the export service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-export/exports/{id}/retry:
+    post:
+      operationId: atc-console.atc-export.exports.retry
+      tags:
+        - atc-export
+      summary: "Queue a failed or cancelled export again."
+      description: >-
+        Typed pass-through to the **export** service instance named by `sid` — console relays this to its `POST
+        /v1/exports/{id}/retry`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the export service's own `POST /v1/exports/{id}/retry` response body, relayed
+            unchanged. See the export service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-export/exports/{id}/file:
+    get:
+      operationId: atc-console.atc-export.exports.file
+      tags:
+        - atc-export
+      summary: Download the export file through the console.
+      description: >-
+        Asks the **export** service instance named by `sid` for a signed URL (`GET /v1/exports/{id}/download`)
+        and fetches that URL server-side (no redirects, 60 s timeout), streaming the body back with
+        backpressure, so the browser never needs to reach media. Always an attachment with a sanitised file
+        name; content type is `text/csv; charset=utf-8`, `application/x-ndjson` or
+        `application/octet-stream`; adds `content-security-policy: default-src 'none'; sandbox` and
+        `cache-control: no-store`. A failed downstream call becomes a `ServiceError` rather than a partial
+        file.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: The export file.
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+            application/x-ndjson:
+              schema:
+                type: string
+                format: binary
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+              description: "`attachment; filename=\"<sanitised media file name>\"`."
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-export/exports/{id}/download:
+    get:
+      operationId: atc-console.atc-export.exports.download
+      tags:
+        - atc-export
+      summary: "Short-lived signed download URL (recorded in the console log)."
+      description: >-
+        Typed pass-through to the **export** service instance named by `sid` — console relays this to its `GET
+        /v1/exports/{id}/download`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the export service's own `GET /v1/exports/{id}/download` response body, relayed
+            unchanged. See the export service's own OpenAPI document for the authoritative body.
           content:
             application/json:
               schema:

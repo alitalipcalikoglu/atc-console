@@ -125,6 +125,10 @@ export class Schemas {
   static contentExportQuery = { type: 'object', additionalProperties: false, properties: { source: { type: 'string', enum: ['draft', 'published'] }, format: { type: 'string', enum: ['flat', 'nested'] } } };
   static contentReleaseParams = { type: 'object', properties: { sid: Schemas.sid, id: Schemas.contentNs, sub: { type: 'string', pattern: '^[1-9][0-9]{0,9}$' } }, required: ['sid', 'id', 'sub'] };
   static contentReleasesQuery = { type: 'object', additionalProperties: false, properties: { limit: { type: 'string', pattern: '^([1-9]|[1-9][0-9]|100)$' }, before: { type: 'string', pattern: '^[0-9]{1,10}$' } } };
+  static exportId = { type: 'string', pattern: '^exp_[0-9a-z]{9}[0-9a-f]{12}$' };
+  static exportParams = { type: 'object', properties: { sid: Schemas.sid, id: Schemas.exportId }, required: ['sid', 'id'] };
+  static exportCreate = Schemas.body(['source', 'format'], { source: { type: 'string', pattern: '^atc-[a-z][a-z0-9-]{0,30}$' }, format: { type: 'string', enum: ['csv', 'ndjson'] }, filters: { type: 'object', maxProperties: 20, additionalProperties: { type: 'string', maxLength: 254 } }, notifyEmail: Schemas.email });
+  static exportListQuery = { type: 'object', additionalProperties: false, properties: { status: { type: 'string', enum: ['queued', 'running', 'succeeded', 'failed', 'cancelled'] }, source: { type: 'string', pattern: '^atc-[a-z][a-z0-9-]{0,30}$' }, limit: { type: 'string', pattern: '^([1-9]|[1-9][0-9]|100)$' }, cursor: { type: 'string', pattern: '^exp_[0-9a-z]{9}[0-9a-f]{12}$' } } };
   static flagsQuery = {
     type: 'object', additionalProperties: false,
     properties: {

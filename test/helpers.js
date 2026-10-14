@@ -19,7 +19,7 @@ export function testConfig(overrides = {}) {
 
 export function testDb() { return new Database(':memory:'); }
 
-/** @param {Partial<Record<'notify'|'auth'|'media'|'gateway'|'audit'|'shortlink'|'flags'|'scheduler'|'webhook-out'|'search'|'ratelimit'|'geo'|'content', string>>} [urls] Keys are short test-only names. */
+/** @param {Partial<Record<'notify'|'auth'|'media'|'gateway'|'audit'|'shortlink'|'flags'|'scheduler'|'webhook-out'|'search'|'ratelimit'|'geo'|'content'|'export', string>>} [urls] Keys are short test-only names. */
 export function servicesDoc(urls = {}) {
   return { services: [
     { id: 'atc-notify', type: 'atc-notify', url: urls.notify ?? 'http://127.0.0.1:1', apiKeyEnv: 'NOTIFY_API_KEY' },
@@ -35,10 +35,11 @@ export function servicesDoc(urls = {}) {
     { id: 'atc-ratelimit', type: 'atc-ratelimit', url: urls.ratelimit ?? 'http://127.0.0.1:1', apiKeyEnv: 'RATELIMIT_API_KEY' },
     { id: 'atc-geo', type: 'atc-geo', url: urls.geo ?? 'http://127.0.0.1:1', apiKeyEnv: 'GEO_API_KEY' },
     { id: 'atc-content', type: 'atc-content', url: urls.content ?? 'http://127.0.0.1:1', apiKeyEnv: 'CONTENT_API_KEY' },
+    { id: 'atc-export', type: 'atc-export', url: urls.export ?? 'http://127.0.0.1:1', apiKeyEnv: 'EXPORT_API_KEY' },
   ] };
 }
 
-export const servicesEnv = { NOTIFY_API_KEY: SECRET, AUTH_API_KEY: 'a'.repeat(40), MEDIA_API_KEY: 'm'.repeat(40), GATEWAY_METRICS_TOKEN: 'g'.repeat(40), AUDIT_API_KEY: 'd'.repeat(40), SHORTLINK_API_KEY: 's'.repeat(40), FLAGS_API_KEY: 'f'.repeat(40), SCHEDULER_API_KEY: 'j'.repeat(40), WEBHOOK_OUT_API_KEY: 'h'.repeat(40), SEARCH_API_KEY: 'q'.repeat(40), RATELIMIT_API_KEY: 'l'.repeat(40), GEO_API_KEY: 'e'.repeat(40), CONTENT_API_KEY: 'c'.repeat(40) };
+export const servicesEnv = { NOTIFY_API_KEY: SECRET, AUTH_API_KEY: 'a'.repeat(40), MEDIA_API_KEY: 'm'.repeat(40), GATEWAY_METRICS_TOKEN: 'g'.repeat(40), AUDIT_API_KEY: 'd'.repeat(40), SHORTLINK_API_KEY: 's'.repeat(40), FLAGS_API_KEY: 'f'.repeat(40), SCHEDULER_API_KEY: 'j'.repeat(40), WEBHOOK_OUT_API_KEY: 'h'.repeat(40), SEARCH_API_KEY: 'q'.repeat(40), RATELIMIT_API_KEY: 'l'.repeat(40), GEO_API_KEY: 'e'.repeat(40), CONTENT_API_KEY: 'c'.repeat(40), EXPORT_API_KEY: 'x'.repeat(40) };
 
 /** @param {Parameters<typeof servicesDoc>[0]} [urls] */
 export function testRegistry(urls) { return ServiceRegistry.parse(servicesDoc(urls), servicesEnv); }
