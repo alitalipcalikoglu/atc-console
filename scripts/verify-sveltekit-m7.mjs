@@ -32,6 +32,9 @@ assert.ok(swagger, 'Swagger UI production chunk is missing');
 assert.equal(swagger.isDynamicEntry, true, 'Swagger UI must remain a dynamic route-level import');
 const swaggerPath = join('.svelte-kit/output/client', swagger.file);
 assert.ok(statSync(swaggerPath).size > 1_000_000, 'expected local Swagger renderer measurement');
+// adapter-node serves the precompressed copy; this is what /docs actually downloads, once (immutable).
+const swaggerBrotli = join('build/client', `${swagger.file}.br`);
+assert.ok(statSync(swaggerBrotli).size < 400_000, `Swagger transfer grew to ${statSync(swaggerBrotli).size} B brotli`);
 for (const entry of Object.values(viteManifest).filter((value) => value.isEntry)) {
   assert.notEqual(entry.file, swagger.file, 'Swagger must not be an application entry');
   assert.equal(entry.imports?.includes('node_modules/swagger-ui-dist/swagger-ui-es-bundle.js') ?? false, false, 'entry eagerly imports Swagger');
@@ -42,4 +45,4 @@ assert.match(sourceWorker, /cache\.addAll\(PRECACHE\)/);
 assert.doesNotMatch(sourceWorker, /cache\.addAll\(ASSETS\)/);
 assert.doesNotMatch(sourceWorker, /from ['"]\$lib\/server/);
 
-console.log(`SvelteKit M7 build: SW ${statSync(workerPath).size} B; local lazy Swagger ${statSync(swaggerPath).size} B; manifest/icons/security policy OK`);
+console.log(`SvelteKit M7 build: SW ${statSync(workerPath).size} B; local lazy Swagger ${statSync(swaggerPath).size} B (${statSync(swaggerBrotli).size} B brotli); manifest/icons/security policy OK`);
