@@ -164,8 +164,14 @@ try {
   await Promise.all([cdp.send('Page.enable'), cdp.send('Runtime.enable'), cdp.send('Network.enable'), cdp.send('Log.enable')]);
   const requests = [];
   const browserErrors = [];
+  /** Uncaught exceptions in any page; one is enough to fail the smoke. */
+  const pageExceptions = [];
   cdp.on('Network.requestWillBeSent', ({ request }) => requests.push({ url: request.url, headers: request.headers, method: request.method }));
-  cdp.on('Runtime.exceptionThrown', ({ exceptionDetails }) => browserErrors.push(exceptionDetails.text));
+  cdp.on('Runtime.exceptionThrown', ({ exceptionDetails }) => {
+    const message = exceptionDetails.exception?.description ?? exceptionDetails.text;
+    browserErrors.push(message);
+    pageExceptions.push(message);
+  });
   cdp.on('Log.entryAdded', ({ entry }) => { if (entry.level === 'error') browserErrors.push(entry.text); });
 
   const evaluate = async (expression) => {
@@ -252,6 +258,22 @@ try {
   cacheAudit = await evaluate(`(async () => Promise.all((await caches.keys()).map(async (name) => ({ name, urls: (await (await caches.open(name)).keys()).map((request) => request.url) }))))()`);
   assert.equal(cacheAudit.flatMap(({ urls }) => urls).some((url) => new URL(url).pathname.startsWith('/api')), false);
   console.log('M7 browser: canonical SW activation/static cache/API+binary bypass OK');
+
+  await navigate('/');
+  await waitJs(`document.querySelectorAll('.panel, .card, article').length > 0`, 'overview content before update');
+  const exceptionsBeforeUpdate = pageExceptions.length;
+  await evaluate(`navigator.serviceWorker.register('/service-worker.js?update=prompt-m7', { scope: '/' }).then(() => true)`);
+  await waitJs(`document.querySelector('.toasts')?.textContent.includes('A new version is ready') === true`, 'update prompt');
+  await new Promise((resolveWait) => setTimeout(resolveWait, 1_500));
+  assert.deepEqual(pageExceptions.slice(exceptionsBeforeUpdate), [], 'the update prompt raised no page exception');
+  assert.ok(await evaluate(`document.querySelectorAll('.panel, .card, article').length > 0`), 'page content survives the update prompt');
+  assert.equal(await evaluate(`[...document.querySelectorAll('.toasts > *')].filter((n) => n.textContent.includes('A new version is ready')).length`), 1, 'exactly one update prompt');
+  await evaluate(`(() => { window.__m7BeforeReload = true; [...document.querySelectorAll('.toasts button')].find((b) => b.textContent.trim() === 'Reload').click(); return true; })()`);
+  await waitJs(`window.__m7BeforeReload !== true && document.readyState === 'complete' && document.querySelectorAll('.panel, .card, article').length > 0`, 'reload after accepting the update', 30_000);
+  // Kit re-registers the plain script URL after the reload, so a second prompt here is expected; only the controller matters.
+  assert.ok(await evaluate(`navigator.serviceWorker.controller !== null`), 'reloaded page is controlled by the activated worker');
+  assert.deepEqual(pageExceptions.slice(exceptionsBeforeUpdate), [], 'applying the update raised no page exception');
+  console.log('M7 browser: service-worker update prompt and reload OK');
 
   await evaluate(`(async () => {
     await (await caches.open('atc-console-static-old-m7')).put('/old-asset', new Response('old'));
@@ -352,6 +374,7 @@ try {
   await waitJs(`location.pathname === '/login'`, 'final anonymous redirect');
 
   assert.equal(browserErrors.some((message) => /hydration|Content Security Policy|Refused to execute|unsafe-eval/i.test(message)), false, browserErrors.join('\n'));
+  assert.deepEqual(pageExceptions, [], 'no uncaught page exception anywhere in the run');
   console.log(`M7 real Chrome: docs/admin/viewer/SW/cache/theme/i18n/toast/logout/offline/storage passed; evidence ${artifacts}`);
 } finally {
   cdp?.close();
