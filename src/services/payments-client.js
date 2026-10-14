@@ -11,13 +11,17 @@ export class PaymentsClient extends ServiceClient {
   /** @param {Record<string, string|number|undefined>} q */
   payments(q) {
     const p = new URLSearchParams();
-    for (const k of ['status', 'limit', 'cursor']) if (q[k] !== undefined && q[k] !== '') p.set(k, String(q[k]));
+    for (const k of ['status', 'email', 'currency', 'minAmount', 'maxAmount', 'from', 'to', 'metaKey', 'metaValue', 'limit', 'cursor']) if (q[k] !== undefined && q[k] !== '') p.set(k, String(q[k]));
     return this.json('GET', `/v1/payments?${p}`);
   }
   /** @param {string} id */
   payment(id) { return this.json('GET', `/v1/payments/${PaymentsClient.seg(id)}`); }
   /** @param {string} id */
   cancel(id) { return this.json('POST', `/v1/payments/${PaymentsClient.seg(id)}/cancel`, { timeoutMs: PaymentsClient.PROVIDER_MS }); }
+  /** @param {string} id */
+  anonymize(id) { return this.json('POST', `/v1/payments/${PaymentsClient.seg(id)}/anonymize`, { timeoutMs: PaymentsClient.PROVIDER_MS }); }
+  /** Reads every payment of the window from Stripe: bounded by 200 payments. @param {{ from: string, to: string, repair?: boolean }} body */
+  reconcile(body) { return this.json('POST', '/v1/reconciliation', { body, timeoutMs: 600_000 }); }
   /** @param {string} id */
   sync(id) { return this.json('POST', `/v1/payments/${PaymentsClient.seg(id)}/sync`, { timeoutMs: PaymentsClient.PROVIDER_MS }); }
   /** @param {string} id @param {{ amount?: number, reason?: string }} body @param {string} idempotencyKey */

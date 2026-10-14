@@ -31,11 +31,15 @@
   const metadata = $derived(p ? Object.entries(p.metadata ?? {}) : []);
 
   let busy = $state(false);
-  /** @type {'cancel'|'refund'|null} */ let confirm = $state(null);
+  /** @type {'cancel'|'refund'|'anonymize'|null} */ let confirm = $state(null);
   async function sync() {
     busy = true;
     try { const r = /** @type {any} */ (await api.post(`${base}/sync`, {})); toasts.ok(r.changed ? t('pm.synced', { status: t(`pm.s.${r.payment.status}`) }) : t('pm.syncedSame')); await res.load(); }
     catch (e) { toasts.error(e); } finally { busy = false; }
+  }
+  async function anonymize() {
+    busy = true;
+    try { await api.post(`${base}/anonymize`, {}); toasts.ok(t('pm.anonymized')); confirm = null; await res.load(); } catch (e) { toasts.error(e); confirm = null; } finally { busy = false; }
   }
   async function cancel() {
     busy = true;
@@ -68,6 +72,7 @@
       {#if d.refundable > 0}<button class="btn primary" onclick={openRefund} disabled={busy} aria-label={t('pm.refund')} title={t('pm.refund')}><Icon name="undo" size={16} /><span class="hide-m"> {t('pm.refund')}</span></button>{/if}
       <RowMenu label={t('common.actions')} items={[
         { label: t('pm.sync'), icon: 'refresh', run: sync },
+        ...(p.customerEmail || metadata.length ? [{ label: t('pm.anonymize'), icon: 'shield', danger: true, run: () => { confirm = 'anonymize'; } }] : []),
         ...(['pending', 'processing'].includes(p.status) ? [{ label: t('pm.cancel'), icon: 'x', danger: true, run: () => { confirm = 'cancel'; } }] : []),
       ]} />
     {/if}
@@ -134,6 +139,7 @@
 </Dialog>
 
 <Confirm open={confirm === 'refund'} title={t('pm.refundTitle')} message={t('pm.refundDesc', { amount: refundLabel, customer: p?.customerEmail ?? p?.id ?? '' })} danger confirmLabel={t('pm.refundAction', { amount: refundLabel })} {busy} onconfirm={refund} oncancel={() => { confirm = null; }} />
+<Confirm open={confirm === 'anonymize'} title={t('pm.anonymizeTitle')} message={t('pm.anonymizeDesc')} danger typeWord={p?.id ?? ''} confirmLabel={t('pm.anonymize')} {busy} onconfirm={anonymize} oncancel={() => { confirm = null; }} />
 <Confirm open={confirm === 'cancel'} title={t('pm.cancelTitle')} message={t('pm.cancelDesc')} danger confirmLabel={t('pm.cancel')} {busy} onconfirm={cancel} oncancel={() => { confirm = null; }} />
 
 <style>

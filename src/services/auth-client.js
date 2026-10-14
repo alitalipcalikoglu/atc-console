@@ -21,9 +21,19 @@ export class AuthClient extends ServiceClient {
     return this.json('POST', '/v1/users', { body });
   }
 
-  /** @param {string} id @param {{ name?: string|null, status?: 'active'|'disabled' }} patch */
+  /** @param {string} id @param {{ name?: string|null, email?: string, status?: 'active'|'disabled' }} patch */
   patchUser(id, patch) {
     return this.json('PATCH', `/v1/users/${encodeURIComponent(id)}`, { body: patch });
+  }
+
+  /** @param {string} id */
+  exportUser(id) {
+    return this.json('GET', `/v1/users/${encodeURIComponent(id)}/export`);
+  }
+
+  /** @param {string} id */
+  anonymizeUser(id) {
+    return this.json('POST', `/v1/users/${encodeURIComponent(id)}/anonymize`);
   }
 
   /** @param {string} id */

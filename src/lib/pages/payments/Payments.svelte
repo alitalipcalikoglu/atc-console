@@ -13,6 +13,7 @@
   import ServiceTabs from '#lib/components/ServiceTabs.svelte';
   import AutoRefresh from '#lib/components/AutoRefresh.svelte';
   import PollStats from '#lib/components/PollStats.svelte';
+  import Dialog from '#lib/components/Dialog.svelte';
   import { untrack } from 'svelte';
   import { poller } from '#lib/client/poller.svelte.js';
   import { api } from '#lib/client/api.js';
@@ -21,8 +22,11 @@
   import { page as route } from '$app/state';
   import { Navigation } from '#lib/client/navigation.js';
   import { services } from '#lib/client/services.svelte.js';
+  import { useSession } from '#lib/client/session.svelte.js';
+  import { toasts } from '#lib/client/toast.svelte.js';
   import { Fmt } from '#lib/client/format.js';
   import { t, i18n } from '#lib/client/i18n.svelte.js';
+  const session = useSession();
   /** @type {{ sid: string }} */
   let { sid } = $props();
   const service = $derived(poller.for(sid));
@@ -35,6 +39,8 @@
   const count = (/** @type {string[]} */ ks) => (st ? ks.reduce((a, k) => a + Number(st.byStatus[k] ?? 0), 0) : 0);
   const STATUSES = /** @type {const} */ (['', 'pending', 'processing', 'succeeded', 'partially_refunded', 'refunded', 'canceled']);
   /** @type {string} */ let status = $state(STATUSES.includes(/** @type {any} */ (route.url.searchParams.get('status') ?? '')) ? route.url.searchParams.get('status') ?? '' : '');
+  /** Search box: an address with @ matches the customer e-mail, anything else the "order" metadata value. */
+  let search = $state(route.url.searchParams.get('q') ?? '');
   /** @type {any[]} */ let items = $state([]);
   /** @type {string|null} */ let cursor = $state(null);
   let loading = $state(false);
@@ -44,15 +50,33 @@
   async function loadPayments(c = null) {
     if (c) more = true; else loading = true;
     try {
-      const q = new URLSearchParams({ limit: '50', ...(status ? { status } : {}), ...(c ? { cursor: c } : {}) });
+      const term = search.trim();
+      const q = new URLSearchParams({ limit: '50', ...(status ? { status } : {}), ...(term ? (term.includes('@') ? { email: term } : { metaKey: 'order', metaValue: term }) : {}), ...(c ? { cursor: c } : {}) });
       const r = /** @type {any} */ (await api.get(`${base}/payments?${q}`));
       items = c ? [...items, ...r.items] : r.items; cursor = r.nextCursor; listError = null;
     } catch (e) { listError = e; } finally { loading = false; more = false; }
   }
   $effect(() => service.subscribe(() => { stats.load(); events.load(); loadPayments(null); }));
   $effect(() => { stats.load(); events.load(); });
-  $effect(() => { const s = status; untrack(() => { Navigation.replaceQuery(route.url, { status: s || null }); loadPayments(null); }); });
+  $effect(() => { const s = status; const term = search; untrack(() => { Navigation.replaceQuery(route.url, { status: s || null, q: term.trim() || null }); loadPayments(null); }); });
   const refreshNow = () => service.trigger();
+
+  // ---- reconciliation with Stripe: a period, optionally repairing what differs
+  let rcOpen = $state(false);
+  let rcBusy = $state(false);
+  const day = (/** @type {number} */ offset) => new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+  let rcFrom = $state(day(-7));
+  let rcTo = $state(day(1));
+  let rcRepair = $state(false);
+  /** @type {any|null} */ let rcResult = $state(null);
+  async function reconcile() {
+    rcBusy = true;
+    try {
+      rcResult = await api.post(`${base}/reconciliation`, { from: `${rcFrom}T00:00:00.000Z`, to: `${rcTo}T00:00:00.000Z`, repair: rcRepair });
+      if (rcResult.repaired) toasts.ok(t('pm.reconcileRepaired', { n: rcResult.repaired }));
+      await loadPayments(null);
+    } catch (e) { toasts.error(e); } finally { rcBusy = false; }
+  }
   const svc = $derived(services.get(sid));
   const volume = $derived(st ? st.volume24h.map((/** @type {any} */ v) => fmt.money(v.amount, v.currency)).join(' · ') : '');
 </script>
@@ -60,6 +84,7 @@
 <Page title={svc?.label ?? t('pm.title')} desc={t('pm.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
+    {#if session.isAdmin}<button class="btn" onclick={() => { rcResult = null; rcOpen = true; }} aria-label={t('pm.reconcile')} title={t('pm.reconcile')}><Icon name="check" size={16} /><span class="hide-m"> {t('pm.reconcile')}</span></button>{/if}
     <button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}
   <ServiceTabs type="atc-payments" {sid} />
@@ -74,6 +99,7 @@
   <div class="stack">
     <Panel title={t('pm.payments')} flush>
       {#snippet aside()}
+        <input class="input search" type="search" bind:value={search} placeholder={t('pm.search')} aria-label={t('pm.search')} title={t('pm.searchHint')} maxlength="254" />
         <div class="seg">{#each STATUSES as s (s)}<button aria-pressed={status === s} onclick={() => { status = s; }}>{s ? t(`pm.s.${s}`) : t('pm.all')}</button>{/each}</div>
       {/snippet}
       {#if listError}<ErrorBox error={listError} onretry={() => loadPayments(null)} />
@@ -123,7 +149,33 @@
   </div>
 </Page>
 
+<Dialog open={rcOpen} title={t('pm.reconcileTitle')} onclose={() => { rcOpen = false; }}>
+  <div class="stack">
+    <p class="small muted no-margin">{t('pm.reconcileDesc')}</p>
+    <div class="grid two-dates">
+      <div class="field"><label for="rc-from">{t('pm.from')}</label><input id="rc-from" class="input" type="date" bind:value={rcFrom} /></div>
+      <div class="field"><label for="rc-to">{t('pm.to')}</label><input id="rc-to" class="input" type="date" bind:value={rcTo} /></div>
+    </div>
+    <label class="checkbox small"><input type="checkbox" bind:checked={rcRepair} /> {t('pm.repair')}</label>
+    {#if rcResult}
+      <p class="small no-margin">{t('pm.reconcileDone', { n: rcResult.checked, m: rcResult.mismatches.length })}{rcResult.repaired ? ` · ${t('pm.reconcileRepaired', { n: rcResult.repaired })}` : ''}</p>
+      {#if rcResult.truncated}<p class="small warn-text no-margin">{t('pm.reconcileMore')}</p>{/if}
+      {#if !rcResult.mismatches.length}<p class="small ok-text no-margin">{t('pm.reconcileNone')}</p>
+      {:else}
+        <div class="table-wrap"><table class="table">
+          <thead><tr><th>{t('pm.payment')}</th><th>{t('pm.local')}</th><th>{t('pm.stripe')}</th></tr></thead>
+          <tbody>{#each rcResult.mismatches as m (m.id)}<tr class="clickable" onclick={() => goto(`/atc-payments/${sid}/payments/${m.id}`)}><td class="mono xs">{m.id}</td><td class="small">{t(`pm.s.${m.local.status}`)}</td><td class="small">{t(`pm.s.${m.provider.status}`)}</td></tr>{/each}</tbody>
+        </table></div>
+      {/if}
+    {/if}
+  </div>
+  {#snippet footer()}<button class="btn" onclick={() => { rcOpen = false; }}>{t('common.close')}</button><button class="btn primary" onclick={reconcile} disabled={rcBusy || !rcFrom || !rcTo || rcFrom >= rcTo}>{t('pm.reconcileRun')}</button>{/snippet}
+</Dialog>
+
 <style>
+  .search { max-width: 220px; margin-right: 8px; }
+  .two-dates { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+  .no-margin { margin: 0; }
   .stat-row { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); margin-bottom: 20px; }
   .two-cols { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
   .detail { display: block; max-width: 220px; }

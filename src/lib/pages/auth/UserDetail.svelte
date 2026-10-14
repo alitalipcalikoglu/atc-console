@@ -9,6 +9,8 @@
   import CopyButton from '#lib/components/CopyButton.svelte';
   import Confirm from '#lib/components/Confirm.svelte';
   import Empty from '#lib/components/Empty.svelte';
+  import Dialog from '#lib/components/Dialog.svelte';
+  import RowMenu from '#lib/components/RowMenu.svelte';
   import { api } from '#lib/client/api.js';
   import { Resource } from '#lib/client/resource.svelte.js';
   import { goto } from '$app/navigation';
@@ -22,8 +24,16 @@
   $effect(() => { res.load(); });
   const d = $derived(/** @type {any} */ (res.data));
   const u = $derived(d?.user);
-  /** @type {null|'disable'|'delete'|'revokeAll'} */
+  /** @type {null|'disable'|'delete'|'revokeAll'|'anonymize'} */
   let confirm = $state(null);
+  let emailOpen = $state(false);
+  let newEmail = $state('');
+  const emailOk = $derived(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail.trim()));
+  function downloadExport() {
+    const a = document.createElement('a');
+    a.href = `/api${base}/export`; a.download = `user-${id}.json`;
+    document.body.append(a); a.click(); a.remove();
+  }
   /** Session id awaiting revoke confirmation. @type {string|null} */
   let revoking = $state(null);
   let busy = $state(false);
@@ -43,6 +53,11 @@
       {#if u.status === 'active'}<button class="btn danger" onclick={() => { confirm = 'disable'; }} disabled={busy}><Icon name="lock" size={16} /> {t('auth.disable')}</button>
       {:else}<button class="btn" onclick={() => run(() => api.patch(base, { status: 'active' }), t('auth.updated'))} disabled={busy}><Icon name="unlock" size={16} /> {t('auth.enable')}</button>{/if}
       <button class="btn danger" onclick={() => { confirm = 'delete'; }} disabled={busy}><Icon name="trash" size={16} /> {t('common.delete')}</button>
+      <RowMenu label={t('common.actions')} items={[
+        { label: t('auth.changeEmail'), icon: 'mail', run: () => { newEmail = ''; emailOpen = true; } },
+        { label: t('auth.export'), icon: 'download', run: downloadExport },
+        { label: t('auth.anonymize'), icon: 'shield', danger: true, run: () => { confirm = 'anonymize'; } },
+      ]} />
     {/if}
     <button class="btn icon" onclick={() => res.load()} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}
@@ -97,4 +112,10 @@
 <Confirm open={revoking !== null} title={t('auth.revoke')} message={t('auth.revokeDesc')} danger confirmLabel={t('auth.revoke')} {busy} onconfirm={() => run(() => api.delete(`${base}/sessions/${revoking}`), t('auth.revoked'))} oncancel={() => { revoking = null; }} />
 <Confirm open={confirm === 'disable'} title={t('auth.disable')} message={t('auth.disableDesc')} danger irreversible={false} confirmLabel={t('auth.disable')} {busy} onconfirm={() => run(() => api.patch(base, { status: 'disabled' }), t('auth.updated'))} oncancel={() => { confirm = null; }} />
 <Confirm open={confirm === 'revokeAll'} title={t('auth.revokeAll')} message={t('auth.revokeAllDesc')} danger confirmLabel={t('auth.revokeAll')} {busy} onconfirm={() => run(async () => { const r = /** @type {any} */ (await api.delete(`${base}/sessions`)); toasts.info(t('auth.revokedAll', { n: r.revoked })); }, t('auth.updated'))} oncancel={() => { confirm = null; }} />
+<Dialog open={emailOpen} title={t('auth.changeEmail')} onclose={() => { emailOpen = false; }}>
+  <p class="small muted" style="margin-bottom:12px">{t('auth.changeEmailDesc')}</p>
+  <div class="field"><label for="ne">{t('auth.newEmail')}</label><input id="ne" class="input" type="email" autocomplete="off" bind:value={newEmail} aria-invalid={newEmail && !emailOk ? 'true' : undefined} /></div>
+  {#snippet footer()}<button class="btn" onclick={() => { emailOpen = false; }}>{t('common.cancel')}</button><button class="btn primary" disabled={busy || !emailOk} onclick={async () => { await run(() => api.patch(base, { email: newEmail.trim() }), t('auth.emailChanged')); emailOpen = false; }}>{t('common.save')}</button>{/snippet}
+</Dialog>
+<Confirm open={confirm === 'anonymize'} title={t('auth.anonymizeTitle')} message={t('auth.anonymizeDesc')} danger typeWord={u?.email ?? ''} confirmLabel={t('auth.anonymize')} {busy} onconfirm={() => run(() => api.post(`${base}/anonymize`, {}), t('auth.anonymized'))} oncancel={() => { confirm = null; }} />
 <Confirm open={confirm === 'delete'} title={t('auth.deleteUser')} message={t('auth.deleteDesc')} danger typeWord={u?.email ?? ''} confirmLabel={t('common.delete')} {busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/atc-auth/${sid}`); }, t('auth.userDeleted'), false)} oncancel={() => { confirm = null; }} />

@@ -1,0 +1,3 @@
+import { PaymentsClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, record } from '#lib/server/m4.js';
+export const POST = jsonRoute({ auth: 'admin', params: Schemas.serviceParams, body: Schemas.paymentReconcile, handler: async (context) => { const output = await context.runtime.clients.get(context.params.sid, PaymentsClient).reconcile(context.body as { from: string, to: string, repair?: boolean }) as any; record(context, 'atc-payments.reconciliation.run', context.params.sid, { service: context.params.sid, checked: output.checked, mismatches: output.mismatches?.length, repair: Boolean(context.body.repair) }); return output; } });

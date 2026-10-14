@@ -1619,6 +1619,11 @@ paths:
               additionalProperties: false
               minProperties: 1
               properties:
+                email:
+                  type: string
+                  format: email
+                  maxLength: 254
+                  description: Sets the address directly; it becomes unverified and a verification mail goes to it.
                 name:
                   type:
                     - string
@@ -10570,6 +10575,38 @@ paths:
         Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
       parameters:
         - $ref: "#/components/parameters/SidParam"
+        - name: email
+          in: query
+          required: false
+          schema: {"type":"string","maxLength":254}
+        - name: currency
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^[A-Za-z]{3}$"}
+        - name: minAmount
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^[0-9]{1,9}$"}
+        - name: maxAmount
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^[0-9]{1,9}$"}
+        - name: from
+          in: query
+          required: false
+          schema: {"type":"string","maxLength":40}
+        - name: to
+          in: query
+          required: false
+          schema: {"type":"string","maxLength":40}
+        - name: metaKey
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^[A-Za-z0-9_.-]{1,40}$"}
+        - name: metaValue
+          in: query
+          required: false
+          schema: {"type":"string","maxLength":500}
         - name: status
           in: query
           required: false
@@ -10936,6 +10973,175 @@ paths:
               schema:
                 $ref: "#/components/schemas/PassThrough"
           x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-payments/payments/{id}/anonymize:
+    post:
+      operationId: atc-console.atc-payments.payments.anonymize
+      tags:
+        - atc-payments
+      summary: "Remove the person from a payment."
+      description: >-
+        Typed pass-through to the **payments** service instance named by `sid` — console relays this to its
+        `POST /v1/payments/{id}/anonymize`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the payments service's own `POST /v1/payments/{id}/anonymize` response body, relayed
+            unchanged. See the payments service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-payments/reconciliation:
+    post:
+      operationId: atc-console.atc-payments.reconciliation.run
+      tags:
+        - atc-payments
+      summary: "Reconcile a creation window with Stripe."
+      description: >-
+        Typed pass-through to the **payments** service instance named by `sid` — console relays this to its
+        `POST /v1/reconciliation`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["from","to"],"properties":{"from":{"type":"string","format":"date-time"},"to":{"type":"string","format":"date-time"},"repair":{"type":"boolean"}}}
+      responses:
+        "200":
+          description: Pass-through of the payments service's own `POST /v1/reconciliation` response body, relayed
+            unchanged. See the payments service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-auth/users/{id}/export:
+    get:
+      operationId: atc-console.atc-auth.users.export
+      tags:
+        - atc-auth
+      summary: "Everything stored about one person (admin)."
+      description: >-
+        Typed pass-through to the **auth** service instance named by `sid` — console relays this to its `GET
+        /v1/users/{id}/export`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the auth service's own `GET /v1/users/{id}/export` response body, relayed
+            unchanged. See the auth service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-auth/users/{id}/anonymize:
+    post:
+      operationId: atc-console.atc-auth.users.anonymize
+      tags:
+        - atc-auth
+      summary: "Erase the person, keep the account row."
+      description: >-
+        Typed pass-through to the **auth** service instance named by `sid` — console relays this to its `POST
+        /v1/users/{id}/anonymize`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "204":
+          description: Done. console discards auth's response body.
         "400":
           $ref: "#/components/responses/ValidationFailed"
         "401":
