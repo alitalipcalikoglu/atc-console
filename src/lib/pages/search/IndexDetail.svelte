@@ -13,6 +13,7 @@
   import RowMenu from '#lib/components/RowMenu.svelte';
   import CopyButton from '#lib/components/CopyButton.svelte';
   import IndexForm from './IndexForm.svelte';
+  import DocumentsImport from './DocumentsImport.svelte';
   import { api } from '#lib/client/api.js';
   import { Resource } from '#lib/client/resource.svelte.js';
   import { goto } from '$app/navigation';
@@ -83,6 +84,7 @@
     try { await fn(); if (ok) toasts.ok(ok); confirm = null; await res.load(); } catch (err) { toasts.error(err); } finally { busy = false; }
   }
   let editOpen = $state(false);
+  let addOpen = $state(false);
   /** @param {Record<string, unknown>} patch */
   async function save(patch) {
     if (!Object.keys(patch).length) { toasts.info(t('se.noChanges')); editOpen = false; return; }
@@ -98,6 +100,7 @@
 <Page title={x ? x.name : t('se.index')} back="/atc-search/{sid}">
   {#snippet actions()}
     {#if x && session.isAdmin}
+      <button class="btn" onclick={() => { addOpen = true; }} disabled={busy}><Icon name="plus" size={16} /><span class="hide-m"> {t('se.addDocs')}</span></button>
       <button class="btn" onclick={() => { editOpen = true; }} disabled={busy}><Icon name="settings" size={16} /><span class="hide-m"> {t('se.edit')}</span></button>
       <RowMenu label={t('common.actions')} items={[
         { label: t('se.clear'), icon: 'x', danger: true, run: () => { confirm = 'clear'; } },
@@ -158,6 +161,7 @@
   {/if}
 </Page>
 
+<DocumentsImport open={addOpen} {base} ondone={() => { addOpen = false; res.load(); search(0); }} onclose={() => { addOpen = false; }} />
 <IndexForm open={editOpen} initial={x} busy={busy} onsubmit={save} onclose={() => { editOpen = false; }} />
 <Dialog open={doc !== null} title={doc?.title ?? t('se.document')} onclose={() => { doc = null; }} wide>
   {#if doc}
