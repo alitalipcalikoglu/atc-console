@@ -22,6 +22,7 @@ export class Config {
     this.loginLockoutMin = v.loginLockoutMin;
     this.scryptLogN = v.scryptLogN;
     this.totpIssuer = v.totpIssuer;
+    this.requireTotp = v.requireTotp;
     this.secretsKey = v.secretsKey;
     this.secretsPreviousKey = v.secretsPreviousKey;
     this.auditRetentionDays = v.auditRetentionDays;
@@ -64,6 +65,7 @@ export class Config {
       loginLockoutMin: r.integer('CONSOLE_LOGIN_LOCKOUT_MIN', 15, { min: 1 }),
       scryptLogN: r.integer('SCRYPT_LOG_N', 15, { min: 14, max: 20 }),
       totpIssuer: r.optional('TOTP_ISSUER') || 'atc console',
+      requireTotp: r.boolean('CONSOLE_REQUIRE_TOTP', false),
       secretsKey: secretsKeyHex ? Buffer.from(secretsKeyHex, 'hex') : null,
       secretsPreviousKey: secretsPreviousKeyHex ? Buffer.from(secretsPreviousKeyHex, 'hex') : null,
       auditRetentionDays: r.integer('AUDIT_RETENTION_DAYS', 365, { min: 30 }),

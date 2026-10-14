@@ -27,7 +27,7 @@ test(`DB oracle: a current package (${PACKAGE_VERSION}) database reopens without
   const created = sessions.create({ adminId: admin.id, ttlMs: 60_000, totpPending: false, ip: '192.0.2.10', userAgent: 'migration-oracle' }, 1_700_000_000_300);
   new AuditStore(db).record({ adminId: admin.id, adminUsername: admin.username, action: 'fixture.created', target: 'compat', meta: { safe: true }, ip: '192.0.2.10' }, 1_700_000_000_400);
   const version = db.schemaVersion;
-  assert.equal(version, 3);
+  assert.equal(version, 4);
   db.close();
 
   db = new Database(path);
@@ -49,7 +49,7 @@ test(`DB oracle: a current package (${PACKAGE_VERSION}) database reopens without
     assert.deepEqual(audit.map((entry) => [entry.action, entry.target, entry.meta]), [['fixture.created', 'compat', '{"safe":true}']]);
     assert.deepEqual(
       db.prepare('SELECT version, name FROM schema_migrations ORDER BY version').all().map((row) => ({ ...row })),
-      [{ version: 1, name: 'v1' }, { version: 2, name: 'v2' }, { version: 3, name: 'v3' }],
+      [{ version: 1, name: 'v1' }, { version: 2, name: 'v2' }, { version: 3, name: 'v3' }, { version: 4, name: 'v4' }],
     );
   } finally {
     db.close();
@@ -69,7 +69,7 @@ test('environment oracle: every documented variable is classified and defaults r
     AUDIT_RETENTION_DAYS: String(config.auditRetentionDays), CONSOLE_SESSION_TTL_MIN: String(config.sessionTtlMin),
     CONSOLE_SESSION_IDLE_MIN: String(config.sessionIdleMin), CONSOLE_LOGIN_MAX_FAILURES: String(config.loginMaxFailures),
     CONSOLE_LOGIN_LOCKOUT_MIN: String(config.loginLockoutMin), SCRYPT_LOG_N: String(config.scryptLogN),
-    TOTP_ISSUER: config.totpIssuer, RATE_LIMIT_MAX: String(config.rateLimitMax), SERVICE_TIMEOUT_MS: String(config.serviceTimeoutMs),
+    CONSOLE_REQUIRE_TOTP: String(config.requireTotp), TOTP_ISSUER: config.totpIssuer, RATE_LIMIT_MAX: String(config.rateLimitMax), SERVICE_TIMEOUT_MS: String(config.serviceTimeoutMs),
   }, Object.fromEntries(Object.entries(inventory).filter(([, value]) => value.default !== undefined).map(([name, value]) => [name, value.default])));
   assert.equal(config.tls, null);
   assert.equal(config.dbBackupDir, undefined);

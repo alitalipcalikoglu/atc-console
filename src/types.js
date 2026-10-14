@@ -18,6 +18,7 @@
  * @property {number} loginLockoutMin
  * @property {number} scryptLogN
  * @property {string} totpIssuer
+ * @property {boolean} requireTotp  Every admin and viewer must enrol a second factor before anything else works.
  * @property {Buffer|null} secretsKey      Seals TOTP secrets at rest; null = TOTP enrollment unavailable, existing sealed secrets still verify.
  * @property {Buffer|null} secretsPreviousKey  For rotation: decrypts (never encrypts with) the key being retired.
  * @property {number} auditRetentionDays
@@ -44,6 +45,7 @@
  * @property {number} created_at
  * @property {number} updated_at
  * @property {number|null} last_login_at
+ * @property {string|null} services  JSON array of service ids the account may use; null = all.
  */
 
 /**

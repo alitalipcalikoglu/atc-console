@@ -48,7 +48,7 @@ test('migration v2 -> v3: admin emails become usernames, clashing local parts ke
     v2.close();
 
     const v3 = new Database(path);
-    assert.equal(v3.schemaVersion, 3);
+    assert.equal(v3.schemaVersion, 4);
     const rows = /** @type {{ id: string, username: string }[]} */ (v3.prepare('SELECT id, username FROM admins ORDER BY id').all());
     assert.deepEqual(rows.map((r) => [r.id, r.username]), [['a1', 'a.x.com'], ['a2', 'a.y.com'], ['b1', 'bob']]);
     assert.equal(/** @type {any} */ (v3.prepare('SELECT admin_username FROM audit').get()).admin_username, 'bob@z.com', 'audit history kept as written');

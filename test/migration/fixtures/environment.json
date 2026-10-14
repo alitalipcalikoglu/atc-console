@@ -6,6 +6,7 @@
   "TLS_CERT_PATH": { "class": ["tls", "path", "optional"] },
   "TLS_KEY_PATH": { "class": ["tls", "path", "secret", "optional"] },
   "COOKIE_SECURE": { "class": ["security", "defaulted"], "default": "true" },
+  "CONSOLE_REQUIRE_TOTP": { "class": ["security", "defaulted"], "default": "false" },
   "DB_PATH": { "class": ["storage", "path", "defaulted"], "default": "./data/console.db" },
   "DB_BACKUP_DIR": { "class": ["storage", "path", "optional"] },
   "SERVICES_FILE": { "class": ["configuration", "path", "defaulted"], "default": "./services.json" },

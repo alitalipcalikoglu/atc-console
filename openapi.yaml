@@ -665,6 +665,14 @@ paths:
                 - password
                 - role
               properties:
+                services:
+                  type:
+                    - array
+                    - "null"
+                  maxItems: 40
+                  description: Service ids the account may use; null or empty = every service. A limited account cannot manage accounts.
+                  items:
+                    type: string
                 username:
                   type: string
                   minLength: 1
@@ -743,6 +751,14 @@ paths:
               additionalProperties: false
               minProperties: 1
               properties:
+                services:
+                  type:
+                    - array
+                    - "null"
+                  maxItems: 40
+                  description: Service ids the account may use; null or empty = every service. A limited account cannot manage accounts.
+                  items:
+                    type: string
                 name:
                   type: string
                   minLength: 1
@@ -11836,12 +11852,20 @@ components:
         - name
         - role
         - status
+        - services
         - totpEnabled
         - lockedUntil
         - createdAt
         - updatedAt
         - lastLoginAt
       properties:
+        services:
+          type:
+            - array
+            - "null"
+          description: Service ids the account is limited to; null = every service.
+          items:
+            type: string
         id:
           type: string
           format: uuid

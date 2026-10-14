@@ -6,7 +6,7 @@ import type { RequestHandler } from './$types';
 export const POST: RequestHandler = (event) => {
   const runtime = Runtime.get();
   return ApiEndpoint.run(runtime, () => {
-    const { admin } = AuthRequest.requireSession(runtime, event.locals);
+    const { admin } = AuthRequest.requireSession(runtime, event.locals, { enrolling: true });
     return Response.json(runtime.auth.startTotp(admin));
   });
 };

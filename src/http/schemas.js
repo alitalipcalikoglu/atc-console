@@ -18,8 +18,9 @@ export class Schemas {
   static totp = Schemas.body(['code'], { code: Schemas.code });
   static changePassword = Schemas.body(['currentPassword', 'newPassword'], { currentPassword: Schemas.password, newPassword: Schemas.password });
   static disableTotp = Schemas.body(['password', 'code'], { password: Schemas.password, code: Schemas.code });
-  static createAdmin = Schemas.body(['username', 'password', 'role'], { username: Schemas.username, password: Schemas.password, name: { type: 'string', maxLength: 80 }, role: { type: 'string', enum: ['admin', 'viewer'] } });
-  static patchAdmin = { type: 'object', additionalProperties: false, minProperties: 1, properties: { name: { type: 'string', minLength: 1, maxLength: 80 }, role: { type: 'string', enum: ['admin', 'viewer'] }, status: { type: 'string', enum: ['active', 'disabled'] } } };
+  static serviceScope = { type: ['array', 'null'], maxItems: 40, items: Schemas.sid };
+  static createAdmin = Schemas.body(['username', 'password', 'role'], { username: Schemas.username, password: Schemas.password, name: { type: 'string', maxLength: 80 }, role: { type: 'string', enum: ['admin', 'viewer'] }, services: Schemas.serviceScope });
+  static patchAdmin = { type: 'object', additionalProperties: false, minProperties: 1, properties: { name: { type: 'string', minLength: 1, maxLength: 80 }, role: { type: 'string', enum: ['admin', 'viewer'] }, status: { type: 'string', enum: ['active', 'disabled'] }, services: Schemas.serviceScope } };
   static setPassword = Schemas.body(['password'], { password: Schemas.password });
   static serviceParams = { type: 'object', properties: { sid: Schemas.sid }, required: ['sid'] };
   static serviceIdParams = { type: 'object', properties: { sid: Schemas.sid, id: Schemas.id }, required: ['sid', 'id'] };

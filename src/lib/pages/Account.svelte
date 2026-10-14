@@ -15,6 +15,9 @@
   import { i18n, t } from '#lib/client/i18n.svelte.js';
   import { toasts } from '#lib/client/toast.svelte.js';
   import { QrCode } from '#lib/client/qr.js';
+  import { PasswordHint } from '#lib/client/password-hint.js';
+  import { invalidateAll } from '$app/navigation';
+  import { page } from '$app/state';
   const sessions = new Resource(() => api.get('/me/sessions'));
   $effect(() => { sessions.load(); });
   let busy = $state(false);
@@ -34,7 +37,7 @@
   /** @param {SubmitEvent} e */
   async function confirmTotp(e) {
     e.preventDefault(); busy = true;
-    try { await api.post('/me/totp/confirm', { code: code.trim() }); toasts.ok(t('account.totpEnabled')); enrol = null; await session.refresh(); } catch (err) { toasts.error(err); code = ''; } finally { busy = false; }
+    try { await api.post('/me/totp/confirm', { code: code.trim() }); toasts.ok(t('account.totpEnabled')); enrol = null; await session.refresh(); await invalidateAll(); } catch (err) { toasts.error(err); code = ''; } finally { busy = false; }
   }
   async function disableTotp() {
     busy = true;
@@ -47,6 +50,7 @@
 </script>
 
 <Page title={t('account.title')} desc={t('account.desc')}>
+  {#if page.data.mustEnrol}<p class="small warn-text" role="alert">{t('account.totpRequiredNote')}</p>{/if}
   {#snippet actions()}<button class="btn" onclick={() => session.requestLogout()}><Icon name="logout" size={16} /> {t('account.logout')}</button>{/snippet}
   <div class="two">
     <div class="stack">
@@ -60,7 +64,7 @@
 
       <Panel title={t('account.password')}><form class="stack" onsubmit={changePassword}>
         <div class="field"><label for="cp">{t('account.current')}</label><input id="cp" class="input" type="password" autocomplete="current-password" bind:value={cur} required /></div>
-        <div class="field"><label for="np">{t('account.new')}</label><input id="np" class="input" type="password" autocomplete="new-password" bind:value={next} required /></div>
+        <div class="field"><label for="np">{t('account.new')}</label><input id="np" class="input" type="password" autocomplete="new-password" bind:value={next} required />{#if PasswordHint.weak(next)}<span class="hint warn-text">{t('common.weakPassword')}</span>{/if}</div>
         <div><button class="btn primary" type="submit" disabled={busy || !cur || next.length < 12}>{t('common.save')}</button></div>
       </form></Panel>
     </div>

@@ -7,7 +7,7 @@ export const POST: RequestHandler = async (event) => {
   const runtime = Runtime.get();
   return ApiEndpoint.run(runtime, async () => {
     const body = await ApiRequest.json(event.request, AuthSchemas.totp);
-    const { admin } = AuthRequest.requireSession(runtime, event.locals);
+    const { admin } = AuthRequest.requireSession(runtime, event.locals, { enrolling: true });
     runtime.auth.confirmTotp(admin, body.code, AuthRequest.context(event));
     return new Response(null, { status: 204 });
   });

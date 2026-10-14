@@ -75,6 +75,7 @@ export const jsonRoute = (route: Route): RequestHandler => {
       const resolved = route.auth === 'admin'
         ? AuthRequest.requireAdmin(runtime, event.locals)
         : AuthRequest.requireSession(runtime, event.locals);
+      AuthRequest.assertService(resolved.admin, (params as { sid?: string }).sid ?? event.params.sid);
       runtime.prepareM4();
       const output = await ActingAdmin.run(resolved.admin.username, () => route.handler({ runtime, event, params, query, body, ...resolved }));
       if (output instanceof Response) return output;

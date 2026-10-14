@@ -9,7 +9,7 @@ import { SecretBox } from '@atc-web/atc-service-core/secrets';
 
 /** Console administrator accounts. */
 export class AdminStore {
-  static COLUMNS = 'id, username, name, password_hash, role, status, totp_secret, totp_enabled_at, failed_logins, locked_until, created_at, updated_at, last_login_at';
+  static COLUMNS = 'id, username, name, password_hash, role, status, totp_secret, totp_enabled_at, failed_logins, locked_until, created_at, updated_at, last_login_at, services';
 
   /**
    * @param {Database} db
@@ -22,7 +22,8 @@ export class AdminStore {
     this.keyring = keyring;
     const C = AdminStore.COLUMNS;
     this.stmt = {
-      insert: db.prepare(`INSERT INTO admins (id, username, name, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`),
+      insert: db.prepare(`INSERT INTO admins (id, username, name, password_hash, role, services, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`),
+      setServices: db.prepare(`UPDATE admins SET services = ?, updated_at = ? WHERE id = ?`),
       byId: db.prepare(`SELECT ${C} FROM admins WHERE id = ?`),
       byUsername: db.prepare(`SELECT ${C} FROM admins WHERE username = ?`),
       all: db.prepare(`SELECT ${C} FROM admins ORDER BY created_at`),
@@ -116,13 +117,13 @@ export class AdminStore {
   }
 
   /**
-   * @param {{ username: string, name: string, passwordHash: string, role: Role }} a
+   * @param {{ username: string, name: string, passwordHash: string, role: Role, services?: string[]|null }} a
    * @param {number} [now]
    * @returns {AdminRow}
    */
   create(a, now = Date.now()) {
     const id = randomUUID();
-    this.stmt.insert.run(id, AdminStore.normalizeUsername(a.username), a.name.trim(), a.passwordHash, a.role, now, now);
+    this.stmt.insert.run(id, AdminStore.normalizeUsername(a.username), a.name.trim(), a.passwordHash, a.role, a.services ? JSON.stringify(a.services) : null, now, now);
     return /** @type {AdminRow} */ (this.stmt.byId.get(id));
   }
 
@@ -149,6 +150,11 @@ export class AdminStore {
   /** @param {string} id @param {string} hash @param {number} [now] */
   setPassword(id, hash, now = Date.now()) {
     this.stmt.setPassword.run(hash, now, id);
+  }
+
+  /** @param {string} id @param {string[]|null} services @param {number} [now] */
+  setServices(id, services, now = Date.now()) {
+    this.stmt.setServices.run(services ? JSON.stringify(services) : null, now, id);
   }
 
   /** @param {string} id @param {Role} role @param {number} [now] */

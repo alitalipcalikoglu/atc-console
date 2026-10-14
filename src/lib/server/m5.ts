@@ -66,6 +66,7 @@ export const specialRoute = (route: SpecialRoute): RequestHandler => {
       const resolved = route.auth === 'admin'
         ? AuthRequest.requireAdmin(runtime, event.locals)
         : AuthRequest.requireSession(runtime, event.locals);
+      AuthRequest.assertService(resolved.admin, (params as { sid?: string }).sid ?? event.params.sid);
       runtime.prepareM4();
       return ActingAdmin.run(resolved.admin.username, () => route.handler({ runtime, event, params, query, ...resolved }));
     });

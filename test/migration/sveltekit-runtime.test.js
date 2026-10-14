@@ -29,7 +29,7 @@ test('M2 runtime owns one process-scoped database and one maintenance lifecycle'
   assert.ok(timer);
   runtime.start();
   assert.equal(runtime.maintenance.timer, timer);
-  assert.equal(runtime.db.schemaVersion, 3);
+  assert.equal(runtime.db.schemaVersion, 4);
   runtime.checkReadiness();
   assert.deepEqual(Runtime.diagnostics(), {
     initializations: 1,

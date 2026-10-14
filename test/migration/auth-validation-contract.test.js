@@ -46,7 +46,7 @@ test('auth oracle: anonymous, successful login, invalid login and authenticated 
   const signedInAdmin = consoleApp.admins.byUsername('admin');
   assert.ok(signedInAdmin);
   assert.deepEqual(actual.body, {
-    admin: { id: signedInAdmin.id, username: 'admin', name: 'Admin', role: 'admin', status: 'active', totpEnabled: false, lockedUntil: null, createdAt: actual.body.admin.createdAt, updatedAt: actual.body.admin.updatedAt, lastLoginAt: actual.body.admin.lastLoginAt },
+    admin: { id: signedInAdmin.id, username: 'admin', name: 'Admin', role: 'admin', services: null, status: 'active', totpEnabled: false, lockedUntil: null, createdAt: actual.body.admin.createdAt, updatedAt: actual.body.admin.updatedAt, lastLoginAt: actual.body.admin.lastLoginAt },
     totpPending: false,
   });
 

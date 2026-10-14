@@ -41,12 +41,29 @@ export class AuthRequest {
     return admin && session ? { admin, session } : null;
   }
 
-  static requireSession(runtime: ConsoleRuntime, locals: App.Locals) {
+  /** `enrolling` routes (password, two-factor setup) stay open to an account that must still enrol a second factor (REQUIRE_TOTP). */
+  static requireSession(runtime: ConsoleRuntime, locals: App.Locals, opts: { enrolling?: boolean } = {}) {
     const resolved = AuthRequest.resolved(runtime, locals);
     if (!resolved) throw new ConsoleError('UNAUTHENTICATED', 'sign in required');
     if (resolved.session.totp_pending === 1) throw new ConsoleError('TOTP_REQUIRED', 'second factor required');
+    if (runtime.config.requireTotp && resolved.admin.totp_enabled_at === null && !opts.enrolling) throw new ConsoleError('TOTP_ENROLLMENT_REQUIRED', 'set up two-factor authentication on the account page first');
     AuthRequest.requireCsrf(locals);
     return resolved;
+  }
+
+  /** A scoped account (limited to some services) may only touch those; the list endpoints use `visible`. */
+  static assertService(admin: AdminRow, sid: string | undefined) {
+    const scope = AuthRequest.scope(admin);
+    if (scope && sid && !scope.includes(sid)) throw new ConsoleError('FORBIDDEN', 'your account has no access to this service');
+  }
+
+  static scope(admin: AdminRow): string[] | null {
+    return admin.services ? (JSON.parse(admin.services) as string[]) : null;
+  }
+
+  static visible<T extends { id: string }>(admin: AdminRow, items: T[]): T[] {
+    const scope = AuthRequest.scope(admin);
+    return scope ? items.filter((item) => scope.includes(item.id)) : items;
   }
 
   static requireCsrf(locals: App.Locals) {

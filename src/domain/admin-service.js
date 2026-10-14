@@ -31,10 +31,16 @@ export class AdminService {
     const iso = (/** @type {number|null} */ ms) => (ms === null ? null : new Date(ms).toISOString());
     return {
       id: a.id, username: a.username, name: a.name, role: a.role, status: a.status,
+      services: a.services ? JSON.parse(a.services) : null,
       totpEnabled: a.totp_enabled_at !== null,
       lockedUntil: a.locked_until !== null && a.locked_until > Date.now() ? iso(a.locked_until) : null,
       createdAt: iso(a.created_at), updatedAt: iso(a.updated_at), lastLoginAt: iso(a.last_login_at),
     };
+  }
+
+  /** Only an account with access to every service may manage accounts, so a scoped account cannot widen itself. @param {AdminRow|null} actor */
+  static #assertUnscoped(actor) {
+    if (actor?.services) throw new ConsoleError('FORBIDDEN', 'an account limited to some services cannot manage accounts');
   }
 
   list() {
@@ -42,34 +48,38 @@ export class AdminService {
   }
 
   /**
-   * @param {{ username: string, name: string, password: string, role: Role }} input
+   * @param {{ username: string, name: string, password: string, role: Role, services?: string[]|null }} input
    * @param {AdminRow|null} actor  Null when created from the CLI.
    * @param {Ctx} ctx
    */
   async create(input, actor, ctx) {
+    AdminService.#assertUnscoped(actor);
     const username = AdminStore.normalizeUsername(input.username);
     if (!AdminService.USERNAME.test(username)) throw new ConsoleError('INVALID_ARGUMENT', 'username must be 1-64 characters of a-z, 0-9, dot, underscore or hyphen, starting with a letter or digit');
     if (this.admins.byUsername(username)) throw new ConsoleError('USERNAME_TAKEN', 'an account with this username already exists');
     ConsoleAuth.assertPassword(input.password);
-    const admin = this.admins.create({ username, name: input.name?.trim() || username, passwordHash: await this.hasher.hash(input.password), role: input.role }, this.now());
-    this.audit.record({ adminId: actor?.id ?? null, adminUsername: actor?.username ?? 'cli', action: 'admin.created', target: admin.username, meta: { role: admin.role }, ip: ctx.ip }, this.now());
+    const admin = this.admins.create({ username, name: input.name?.trim() || username, passwordHash: await this.hasher.hash(input.password), role: input.role, services: input.services?.length ? [...new Set(input.services)] : null }, this.now());
+    this.audit.record({ adminId: actor?.id ?? null, adminUsername: actor?.username ?? 'cli', action: 'admin.created', target: admin.username, meta: { role: admin.role, services: input.services?.length ? input.services : null }, ip: ctx.ip }, this.now());
     return AdminService.view(admin);
   }
 
   /**
    * @param {string} id
-   * @param {{ name?: string, role?: Role, status?: 'active'|'disabled' }} patch
+   * @param {{ name?: string, role?: Role, status?: 'active'|'disabled', services?: string[]|null }} patch
    * @param {AdminRow} actor
    * @param {Ctx} ctx
    */
   update(id, patch, actor, ctx) {
+    AdminService.#assertUnscoped(actor);
     const target = this.#require(id);
+    if (patch.services !== undefined && target.id === actor.id) throw new ConsoleError('CONFLICT', 'you cannot change your own service access');
     const demoting = (patch.role === 'viewer' && target.role === 'admin') || (patch.status === 'disabled' && target.status === 'active' && target.role === 'admin');
     if (demoting && this.admins.activeAdminCount() <= 1) throw new ConsoleError('LAST_ADMIN', 'at least one active administrator must remain');
     if (target.id === actor.id && (patch.role === 'viewer' || patch.status === 'disabled')) throw new ConsoleError('CONFLICT', 'you cannot demote or disable your own account');
     const now = this.now();
     if (patch.name !== undefined) this.admins.setName(id, patch.name, now);
     if (patch.role !== undefined) this.admins.setRole(id, patch.role, now);
+    if (patch.services !== undefined) this.admins.setServices(id, patch.services?.length ? [...new Set(patch.services)] : null, now);
     if (patch.status !== undefined) {
       this.admins.setStatus(id, patch.status, now);
       if (patch.status === 'disabled') this.sessions.removeOthers(id, '');
@@ -86,6 +96,7 @@ export class AdminService {
    * @param {Ctx} ctx
    */
   async resetPassword(id, password, actor, ctx) {
+    AdminService.#assertUnscoped(actor);
     const target = this.#require(id);
     ConsoleAuth.assertPassword(password);
     this.admins.setPassword(id, await this.hasher.hash(password), this.now());
@@ -100,6 +111,7 @@ export class AdminService {
    * @param {Ctx} ctx
    */
   unlock(id, actor, ctx) {
+    AdminService.#assertUnscoped(actor);
     const target = this.#require(id);
     this.admins.recordLoginSuccess(id, target.last_login_at ?? 0);
     this.audit.record({ adminId: actor.id, adminUsername: actor.username, action: 'admin.unlocked', target: target.username, ip: ctx.ip }, this.now());
@@ -111,6 +123,7 @@ export class AdminService {
    * @param {Ctx} ctx
    */
   remove(id, actor, ctx) {
+    AdminService.#assertUnscoped(actor);
     const target = this.#require(id);
     if (target.id === actor.id) throw new ConsoleError('CONFLICT', 'you cannot delete your own account');
     if (target.role === 'admin' && target.status === 'active' && this.admins.activeAdminCount() <= 1) throw new ConsoleError('LAST_ADMIN', 'at least one active administrator must remain');

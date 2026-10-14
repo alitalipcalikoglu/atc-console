@@ -5,6 +5,7 @@ Walkthroughs for every feature of the admin console. Screens are described as th
 | Example | Shows |
 |---|---|
 | [First run and sign-in](first-run-and-sign-in.md) | Creating the first administrator, signing in, cookies and lockout |
+| [Access control](access-control.md) | Per-account service scope, mandatory two-factor, weak-password hint, admin-only downloads |
 | [Two-factor authentication](two-factor.md) | Enrolling with a QR code, the second step at sign-in, replay protection, disabling |
 | [Admins and roles](admins-and-roles.md) | Adding admins and viewers, what each can do, the last-admin guard |
 | [Connecting services](connecting-services.md) | `services.json`, dedicated keys, several instances, what breaks when a service is down |

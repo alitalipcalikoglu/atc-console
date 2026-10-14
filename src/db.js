@@ -76,5 +76,9 @@ export class Database extends CoreDatabase {
     UPDATE admins SET username = lower(replace(username, '@', '.')) WHERE instr(username, '@') > 0;
     DROP TABLE _admin_locals;
     `,
+    `
+    -- Per-account service scope: a JSON array of service ids the account may use, NULL = every service.
+    ALTER TABLE admins ADD COLUMN services TEXT;
+    `,
   ];
 }
