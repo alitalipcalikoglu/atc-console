@@ -111,8 +111,9 @@ kbd { font-family: var(--mono); font-size: .75rem; border: 1px solid var(--borde
 
 /* Tables */
 .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
-/* A right-edge fade hints that a table scrolls; wide tables can scroll inside narrow panels on desktop too. */
-.table-wrap { background: linear-gradient(to left, color-mix(in srgb, var(--text) 10%, transparent), transparent 14px) right / 100% 100% no-repeat; }
+/* A right-edge fade hints that a table scrolls. The first layer scrolls with the content (local) and
+   covers the fade once the end is reached, so a table that fits or is scrolled to the end shows none. */
+.table-wrap { background: linear-gradient(to left, var(--surface) 40%, transparent) right / 28px 100% no-repeat local, linear-gradient(to left, color-mix(in srgb, var(--text) 10%, transparent), transparent 14px) right / 100% 100% no-repeat scroll; }
 /* Mobile: secondary columns hide, the rest shrinks. */
 @media (max-width: 900px) {
   .table th, .table td { padding: 9px 8px; font-size: .85rem; }
@@ -192,7 +193,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: .9rem; }
 .seg::-webkit-scrollbar { display: none; }
 .seg button { flex: none; }
 /* Mobile: segmented controls may scroll; the same right-edge fade as tables hints at it. */
-@media (max-width: 900px) { .seg { background: linear-gradient(to left, color-mix(in srgb, var(--text) 12%, transparent), transparent 14px) right / 100% 100% no-repeat, var(--surface-2); } }
+@media (max-width: 900px) { .seg { background: linear-gradient(to left, var(--surface-2) 40%, transparent) right / 28px 100% no-repeat local, linear-gradient(to left, color-mix(in srgb, var(--text) 12%, transparent), transparent 14px) right / 100% 100% no-repeat scroll, var(--surface-2); } }
 .seg button { border: 0; background: transparent; padding: 5px 12px; border-radius: 5px; color: var(--text-2); cursor: pointer; font-weight: 550; font-size: .875rem; }
 .seg button[aria-pressed="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
 /* Search highlights: the search service wraps hits in <mark>, everything else escaped. */
