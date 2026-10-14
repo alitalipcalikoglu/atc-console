@@ -27,7 +27,7 @@ Wrong codes count as failed logins towards the lockout.
 Another administrator sets a new password from **Admins → Set password**; TOTP stays enabled. If nobody can produce a code, reset the account from the server:
 
 ```bash
-sqlite3 data/console.db "UPDATE admins SET totp_secret = NULL, totp_enabled_at = NULL WHERE email = 'ali@example.com'"
+sqlite3 data/console.db "UPDATE admins SET totp_secret = NULL, totp_enabled_at = NULL WHERE username = 'ali'"
 ```
 
 then sign in with the password alone and enrol again.

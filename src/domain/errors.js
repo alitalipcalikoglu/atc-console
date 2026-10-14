@@ -12,7 +12,7 @@ export class ConsoleError extends Error {
     ACCOUNT_DISABLED: 403,
     FORBIDDEN: 403,
     NOT_FOUND: 404,
-    EMAIL_TAKEN: 409,
+    USERNAME_TAKEN: 409,
     CONFLICT: 409,
     WEAK_PASSWORD: 400,
     INVALID_ARGUMENT: 400,

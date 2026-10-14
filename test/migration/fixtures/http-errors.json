@@ -13,15 +13,15 @@
   },
   "invalidLogin": {
     "status": 401,
-    "body": { "error": { "code": "INVALID_CREDENTIALS", "message": "email or password is incorrect" } }
+    "body": { "error": { "code": "INVALID_CREDENTIALS", "message": "username or password is incorrect" } }
   },
   "missingRequired": {
     "status": 400,
     "body": {
       "error": {
         "code": "VALIDATION_FAILED",
-        "message": "body must have required property 'email'",
-        "details": [{ "path": "", "message": "must have required property 'email'" }]
+        "message": "body must have required property 'username'",
+        "details": [{ "path": "", "message": "must have required property 'username'" }]
       }
     }
   },

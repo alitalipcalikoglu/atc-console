@@ -124,8 +124,8 @@ try {
     ...(type === 'atc-gateway' ? { metricsTokenEnv: 'M7_SERVICE_KEY' } : { apiKeyEnv: 'M7_SERVICE_KEY' }),
   })) }));
   const seed = new ConsoleRuntime(Config.fromEnv({ DB_PATH: dbPath, SERVICES_FILE: servicesFile, LOG_LEVEL: 'silent', COOKIE_SECURE: 'false', SCRYPT_LOG_N: '14', SECRETS_KEY, M7_SERVICE_KEY: SERVICE_KEY }));
-  await seed.adminService.create({ email: 'admin@m7.test', name: 'M7 Admin', password: PASSWORD, role: 'admin' }, null, { ip: null, userAgent: null });
-  await seed.adminService.create({ email: 'viewer@m7.test', name: 'M7 Viewer', password: PASSWORD, role: 'viewer' }, null, { ip: null, userAgent: null });
+  await seed.adminService.create({ username: 'admin', name: 'M7 Admin', password: PASSWORD, role: 'admin' }, null, { ip: null, userAgent: null });
+  await seed.adminService.create({ username: 'viewer', name: 'M7 Viewer', password: PASSWORD, role: 'viewer' }, null, { ip: null, userAgent: null });
   seed.finishShutdown();
 
   const port = await freePort();
@@ -191,9 +191,9 @@ try {
     const { data } = await cdp.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
     writeFileSync(join(artifacts, `${name}.png`), Buffer.from(data, 'base64'));
   };
-  const loginCookie = async (email, password) => {
+  const loginCookie = async (username, password) => {
     const response = await fetch(`${origin}/api/session/login`, {
-      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email, password }),
+      method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ username, password }),
     });
     assert.equal(response.status, 200);
     const pair = response.headers.get('set-cookie').split(';', 1)[0];
@@ -207,7 +207,7 @@ try {
   await screenshot('01-login-light-en');
   console.log('M7 browser: anonymous redirect/login OK');
 
-  await loginCookie('admin@m7.test', PASSWORD);
+  await loginCookie('admin', PASSWORD);
   const viteManifest = JSON.parse(readFileSync('.svelte-kit/output/client/.vite/manifest.json', 'utf8'));
   const swaggerFile = viteManifest['node_modules/swagger-ui-dist/swagger-ui-es-bundle.js'].file;
   await navigate('/');
@@ -366,7 +366,7 @@ try {
   await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
 
   await cdp.send('Network.clearBrowserCookies');
-  await loginCookie('viewer@m7.test', PASSWORD);
+  await loginCookie('viewer', PASSWORD);
   await navigate('/docs?service=atc-notify');
   await waitJs(`document.querySelector('.swagger-ui .opblock') !== null`, 'viewer docs access', 30_000);
   await cdp.send('Network.clearBrowserCookies');

@@ -19,7 +19,6 @@ import { ConsoleError } from './errors.js';
  * an opaque cookie token.
  */
 export class ConsoleAuth {
-  static MIN_PASSWORD = 12;
   static DUMMY_HASH = 'scrypt$14$8$1$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 
   /**
@@ -72,36 +71,36 @@ export class ConsoleAuth {
   /**
    * Password step. Returns a session cookie token; `totpRequired` tells the UI to ask for a code
    * before the session becomes usable.
-   * @param {{ email: string, password: string }} input
+   * @param {{ username: string, password: string }} input
    * @param {Ctx} ctx
    * @returns {Promise<{ token: string, totpRequired: boolean, admin: AdminRow }>}
    */
   async login(input, ctx) {
     const now = this.now();
-    const admin = this.admins.byEmail(input.email);
+    const admin = this.admins.byUsername(input.username);
     const ok = admin ? await this.hasher.verify(input.password, admin.password_hash) : await this.hasher.verify(input.password, ConsoleAuth.DUMMY_HASH).then(() => false);
     if (!admin) {
-      this.audit.record({ action: 'login.failed', ip: ctx.ip, meta: { reason: 'unknown_email' } }, now);
-      throw new ConsoleError('INVALID_CREDENTIALS', 'email or password is incorrect');
+      this.audit.record({ action: 'login.failed', ip: ctx.ip, meta: { reason: 'unknown_username' } }, now);
+      throw new ConsoleError('INVALID_CREDENTIALS', 'username or password is incorrect');
     }
     if (admin.locked_until !== null && admin.locked_until > now) {
-      this.audit.record({ adminId: admin.id, adminEmail: admin.email, action: 'login.failed', ip: ctx.ip, meta: { reason: 'locked' } }, now);
+      this.audit.record({ adminId: admin.id, adminUsername: admin.username, action: 'login.failed', ip: ctx.ip, meta: { reason: 'locked' } }, now);
       throw new ConsoleError('ACCOUNT_LOCKED', 'too many failed attempts, try again later', { retryAfterSec: Math.ceil((admin.locked_until - now) / 1000) });
     }
     if (!ok) {
       const r = this.admins.recordLoginFailure(admin.id, { maxFailures: this.options.loginMaxFailures, lockoutMs: this.options.lockoutMs, now });
-      this.audit.record({ adminId: admin.id, adminEmail: admin.email, action: 'login.failed', ip: ctx.ip, meta: { reason: 'bad_password', failures: r.failed_logins } }, now);
-      throw new ConsoleError('INVALID_CREDENTIALS', 'email or password is incorrect');
+      this.audit.record({ adminId: admin.id, adminUsername: admin.username, action: 'login.failed', ip: ctx.ip, meta: { reason: 'bad_password', failures: r.failed_logins } }, now);
+      throw new ConsoleError('INVALID_CREDENTIALS', 'username or password is incorrect');
     }
     if (admin.status === 'disabled') {
-      this.audit.record({ adminId: admin.id, adminEmail: admin.email, action: 'login.failed', ip: ctx.ip, meta: { reason: 'disabled' } }, now);
+      this.audit.record({ adminId: admin.id, adminUsername: admin.username, action: 'login.failed', ip: ctx.ip, meta: { reason: 'disabled' } }, now);
       throw new ConsoleError('ACCOUNT_DISABLED', 'account is disabled');
     }
     const totpRequired = admin.totp_enabled_at !== null;
     const { token } = this.sessions.create({ adminId: admin.id, ttlMs: this.options.sessionTtlMs, totpPending: totpRequired, ip: ctx.ip, userAgent: ctx.userAgent }, now);
     if (!totpRequired) {
       this.admins.recordLoginSuccess(admin.id, now);
-      this.audit.record({ adminId: admin.id, adminEmail: admin.email, action: 'login.succeeded', ip: ctx.ip }, now);
+      this.audit.record({ adminId: admin.id, adminUsername: admin.username, action: 'login.succeeded', ip: ctx.ip }, now);
     }
     return { token, totpRequired, admin: /** @type {AdminRow} */ (this.admins.byId(admin.id)) };
   }
@@ -119,7 +118,7 @@ export class ConsoleAuth {
     const step = Totp.verify(/** @type {string} */ (this.#totpSecret(admin)), code, now);
     if (step === null || !this.sessions.claimTotpStep(admin.id, step)) {
       const r = this.admins.recordLoginFailure(admin.id, { maxFailures: this.options.loginMaxFailures, lockoutMs: this.options.lockoutMs, now });
-      this.audit.record({ adminId: admin.id, adminEmail: admin.email, action: 'login.failed', ip: ctx.ip, meta: { reason: 'bad_totp', failures: r.failed_logins } }, now);
+      this.audit.record({ adminId: admin.id, adminUsername: admin.username, action: 'login.failed', ip: ctx.ip, meta: { reason: 'bad_totp', failures: r.failed_logins } }, now);
       if (r.locked_until) {
         this.sessions.remove(session.id);
         throw new ConsoleError('ACCOUNT_LOCKED', 'too many failed attempts, try again later', { retryAfterSec: Math.ceil((r.locked_until - now) / 1000) });
@@ -128,7 +127,7 @@ export class ConsoleAuth {
     }
     this.sessions.completeTotp(session.id, now);
     this.admins.recordLoginSuccess(admin.id, now);
-    this.audit.record({ adminId: admin.id, adminEmail: admin.email, action: 'login.succeeded', ip: ctx.ip, meta: { totp: true } }, now);
+    this.audit.record({ adminId: admin.id, adminUsername: admin.username, action: 'login.succeeded', ip: ctx.ip, meta: { totp: true } }, now);
   }
 
   /**
@@ -160,7 +159,7 @@ export class ConsoleAuth {
    * @param {Ctx} ctx
    */
   logout(session, admin, ctx) {
-    if (this.sessions.remove(session.id)) this.audit.record({ adminId: admin.id, adminEmail: admin.email, action: 'logout', ip: ctx.ip }, this.now());
+    if (this.sessions.remove(session.id)) this.audit.record({ adminId: admin.id, adminUsername: admin.username, action: 'logout', ip: ctx.ip }, this.now());
   }
 
   /** @param {AdminRow} admin @param {SessionRow} session */
@@ -171,7 +170,7 @@ export class ConsoleAuth {
   /** @param {AdminRow} admin @param {SessionRow} keep @param {Ctx} ctx */
   logoutOthers(admin, keep, ctx) {
     const n = this.sessions.removeOthers(admin.id, keep.id);
-    this.audit.record({ adminId: admin.id, adminEmail: admin.email, action: 'sessions.revoked_others', ip: ctx.ip, meta: { count: n } }, this.now());
+    this.audit.record({ adminId: admin.id, adminUsername: admin.username, action: 'sessions.revoked_others', ip: ctx.ip, meta: { count: n } }, this.now());
     return n;
   }
 
@@ -183,10 +182,10 @@ export class ConsoleAuth {
    */
   async changePassword(admin, session, input, ctx) {
     if (!(await this.hasher.verify(input.currentPassword, admin.password_hash))) throw new ConsoleError('INVALID_CREDENTIALS', 'current password is incorrect');
-    ConsoleAuth.assertPassword(input.newPassword, admin.email);
+    ConsoleAuth.assertPassword(input.newPassword);
     this.admins.setPassword(admin.id, await this.hasher.hash(input.newPassword), this.now());
     this.sessions.removeOthers(admin.id, session.id);
-    this.audit.record({ adminId: admin.id, adminEmail: admin.email, action: 'password.changed', ip: ctx.ip }, this.now());
+    this.audit.record({ adminId: admin.id, adminUsername: admin.username, action: 'password.changed', ip: ctx.ip }, this.now());
   }
 
   /**
@@ -198,7 +197,7 @@ export class ConsoleAuth {
     if (!this.keyring) throw new ConsoleError('TOTP_UNAVAILABLE', 'SECRETS_KEY is required to enrol two-factor authentication, but is not configured');
     const secret = Totp.generateSecret();
     this.admins.setTotpSecret(admin.id, secret, this.now());
-    return { secret, uri: Totp.uri({ secret, account: admin.email, issuer: this.options.totpIssuer }) };
+    return { secret, uri: Totp.uri({ secret, account: admin.username, issuer: this.options.totpIssuer }) };
   }
 
   /**
@@ -212,7 +211,7 @@ export class ConsoleAuth {
     const step = Totp.verify(/** @type {string} */ (this.#totpSecret(fresh)), code, this.now());
     if (step === null || !this.sessions.claimTotpStep(admin.id, step)) throw new ConsoleError('INVALID_TOTP', 'code is incorrect');
     this.admins.enableTotp(admin.id, this.now());
-    this.audit.record({ adminId: admin.id, adminEmail: admin.email, action: 'totp.enabled', ip: ctx.ip }, this.now());
+    this.audit.record({ adminId: admin.id, adminUsername: admin.username, action: 'totp.enabled', ip: ctx.ip }, this.now());
   }
 
   /**
@@ -227,20 +226,17 @@ export class ConsoleAuth {
     const step = Totp.verify(/** @type {string} */ (this.#totpSecret(admin)), input.code, this.now());
     if (step === null) throw new ConsoleError('INVALID_TOTP', 'code is incorrect');
     this.admins.disableTotp(admin.id, this.now());
-    this.audit.record({ adminId: admin.id, adminEmail: admin.email, action: 'totp.disabled', ip: ctx.ip }, this.now());
+    this.audit.record({ adminId: admin.id, adminUsername: admin.username, action: 'totp.disabled', ip: ctx.ip }, this.now());
   }
 
   /**
+   * The only password rules: present, and not absurdly long (bounds the hashing cost).
    * @param {string} password
-   * @param {string} email
    */
-  static assertPassword(password, email) {
+  static assertPassword(password) {
     const problems = [];
-    if ([...password].length < ConsoleAuth.MIN_PASSWORD) problems.push(`must be at least ${ConsoleAuth.MIN_PASSWORD} characters`);
+    if (password.length === 0) problems.push('must not be empty');
     if (password.length > 256) problems.push('must be at most 256 characters');
-    if (/^(.)\1+$/.test(password)) problems.push('must not repeat a single character');
-    const local = AdminStore.normalizeEmail(email).split('@')[0];
-    if (local.length >= 4 && password.toLowerCase().includes(local)) problems.push('must not contain your email address');
     if (problems.length) throw new ConsoleError('WEAK_PASSWORD', `password ${problems.join('; ')}`, { problems });
   }
 }

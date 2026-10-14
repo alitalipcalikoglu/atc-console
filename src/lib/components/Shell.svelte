@@ -42,7 +42,7 @@
     <div class="grow"></div>
     {#if pwa.canInstall}<button class="btn sm" onclick={() => pwa.install()}><Icon name="download" size={14} /> {t('common.install')}</button>{/if}
     <div class="nav-user">
-      <span class="xs faint truncate">{session.admin?.email}</span>
+      <span class="xs faint truncate">{session.admin?.username}</span>
       <button class="btn ghost icon sm" onclick={() => session.requestLogout()} aria-label={t('account.logout')} title={t('account.logout')}><Icon name="logout" /></button>
     </div>
   </nav>

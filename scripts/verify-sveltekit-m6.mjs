@@ -62,8 +62,8 @@ try {
     SCRYPT_LOG_N: '14',
     SECRETS_KEY,
   }));
-  await seedRuntime.adminService.create({ email: 'admin@m6.test', name: 'Admin', password: PASSWORD, role: 'admin' }, null, { ip: null, userAgent: null });
-  await seedRuntime.adminService.create({ email: 'viewer@m6.test', name: 'Viewer', password: PASSWORD, role: 'viewer' }, null, { ip: null, userAgent: null });
+  await seedRuntime.adminService.create({ username: 'admin', name: 'Admin', password: PASSWORD, role: 'admin' }, null, { ip: null, userAgent: null });
+  await seedRuntime.adminService.create({ username: 'viewer', name: 'Viewer', password: PASSWORD, role: 'viewer' }, null, { ip: null, userAgent: null });
   seedRuntime.finishShutdown();
 
   const port = await freePort();
@@ -111,13 +111,13 @@ try {
     assert.doesNotMatch(await response.text(), /aria-label="main"/, pattern);
   }
 
-  const login = async (email) => {
-    const result = await fetch(`${origin}/api/session/login`, requestJson({ email, password: PASSWORD }));
+  const login = async (username) => {
+    const result = await fetch(`${origin}/api/session/login`, requestJson({ username, password: PASSWORD }));
     assert.equal(result.status, 200);
     return cookiePair(result);
   };
-  const admin = await login('admin@m6.test');
-  const viewer = await login('viewer@m6.test');
+  const admin = await login('admin');
+  const viewer = await login('viewer');
 
   response = await fetch(`${origin}/login`, { headers: { cookie: admin }, redirect: 'manual' });
   assert.equal(response.status, 303);

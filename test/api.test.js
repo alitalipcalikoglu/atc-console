@@ -226,14 +226,14 @@ test('filesystem pages, generated assets and frontend/API 404 contracts', async 
 test('session endpoints: login sets an httpOnly cookie, /session reflects state, logout clears', async () => {
   const { cookie, body } = await signIn(t);
   assert.equal(body.totpRequired, false);
-  assert.equal(body.admin.email, 'root@console.local');
-  const loginRes = await t.app.inject({ method: 'POST', url: '/api/session/login', payload: { email: 'root@console.local', password: ADMIN_PASSWORD } });
+  assert.equal(body.admin.username, 'root');
+  const loginRes = await t.app.inject({ method: 'POST', url: '/api/session/login', payload: { username: 'root', password: ADMIN_PASSWORD } });
   assert.match(String(loginRes.headers['set-cookie']), /console_session=.*HttpOnly.*SameSite=Strict/);
   assert.equal((await t.app.inject('/api/session')).json().admin, null);
   const me = await t.app.inject({ url: '/api/session', headers: { cookie } });
   assert.equal(me.json().admin.role, 'admin');
   assert.equal(me.headers['cache-control'], 'no-store');
-  const bad = await t.app.inject({ method: 'POST', url: '/api/session/login', payload: { email: 'root@console.local', password: 'wrong wrong wrong' } });
+  const bad = await t.app.inject({ method: 'POST', url: '/api/session/login', payload: { username: 'root', password: 'wrong wrong wrong' } });
   assert.equal(bad.statusCode, 401);
   const out = await t.app.inject({ method: 'POST', url: '/api/session/logout', headers: { cookie, ...CSRF } });
   assert.equal(out.statusCode, 204);
@@ -243,11 +243,11 @@ test('session endpoints: login sets an httpOnly cookie, /session reflects state,
 
 test('CSRF header required on mutations; viewers are read-only; admins are audited', async () => {
   const admin = await signIn(t);
-  const viewer = await signIn(t, { email: 'viewer@console.local', role: 'viewer' });
+  const viewer = await signIn(t, { username: 'viewer', role: 'viewer' });
   let res = await t.app.inject({ method: 'POST', url: '/api/services/atc-notify/atc-notify/messages/m1/retry', headers: { cookie: admin.cookie } });
   assert.equal(res.statusCode, 403, 'no CSRF header');
   assert.match(res.json().error.message, /x-console-request/);
-  res = await t.app.inject({ method: 'POST', url: '/api/session/login', headers: { 'content-type': 'text/plain' }, payload: JSON.stringify({ email: 'viewer@console.local', password: 'x' }) });
+  res = await t.app.inject({ method: 'POST', url: '/api/session/login', headers: { 'content-type': 'text/plain' }, payload: JSON.stringify({ username: 'viewer', password: 'x' }) });
   assert.equal(res.statusCode, 403, 'a cross-site form cannot reach login without the CSRF header');
   res = await t.app.inject({ method: 'POST', url: '/api/services/atc-notify/atc-notify/messages/m1/retry', headers: { cookie: viewer.cookie, ...CSRF } });
   assert.equal(res.statusCode, 403, 'viewer cannot mutate');
@@ -258,7 +258,7 @@ test('CSRF header required on mutations; viewers are read-only; admins are audit
   const audit = await t.app.inject({ url: '/api/audit?action=atc-notify.', headers: { cookie: admin.cookie } });
   assert.equal(audit.json().items[0].action, 'atc-notify.message.retry');
   assert.equal(audit.json().items[0].target, 'm1');
-  assert.equal(audit.json().items[0].adminEmail, 'root@console.local');
+  assert.equal(audit.json().items[0].adminUsername, 'root');
 });
 
 test('service endpoints pass through with the service key and map upstream errors', async () => {
@@ -391,7 +391,7 @@ test('media: list, thumbnail proxy, streaming upload, delete, ticket', async () 
 
 test('admin management over HTTP', async () => {
   const { cookie } = await signIn(t);
-  let res = await t.app.inject({ method: 'POST', url: '/api/admins', headers: { cookie, ...CSRF }, payload: { email: 'new@console.local', password: 'long enough password', role: 'viewer', name: 'New' } });
+  let res = await t.app.inject({ method: 'POST', url: '/api/admins', headers: { cookie, ...CSRF }, payload: { username: 'new', password: 'long enough password', role: 'viewer', name: 'New' } });
   assert.equal(res.statusCode, 201, res.body);
   const id = res.json().admin.id;
   res = await t.app.inject({ method: 'PATCH', url: `/api/admins/${id}`, headers: { cookie, ...CSRF }, payload: { role: 'admin' } });
@@ -399,7 +399,7 @@ test('admin management over HTTP', async () => {
   assert.equal((await t.app.inject({ method: 'POST', url: `/api/admins/${id}/password`, headers: { cookie, ...CSRF }, payload: { password: 'another long password' } })).statusCode, 204);
   assert.equal((await t.app.inject({ method: 'POST', url: `/api/admins/${id}/unlock`, headers: { cookie, ...CSRF } })).statusCode, 204);
   res = await t.app.inject({ url: '/api/admins', headers: { cookie } });
-  assert.ok(res.json().items.some((/** @type {any} */ a) => a.email === 'new@console.local'));
+  assert.ok(res.json().items.some((/** @type {any} */ a) => a.username === 'new'));
   assert.equal((await t.app.inject({ method: 'DELETE', url: `/api/admins/${id}`, headers: { cookie, ...CSRF } })).statusCode, 204);
   res = await t.app.inject({ method: 'POST', url: '/api/me/totp/start', headers: { cookie, ...CSRF } });
   assert.match(res.json().uri, /^otpauth:/);
@@ -410,7 +410,7 @@ test('admin management over HTTP', async () => {
 test('PATCH /api/services/:sid/settings writes polling to services.json, audited, admin only', async () => {
   const path = t.servicesFile;
   const { cookie } = await signIn(t);
-    const viewer = await signIn(t, { email: 'viewer2@console.local', role: 'viewer' });
+    const viewer = await signIn(t, { username: 'viewer2', role: 'viewer' });
     let res = await t.app.inject({ method: 'PATCH', url: '/api/services/atc-notify/settings', headers: { cookie: viewer.cookie, ...CSRF }, payload: { polling: { enabled: true, intervalSec: 30 } } });
     assert.equal(res.statusCode, 403);
     res = await t.app.inject({ method: 'PATCH', url: '/api/services/atc-notify/settings', headers: { cookie, ...CSRF }, payload: { polling: { enabled: true, intervalSec: 2 } } });
@@ -456,7 +456,7 @@ test('audit service: events with filters, detail, stats, chain, streamed export 
 
 test('shortlink: list, create, detail with stats, patch, delete, QR proxy, overview', async () => {
   const { cookie } = await signIn(t);
-  const viewer = await signIn(t, { email: 'viewer3@console.local', role: 'viewer' });
+  const viewer = await signIn(t, { username: 'viewer3', role: 'viewer' });
   seen.length = 0;
   let res = await t.app.inject({ url: '/api/services/atc-shortlink/atc-shortlink/links?status=active&q=example&limit=100', headers: { cookie } });
   assert.equal(res.statusCode, 200, res.body);
@@ -490,7 +490,7 @@ test('shortlink: list, create, detail with stats, patch, delete, QR proxy, overv
 
 test('flags: environments, list, create, detail with history, env patch, copy, evaluate, delete', async () => {
   const { cookie } = await signIn(t);
-  const viewer = await signIn(t, { email: 'viewer4@console.local', role: 'viewer' });
+  const viewer = await signIn(t, { username: 'viewer4', role: 'viewer' });
   seen.length = 0;
   let res = await t.app.inject({ url: '/api/services/atc-flags/atc-flags/environments', headers: { cookie } });
   assert.equal(res.statusCode, 200, res.body);
@@ -525,7 +525,7 @@ test('flags: environments, list, create, detail with history, env patch, copy, e
 
 test('scheduler: jobs, detail with runs, run now, patch, runs, cancel, preview, keys, delete (audited)', async () => {
   const { cookie } = await signIn(t);
-  const viewer = await signIn(t, { email: 'viewer4@console.local', role: 'viewer' });
+  const viewer = await signIn(t, { username: 'viewer4', role: 'viewer' });
   seen.length = 0;
   let res = await t.app.inject({ url: '/api/services/atc-scheduler/atc-scheduler/jobs?enabled=true&q=night', headers: { cookie } });
   assert.equal(res.statusCode, 200, res.body);
@@ -568,7 +568,7 @@ test('scheduler: jobs, detail with runs, run now, patch, runs, cancel, preview, 
 
 test('webhook-out: subscriptions, secret on create, detail with deliveries, rotate, test, replay, deliveries, events, delete (audited)', async () => {
   const { cookie } = await signIn(t);
-  const viewer = await signIn(t, { email: 'viewer5@console.local', role: 'viewer' });
+  const viewer = await signIn(t, { username: 'viewer5', role: 'viewer' });
   seen.length = 0;
   let res = await t.app.inject({ url: '/api/services/webhooks/atc-webhook-out/subscriptions?status=active&q=kargo', headers: { cookie } });
   assert.equal(res.statusCode, 200, res.body);
@@ -615,7 +615,7 @@ test('webhook-out: subscriptions, secret on create, detail with deliveries, rota
 
 test('search: indexes, search, browse, upsert, document, clear, delete (audited)', async () => {
   const { cookie } = await signIn(t);
-  const viewer = await signIn(t, { email: 'viewer6@console.local', role: 'viewer' });
+  const viewer = await signIn(t, { username: 'viewer6', role: 'viewer' });
   seen.length = 0;
   let res = await t.app.inject({ url: '/api/services/atc-search/atc-search/indexes', headers: { cookie } });
   assert.equal(res.statusCode, 200, res.body);
@@ -650,7 +650,7 @@ test('search: indexes, search, browse, upsert, document, clear, delete (audited)
 
 test('ratelimit: policies, stats, top, overrides, subject lookup, reset, check (audited)', async () => {
   const { cookie } = await signIn(t);
-  const viewer = await signIn(t, { email: 'viewer7@console.local', role: 'viewer' });
+  const viewer = await signIn(t, { username: 'viewer7', role: 'viewer' });
   seen.length = 0;
   const B = '/api/services/atc-ratelimit/atc-ratelimit';
   let res = await t.app.inject({ url: `${B}/policies`, headers: { cookie } });
@@ -686,7 +686,7 @@ test('ratelimit: policies, stats, top, overrides, subject lookup, reset, check (
 
 test('geo: lookups, reference, database reload, collections and places (audited)', async () => {
   const { cookie } = await signIn(t);
-  const viewer = await signIn(t, { email: 'viewer8@console.local', role: 'viewer' });
+  const viewer = await signIn(t, { username: 'viewer8', role: 'viewer' });
   seen.length = 0;
   const B = '/api/services/atc-geo/atc-geo';
   let res = await t.app.inject({ url: `${B}/ip?ip=81.5.6.7&lang=tr`, headers: { cookie: viewer.cookie } });

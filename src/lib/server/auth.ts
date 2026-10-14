@@ -18,7 +18,7 @@ export class AuthRequest {
     const { admin, session } = resolved;
     locals.principal = {
       id: admin.id,
-      email: admin.email,
+      username: admin.username,
       name: admin.name,
       role: admin.role,
       status: admin.status,

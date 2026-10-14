@@ -82,8 +82,8 @@ before(async () => {
   await new Promise((resolve) => downstream.listen(0, '127.0.0.1', () => resolve(undefined)));
   downstreamOrigin = `http://127.0.0.1:${/** @type {import('node:net').AddressInfo} */ (downstream.address()).port}`;
   consoleApp = await startConsole({ urls: { notify: downstreamOrigin, auth: downstreamOrigin, media: downstreamOrigin, audit: downstreamOrigin, shortlink: downstreamOrigin } });
-  await consoleApp.adminService.create({ email: 'downstream@migration.test', name: 'Downstream', password: ADMIN_PASSWORD, role: 'admin' }, null, { ip: null, userAgent: null });
-  const response = await fetch(`${consoleApp.origin}/api/session/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: 'downstream@migration.test', password: ADMIN_PASSWORD }) });
+  await consoleApp.adminService.create({ username: 'downstream', name: 'Downstream', password: ADMIN_PASSWORD, role: 'admin' }, null, { ip: null, userAgent: null });
+  const response = await fetch(`${consoleApp.origin}/api/session/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ username: 'downstream', password: ADMIN_PASSWORD }) });
   cookie = cookiePair(response.headers.get('set-cookie'));
 });
 
@@ -155,9 +155,9 @@ test('trace oracle: inbound trace is rejected by default and adopted only with T
   async function exercise(trustProxy) {
     const app = await startConsole({ urls: { notify: downstreamOrigin }, env: { TRUST_PROXY: String(trustProxy) } });
     try {
-      const email = `${trustProxy ? 'trusted' : 'untrusted'}@migration.test`;
-      await app.adminService.create({ email, name: 'Trace', password: ADMIN_PASSWORD, role: 'admin' }, null, { ip: null, userAgent: null });
-      const login = await fetch(`${app.origin}/api/session/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email, password: ADMIN_PASSWORD }) });
+      const username = `${trustProxy ? 'trusted' : 'untrusted'}`;
+      await app.adminService.create({ username, name: 'Trace', password: ADMIN_PASSWORD, role: 'admin' }, null, { ip: null, userAgent: null });
+      const login = await fetch(`${app.origin}/api/session/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ username, password: ADMIN_PASSWORD }) });
       const localCookie = cookiePair(login.headers.get('set-cookie'));
       seen.length = 0;
       const response = await fetch(`${app.origin}/api/services/atc-notify/atc-notify/messages`, { headers: { cookie: localCookie, traceparent: inbound } });

@@ -39,7 +39,7 @@
         <div class="table-wrap"><table class="table">
           <thead><tr><th>{t('common.at')}</th><th class="hide-m">{t('audit.actor')}</th><th>{t('audit.action')}</th><th>{t('audit.target')}</th><th class="hide-m">{t('common.details')}</th><th class="hide-m">{t('common.ip')}</th></tr></thead>
           <tbody>{#each items as e (e.id)}<tr>
-            <td style="white-space:nowrap"><Time value={e.at} /></td><td class="small hide-m">{e.adminEmail ?? '–'}</td>
+            <td style="white-space:nowrap"><Time value={e.at} /></td><td class="small hide-m">{e.adminUsername ?? '–'}</td>
             <td><code class="nowrap {/failed|delete|revoke|disable/.test(e.action) ? 'danger-text' : ''}">{e.action}</code></td>
             <td class="mono small truncate" style="max-width:220px">{e.target ?? ''}</td>
             <td class="small muted mono truncate hide-m" style="max-width:320px" title={e.meta ? JSON.stringify(e.meta) : ''}>{e.meta ? JSON.stringify(e.meta) : ''}</td>

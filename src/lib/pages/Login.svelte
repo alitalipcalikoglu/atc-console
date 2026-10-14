@@ -4,20 +4,20 @@
   const session = useSession();
   import { goto } from '$app/navigation';
   import { t, i18n } from '#lib/client/i18n.svelte.js';
-  let email = $state('');
+  let username = $state('');
   let password = $state('');
   let code = $state('');
   let busy = $state(false);
   /** @type {string|null} */
   let error = $state(null);
-  $effect(() => { document.title = `${t('login.title')} · Console`; document.getElementById(session.totpPending ? 'code' : 'email')?.focus(); });
+  $effect(() => { document.title = `${t('login.title')} · Console`; document.getElementById(session.totpPending ? 'code' : 'username')?.focus(); });
 
   /** @param {SubmitEvent} e */
   async function submit(e) {
     e.preventDefault();
     busy = true; error = null;
     try {
-      const r = await session.login(email.trim(), password);
+      const r = await session.login(username.trim(), password);
       if (!r.totpRequired) goto('/', { replace: true, refreshAll: true });
     } catch (err) {
       const x = /** @type {{ code?: string, message?: string, details?: { retryAfterSec?: number } }} */ (err);
@@ -42,7 +42,7 @@
     {#if session.totpPending}
       <div class="field"><label for="code">{t('login.code')}</label><input id="code" class="input mono" style="letter-spacing:.3em;font-size:1.3rem;text-align:center" inputmode="numeric" pattern={'[0-9]{6}'} maxlength="6" autocomplete="one-time-code" bind:value={code} required /></div>
     {:else}
-      <div class="field"><label for="email">{t('common.email')}</label><input id="email" class="input" type="email" autocomplete="username" bind:value={email} required /></div>
+      <div class="field"><label for="username">{t('common.username')}</label><input id="username" class="input" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" bind:value={username} required /></div>
       <div class="field"><label for="password">{t('common.password')}</label><input id="password" class="input" type="password" autocomplete="current-password" bind:value={password} required /></div>
     {/if}
     {#if error}<p class="small danger-text" role="alert">{error}</p>{/if}

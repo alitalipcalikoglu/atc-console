@@ -1,12 +1,12 @@
 # Console log
 
-**Console log** page (the console's own audit trail, not the audit service): every action performed through the console, newest first, with actor email, action, target, details and IP.
+**Console log** page (the console's own audit trail, not the audit service): every action performed through the console, newest first, with actor username, action, target, details and IP.
 
 ## What is recorded
 
 | Prefix | Examples |
 |---|---|
-| `login.` / `logout` | `login.succeeded` (with `{ totp: true }` when 2FA was used), `login.failed` with reason (`unknown_email`, `bad_password`, `bad_totp`, `locked`, `disabled`) |
+| `login.` / `logout` | `login.succeeded` (with `{ totp: true }` when 2FA was used), `login.failed` with reason (`unknown_username`, `bad_password`, `bad_totp`, `locked`, `disabled`) |
 | `password.` / `totp.` / `sessions.` | own-account changes |
 | `admin.` | created, updated (with the patch), password_reset, unlocked, deleted |
 | `atc-notify.` | `message.retry`, `message.send` (template, recipients) |

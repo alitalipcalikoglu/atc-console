@@ -9,7 +9,7 @@ export class AuditEvents {
   static FAILURES = new Set(['login.failed', 'login.locked', 'totp.failed']);
 
   /**
-   * @param {{ adminId: string|null, adminEmail: string|null, action: string, target: string|null, meta: object|null, ip: string|null }} e
+   * @param {{ adminId: string|null, adminUsername: string|null, action: string, target: string|null, meta: object|null, ip: string|null }} e
    * @param {number} at
    * @returns {AuditEvent & { at: string }}
    */
@@ -19,7 +19,7 @@ export class AuditEvents {
     return {
       action: `atc-console.${e.action}`,
       outcome: AuditEvents.FAILURES.has(e.action) ? 'failure' : 'success',
-      actor: e.adminId ? { type: 'admin', id: e.adminId, ...(e.adminEmail ? { name: e.adminEmail } : {}) } : undefined,
+      actor: e.adminId ? { type: 'admin', id: e.adminId, ...(e.adminUsername ? { name: e.adminUsername } : {}) } : undefined,
       target: e.target ? { type: targetType.replace(/[^a-z0-9_-]/g, '-').slice(0, 32) || 'target', id: String(e.target).slice(0, 128) } : undefined,
       ip: e.ip ?? undefined,
       meta: e.meta ?? undefined,

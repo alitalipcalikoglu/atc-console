@@ -97,7 +97,7 @@ export const record = (
 ) => {
   context.runtime.audit.record({
     adminId: context.admin.id,
-    adminEmail: context.admin.email,
+    adminUsername: context.admin.username,
     action,
     target,
     meta,

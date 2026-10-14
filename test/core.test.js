@@ -43,12 +43,12 @@ test('AdminStore: create, lookup, lockout, TOTP enrolment flags, admin count', (
   const db = testDb();
   const keyring = new TotpKeyring({ current: randomBytes(32) });
   const admins = new AdminStore(db, keyring);
-  const a = admins.create({ email: ' Ali@Example.com ', name: ' Ali ', passwordHash: 'h', role: 'admin' }, 1000);
-  assert.equal(a.email, 'ali@example.com');
+  const a = admins.create({ username: ' Ali ', name: ' Ali ', passwordHash: 'h', role: 'admin' }, 1000);
+  assert.equal(a.username, 'ali');
   assert.equal(a.name, 'Ali');
-  assert.equal(admins.byEmail('ALI@example.com')?.id, a.id);
-  assert.throws(() => admins.create({ email: 'ali@example.com', name: 'x', passwordHash: 'h', role: 'viewer' }), /UNIQUE/);
-  const v = admins.create({ email: 'v@example.com', name: 'V', passwordHash: 'h', role: 'viewer' }, 2000);
+  assert.equal(admins.byUsername('ALI')?.id, a.id);
+  assert.throws(() => admins.create({ username: 'ali', name: 'x', passwordHash: 'h', role: 'viewer' }), /UNIQUE/);
+  const v = admins.create({ username: 'v', name: 'V', passwordHash: 'h', role: 'viewer' }, 2000);
   assert.equal(admins.all().length, 2);
   assert.equal(admins.activeAdminCount(), 1);
   admins.setRole(v.id, 'admin');
@@ -83,7 +83,7 @@ test('SessionStore: opaque tokens, TOTP pending flag, replay guard, purge by exp
   const db = testDb();
   const admins = new AdminStore(db);
   const sessions = new SessionStore(db);
-  const a = admins.create({ email: 'a@b.co', name: 'A', passwordHash: 'h', role: 'admin' });
+  const a = admins.create({ username: 'a', name: 'A', passwordHash: 'h', role: 'admin' });
   const { session, token } = sessions.create({ adminId: a.id, ttlMs: 1000, totpPending: true, ip: '1.2.3.4', userAgent: 'ua' }, 0);
   assert.equal(session.totp_pending, 1);
   assert.equal(sessions.byToken(token)?.id, session.id);
@@ -107,8 +107,8 @@ test('SessionStore: opaque tokens, TOTP pending flag, replay guard, purge by exp
 
 test('AuditStore records and pages, filters by action prefix', () => {
   const audit = new AuditStore(testDb());
-  audit.record({ adminId: 'a', adminEmail: 'a@b.co', action: 'login.succeeded', ip: '1.1.1.1' }, 1);
-  audit.record({ adminId: 'a', adminEmail: 'a@b.co', action: 'atc-auth.user.disable', target: 'u1', meta: { reason: 'x' } }, 2);
+  audit.record({ adminId: 'a', adminUsername: 'a', action: 'login.succeeded', ip: '1.1.1.1' }, 1);
+  audit.record({ adminId: 'a', adminUsername: 'a', action: 'atc-auth.user.disable', target: 'u1', meta: { reason: 'x' } }, 2);
   audit.record({ action: 'login.failed', ip: '2.2.2.2' }, 3);
   const all = audit.list({ limit: 10 });
   assert.deepEqual(all.map((e) => e.action), ['login.failed', 'atc-auth.user.disable', 'login.succeeded']);

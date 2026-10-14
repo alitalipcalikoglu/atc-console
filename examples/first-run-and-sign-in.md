@@ -5,19 +5,19 @@
 There is deliberately no sign-up page. On the server:
 
 ```bash
-npm run admin -- create ali@example.com --name "Ali" --role admin
-# New password (min 12 chars): ********
+npm run admin -- create ali --name "Ali" --role admin
+# New password: ********
 # Repeat password: ********
-# created admin ali@example.com (7c1e…)
+# created admin ali (7c1e…)
 ```
 
-The password is prompted without echo and never appears in shell history. `npm run admin -- list` shows every account; `npm run admin -- reset-password <email>` sets a new one and signs that person out everywhere.
+The password is prompted without echo and never appears in shell history. `npm run admin -- list` shows every account; `npm run admin -- reset-password <username>` sets a new one and signs that person out everywhere.
 
-Until an administrator exists the server logs a warning at start: `no administrator exists yet: run npm run admin -- create <email>`.
+Until an administrator exists the server logs a warning at start: `no administrator exists yet: run npm run admin -- create <username>`.
 
 ## Sign in
 
-Open the console, enter email and password. A successful sign-in sets one cookie:
+Open the console, enter username and password. A successful sign-in sets one cookie:
 
 ```
 Set-Cookie: console_session=<opaque token>; Max-Age=43200; Path=/; HttpOnly; SameSite=Strict; Secure
@@ -35,7 +35,7 @@ Sign-in attempts are also rate limited per IP (`RATE_LIMIT_MAX` per minute → `
 
 | Call | Purpose |
 |---|---|
-| `POST /api/session/login { email, password }` | `{ totpRequired, admin }`, sets the cookie |
+| `POST /api/session/login { username, password }` | `{ totpRequired, admin }`, sets the cookie |
 | `POST /api/session/totp { code }` | second step when `totpRequired` |
 | `GET /api/session` | `{ admin, totpPending }` for the current cookie |
 | `POST /api/session/logout` | clears the cookie |

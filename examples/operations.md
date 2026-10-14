@@ -32,7 +32,7 @@ Either terminate at a reverse proxy (set `TRUST_PROXY=true` so lockouts and rate
 ```bash
 docker build -t atc-console .
 docker run -d --name atc-console -p 3004:3004 -v atc-console-data:/data -v $PWD/services.json:/config/services.json:ro --env-file .env -e DB_PATH=/data/console.db -e SERVICES_FILE=/config/services.json atc-console
-docker exec -it atc-console npm run admin -- create ali@example.com
+docker exec -it atc-console npm run admin -- create ali
 ```
 
 The explicit path overrides prevent the host-oriented defaults in `.env` from bypassing the

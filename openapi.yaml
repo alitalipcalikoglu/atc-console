@@ -140,12 +140,12 @@ paths:
       operationId: atc-console.session.login
       tags:
         - session
-      summary: "First step of sign-in: email and password."
+      summary: "First step of sign-in: username and password."
       description: "Pre-session: no cookie and no CSRF header are required. Always issues a session cookie on
         success. When the account has TOTP enabled the response is `{ totpRequired: true, admin: null }` and
         the new session is *pending* — it resolves on later requests but `requireSession` rejects it with `401
         TOTP_REQUIRED` until `POST /api/session/totp` completes it. Rate-limited per client IP before any
-        password work happens. Failures are deliberately indistinguishable between \"no such email\" and
+        password work happens. Failures are deliberately indistinguishable between \"no such username\" and
         \"wrong password\" (both `401 INVALID_CREDENTIALS`, both pay the same hashing cost)."
       security: []
       x-stack-visibility: operator
@@ -157,20 +157,21 @@ paths:
               type: object
               additionalProperties: false
               required:
-                - email
+                - username
                 - password
               properties:
-                email:
+                username:
                   type: string
-                  format: email
-                  maxLength: 254
+                  minLength: 1
+                  maxLength: 128
+                  description: Matched after trimming and lower-casing.
                 password:
                   type: string
                   minLength: 1
                   maxLength: 1024
-                  description: Length is only shape-checked here (1-1024). Strength rules (at least 12 characters, no single
-                    repeated character, must not contain the local part of the account's email) are enforced
-                    in the domain layer and fail with `400 WEAK_PASSWORD` carrying `details.problems`.
+                  description: Length is only shape-checked here (1-1024). New passwords must be non-empty and at most
+                    256 characters; that is enforced in the domain layer and fails with `400 WEAK_PASSWORD` carrying
+                    `details.problems`. There are no other strength rules.
       responses:
         "200":
           description: Signed in, or signed in pending the second factor. The session cookie is set either way.
@@ -198,7 +199,7 @@ paths:
         "400":
           $ref: "#/components/responses/ValidationFailed"
         "401":
-          description: "`INVALID_CREDENTIALS` — unknown email or wrong password."
+          description: "`INVALID_CREDENTIALS` — unknown username or wrong password."
           content:
             application/json:
               schema:
@@ -414,16 +415,16 @@ paths:
                   type: string
                   minLength: 1
                   maxLength: 1024
-                  description: Length is only shape-checked here (1-1024). Strength rules (at least 12 characters, no single
-                    repeated character, must not contain the local part of the account's email) are enforced
-                    in the domain layer and fail with `400 WEAK_PASSWORD` carrying `details.problems`.
+                  description: Length is only shape-checked here (1-1024). New passwords must be non-empty and at most
+                    256 characters; that is enforced in the domain layer and fails with `400 WEAK_PASSWORD` carrying
+                    `details.problems`. There are no other strength rules.
                 newPassword:
                   type: string
                   minLength: 1
                   maxLength: 1024
-                  description: Length is only shape-checked here (1-1024). Strength rules (at least 12 characters, no single
-                    repeated character, must not contain the local part of the account's email) are enforced
-                    in the domain layer and fail with `400 WEAK_PASSWORD` carrying `details.problems`.
+                  description: Length is only shape-checked here (1-1024). New passwords must be non-empty and at most
+                    256 characters; that is enforced in the domain layer and fails with `400 WEAK_PASSWORD` carrying
+                    `details.problems`. There are no other strength rules.
       responses:
         "204":
           description: Password changed; all other sessions revoked.
@@ -567,9 +568,9 @@ paths:
                   type: string
                   minLength: 1
                   maxLength: 1024
-                  description: Length is only shape-checked here (1-1024). Strength rules (at least 12 characters, no single
-                    repeated character, must not contain the local part of the account's email) are enforced
-                    in the domain layer and fail with `400 WEAK_PASSWORD` carrying `details.problems`.
+                  description: Length is only shape-checked here (1-1024). New passwords must be non-empty and at most
+                    256 characters; that is enforced in the domain layer and fails with `400 WEAK_PASSWORD` carrying
+                    `details.problems`. There are no other strength rules.
                 code:
                   type: string
                   pattern: ^[0-9]{6}$
@@ -646,24 +647,28 @@ paths:
               type: object
               additionalProperties: false
               required:
-                - email
+                - username
                 - password
                 - role
               properties:
-                email:
+                username:
                   type: string
-                  format: email
-                  maxLength: 254
+                  minLength: 1
+                  maxLength: 128
+                  pattern: ^\s*[A-Za-z0-9][A-Za-z0-9._-]{0,63}\s*$
+                  description: Trimmed and lower-cased before it is stored; the stored form must match
+                    `^[a-z0-9][a-z0-9._-]{0,63}$`.
                 password:
                   type: string
                   minLength: 1
                   maxLength: 1024
-                  description: Length is only shape-checked here (1-1024). Strength rules (at least 12 characters, no single
-                    repeated character, must not contain the local part of the account's email) are enforced
-                    in the domain layer and fail with `400 WEAK_PASSWORD` carrying `details.problems`.
+                  description: Length is only shape-checked here (1-1024). New passwords must be non-empty and at most
+                    256 characters; that is enforced in the domain layer and fails with `400 WEAK_PASSWORD` carrying
+                    `details.problems`. There are no other strength rules.
                 name:
                   type: string
                   maxLength: 80
+                  description: Defaults to the username when empty.
                 role:
                   type: string
                   enum:
@@ -682,7 +687,7 @@ paths:
                   admin:
                     $ref: "#/components/schemas/Admin"
         "400":
-          description: "`VALIDATION_FAILED`, `INVALID_ARGUMENT` (email rejected by the domain-level check) or
+          description: "`VALIDATION_FAILED`, `INVALID_ARGUMENT` (username rejected by the domain-level check) or
             `WEAK_PASSWORD`."
           content:
             application/json:
@@ -693,7 +698,7 @@ paths:
         "403":
           $ref: "#/components/responses/Forbidden"
         "409":
-          description: "`EMAIL_TAKEN` — an account with this email already exists."
+          description: "`USERNAME_TAKEN` — an account with this username already exists."
           content:
             application/json:
               schema:
@@ -831,9 +836,9 @@ paths:
                   type: string
                   minLength: 1
                   maxLength: 1024
-                  description: Length is only shape-checked here (1-1024). Strength rules (at least 12 characters, no single
-                    repeated character, must not contain the local part of the account's email) are enforced
-                    in the domain layer and fail with `400 WEAK_PASSWORD` carrying `details.problems`.
+                  description: Length is only shape-checked here (1-1024). New passwords must be non-empty and at most
+                    256 characters; that is enforced in the domain layer and fails with `400 WEAK_PASSWORD` carrying
+                    `details.problems`. There are no other strength rules.
       responses:
         "204":
           description: Password set; that administrator's sessions are revoked.
@@ -8390,10 +8395,10 @@ components:
               value:
                 error:
                   code: VALIDATION_FAILED
-                  message: body must have required property 'email'
+                  message: body must have required property 'username'
                   details:
                     - path: ""
-                      message: must have required property 'email'
+                      message: must have required property 'username'
     Unauthenticated:
       description: "No usable session: the cookie is missing, expired or idle-timed-out (`UNAUTHENTICATED`), or the
         session exists but the second factor has not been completed yet (`TOTP_REQUIRED` — finish `POST
@@ -8523,7 +8528,7 @@ components:
               description: "Stable machine-readable code. console domain codes (`ConsoleError.STATUS`): INVALID_CREDENTIALS
                 (401), UNAUTHENTICATED (401), TOTP_REQUIRED (401), INVALID_TOTP (401), TOTP_UNAVAILABLE (503),
                 TOTP_SECRET_CORRUPT (500), ACCOUNT_LOCKED (423), ACCOUNT_DISABLED (403), FORBIDDEN (403),
-                NOT_FOUND (404), EMAIL_TAKEN (409), CONFLICT (409), WEAK_PASSWORD (400), INVALID_ARGUMENT
+                NOT_FOUND (404), USERNAME_TAKEN (409), CONFLICT (409), WEAK_PASSWORD (400), INVALID_ARGUMENT
                 (400), LAST_ADMIN (409), RATE_LIMITED (429). Cross-cutting codes from console's own error
                 handler: VALIDATION_FAILED (400, Ajv schema failure), NOT_FOUND (404, unmatched `/api/*`
                 route), REQUEST_ERROR (other 4xx), INTERNAL_ERROR (500, message never leaked)."
@@ -8633,7 +8638,7 @@ components:
       description: Administrator as `AdminService.view` projects it — never includes the password hash or the TOTP secret.
       required:
         - id
-        - email
+        - username
         - name
         - role
         - status
@@ -8646,9 +8651,9 @@ components:
         id:
           type: string
           format: uuid
-        email:
+        username:
           type: string
-          format: email
+          description: Sign-in name, stored trimmed and lower-cased.
         name:
           type:
             - string
@@ -8717,7 +8722,7 @@ components:
       required:
         - id
         - adminId
-        - adminEmail
+        - adminUsername
         - action
         - target
         - meta
@@ -8731,7 +8736,7 @@ components:
             - string
             - "null"
           format: uuid
-        adminEmail:
+        adminUsername:
           type:
             - string
             - "null"

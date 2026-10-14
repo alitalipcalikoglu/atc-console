@@ -40,13 +40,13 @@ async function seed(dbPath) {
     DB_PATH: dbPath, LOG_LEVEL: 'silent', COOKIE_SECURE: 'false', SCRYPT_LOG_N: '14', SECRETS_KEY: KEY,
   }));
   const hash = await runtime.hasher.hash(PASSWORD);
-  for (const [email, name, role] of [
-    ['admin@m3.test', 'Admin', 'admin'],
-    ['viewer@m3.test', 'Viewer', 'viewer'],
-    ['totp@m3.test', 'TOTP', 'admin'],
-    ['expiry@m3.test', 'Expiry', 'admin'],
-  ]) runtime.admins.create({ email, name, passwordHash: hash, role });
-  const totpAdmin = runtime.admins.byEmail('totp@m3.test');
+  for (const [username, name, role] of [
+    ['admin', 'Admin', 'admin'],
+    ['viewer', 'Viewer', 'viewer'],
+    ['totp', 'TOTP', 'admin'],
+    ['expiry', 'Expiry', 'admin'],
+  ]) runtime.admins.create({ username, name, passwordHash: hash, role });
+  const totpAdmin = runtime.admins.byUsername('totp');
   assert.ok(totpAdmin);
   const secret = 'JBSWY3DPEHPK3PXP';
   runtime.admins.setTotpSecret(totpAdmin.id, secret);
@@ -105,8 +105,8 @@ async function body(response) {
   return text ? JSON.parse(text) : null;
 }
 
-async function login(app, email, password = PASSWORD, headers = {}) {
-  const response = await fetch(`${app.origin}/api/session/login`, json('POST', { email, password }, headers));
+async function login(app, username, password = PASSWORD, headers = {}) {
+  const response = await fetch(`${app.origin}/api/session/login`, json('POST', { username, password }, headers));
   return { response, cookie: cookiePair(response) };
 }
 
@@ -122,22 +122,22 @@ try {
 
     response = await fetch(`${app.origin}/api/session/login`, json('POST', {}));
     assert.equal(response.status, 400);
-    assert.deepEqual(await body(response), { error: { code: 'VALIDATION_FAILED', message: "body must have required property 'email'", details: [{ path: '', message: "must have required property 'email'" }] } });
+    assert.deepEqual(await body(response), { error: { code: 'VALIDATION_FAILED', message: "body must have required property 'username'", details: [{ path: '', message: "must have required property 'username'" }] } });
     response = await fetch(`${app.origin}/api/session/login`, json('POST', '{'));
     assert.equal(response.status, 400);
     assert.deepEqual(await body(response), { error: { code: 'FST_ERR_CTP_INVALID_JSON_BODY', message: "Body is not valid JSON but content-type is set to 'application/json'" } });
-    response = await fetch(`${app.origin}/api/session/login`, json('POST', { email: 'admin@m3.test', password: PASSWORD, extra: true }));
+    response = await fetch(`${app.origin}/api/session/login`, json('POST', { username: 'admin', password: PASSWORD, extra: true }));
     assert.equal(response.status, 400);
     assert.deepEqual((await body(response)).error.details, [{ path: '', message: 'must NOT have additional properties' }]);
-    response = await fetch(`${app.origin}/api/session/login`, json('POST', { email: 'admin@m3.test', password: 'x'.repeat(70_000) }));
+    response = await fetch(`${app.origin}/api/session/login`, json('POST', { username: 'admin', password: 'x'.repeat(70_000) }));
     assert.equal(response.status, 413);
     assert.deepEqual(await body(response), { error: { code: 'FST_ERR_CTP_BODY_TOO_LARGE', message: 'Request body is too large' } });
 
-    const invalid = await login(app, 'nobody@m3.test', 'wrong');
+    const invalid = await login(app, 'nobody', 'wrong');
     assert.equal(invalid.response.status, 401);
-    assert.deepEqual(await body(invalid.response), { error: { code: 'INVALID_CREDENTIALS', message: 'email or password is incorrect' } });
+    assert.deepEqual(await body(invalid.response), { error: { code: 'INVALID_CREDENTIALS', message: 'username or password is incorrect' } });
 
-    const signedIn = await login(app, 'admin@m3.test', PASSWORD, { 'x-forwarded-for': '203.0.113.7' });
+    const signedIn = await login(app, 'admin', PASSWORD, { 'x-forwarded-for': '203.0.113.7' });
     assert.equal(signedIn.response.status, 200);
     const setCookie = signedIn.response.headers.get('set-cookie') ?? '';
     assert.match(setCookie, /^console_session=[A-Za-z0-9_-]+; Max-Age=43200; Path=\/; HttpOnly; SameSite=Strict$/);
@@ -188,7 +188,7 @@ try {
     response = await fetch(`${app.origin}/api/me/sessions/logout-others`, { method: 'POST', headers: { cookie: signedIn.cookie, 'x-console-request': '1' } });
     assert.equal(response.status, 200);
 
-    const viewer = await login(app, 'viewer@m3.test');
+    const viewer = await login(app, 'viewer');
     assert.equal(viewer.response.status, 200);
     response = await fetch(`${app.origin}/api/me/sessions`, { headers: { cookie: viewer.cookie } });
     assert.equal(response.status, 200);
@@ -203,9 +203,9 @@ try {
     assert.equal(response.status, 204);
     response = await fetch(`${app.origin}/api/me/password`, json('POST', { currentPassword: PASSWORD, newPassword: NEW_PASSWORD }, { cookie: viewer.cookie, 'x-console-request': '1' }));
     assert.equal(response.status, 204);
-    assert.equal((await login(app, 'viewer@m3.test', NEW_PASSWORD)).response.status, 200);
+    assert.equal((await login(app, 'viewer', NEW_PASSWORD)).response.status, 200);
 
-    const pending = await login(app, 'totp@m3.test');
+    const pending = await login(app, 'totp');
     assert.equal(pending.response.status, 200);
     assert.deepEqual(await body(pending.response), { totpRequired: true, admin: null });
     response = await fetch(`${app.origin}/api/session`, { headers: { cookie: pending.cookie } });
@@ -221,7 +221,7 @@ try {
     response = await fetch(`${app.origin}/api/session/totp`, json('POST', { code: correctCode }, { cookie: pending.cookie }));
     assert.equal(response.status, 200, 'pre-session TOTP remains exempt from CSRF');
 
-    const expiring = await login(app, 'expiry@m3.test');
+    const expiring = await login(app, 'expiry');
     const expiringToken = decodeURIComponent(expiring.cookie.slice(expiring.cookie.indexOf('=') + 1));
     const expiryDb = new Database(app.dbPath);
     try {
@@ -233,7 +233,7 @@ try {
     response = await fetch(`${app.origin}/api/session`, { headers: { cookie: expiring.cookie } });
     assert.deepEqual(await body(response), { admin: null, totpPending: false });
 
-    const idle = await login(app, 'expiry@m3.test');
+    const idle = await login(app, 'expiry');
     const idleToken = decodeURIComponent(idle.cookie.slice(idle.cookie.indexOf('=') + 1));
     const idleDb = new Database(app.dbPath);
     try {
@@ -245,7 +245,7 @@ try {
     response = await fetch(`${app.origin}/api/session`, { headers: { cookie: idle.cookie } });
     assert.deepEqual(await body(response), { admin: null, totpPending: false });
 
-    const revoked = await login(app, 'expiry@m3.test');
+    const revoked = await login(app, 'expiry');
     const revokedToken = decodeURIComponent(revoked.cookie.slice(revoked.cookie.indexOf('=') + 1));
     const revokeDb = new Database(app.dbPath);
     try { new SessionStore(revokeDb).remove(new SessionStore(revokeDb).byToken(revokedToken).id); } finally { revokeDb.close(); }
@@ -274,7 +274,7 @@ try {
   const trusted = await start('trusted', { TRUST_PROXY: 'true', COOKIE_SECURE: 'true' });
   try {
     const inbound = '00-cccccccccccccccccccccccccccccccc-dddddddddddddddd-01';
-    const signedIn = await login(trusted, 'admin@m3.test', PASSWORD, { 'x-forwarded-for': '203.0.113.44', traceparent: inbound });
+    const signedIn = await login(trusted, 'admin', PASSWORD, { 'x-forwarded-for': '203.0.113.44', traceparent: inbound });
     assert.equal(signedIn.response.status, 200);
     assert.match(signedIn.response.headers.get('set-cookie') ?? '', /; Secure$/);
     assert.equal(signedIn.response.headers.get('traceparent')?.slice(3, 35), 'c'.repeat(32));

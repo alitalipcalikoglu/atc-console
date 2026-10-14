@@ -201,8 +201,8 @@ try {
   const seedRuntime = new ConsoleRuntime(Config.fromEnv({
     DB_PATH: dbPath, LOG_LEVEL: 'silent', COOKIE_SECURE: 'false', SCRYPT_LOG_N: '14', SECRETS_KEY: KEY,
   }));
-  await seedRuntime.adminService.create({ email: 'admin@m5.test', name: 'Admin', password: PASSWORD, role: 'admin' }, null, { ip: null, userAgent: null });
-  await seedRuntime.adminService.create({ email: 'viewer@m5.test', name: 'Viewer', password: PASSWORD, role: 'viewer' }, null, { ip: null, userAgent: null });
+  await seedRuntime.adminService.create({ username: 'admin', name: 'Admin', password: PASSWORD, role: 'admin' }, null, { ip: null, userAgent: null });
+  await seedRuntime.adminService.create({ username: 'viewer', name: 'Viewer', password: PASSWORD, role: 'viewer' }, null, { ip: null, userAgent: null });
   seedRuntime.finishShutdown();
 
   const port = await freePort();
@@ -228,13 +228,13 @@ try {
   assert.equal(ready, 'ready');
   const origin = `http://127.0.0.1:${port}`;
 
-  const login = async (email) => {
-    const response = await fetch(`${origin}/api/session/login`, jsonRequest('POST', { email, password: PASSWORD }));
+  const login = async (username) => {
+    const response = await fetch(`${origin}/api/session/login`, jsonRequest('POST', { username, password: PASSWORD }));
     assert.equal(response.status, 200);
     return cookiePair(response);
   };
-  const admin = await login('admin@m5.test');
-  const viewer = await login('viewer@m5.test');
+  const admin = await login('admin');
+  const viewer = await login('viewer');
 
   let response = await fetch(`${origin}/api/services/atc-media/atc-media/files`, { method: 'PUT', headers: { 'content-type': 'application/octet-stream', ...CSRF }, body: 'anonymous' });
   assert.equal(response.status, 401);

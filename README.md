@@ -13,7 +13,7 @@ cp .env.example .env                    # service keys, cookie/TLS settings
 cp services.example.json services.json  # which services, where, which key
 npm ci
 npm run build                           # SvelteKit → adapter-node build/
-npm run admin -- create you@example.com # first administrator (password prompted)
+npm run admin -- create admin # first administrator (password prompted)
 npm start
 ```
 
@@ -32,7 +32,7 @@ Production with Docker (the image builds the adapter-node application itself):
 ```bash
 docker build -t atc-console .
 docker run -d --name atc-console -p 3004:3004 -v atc-console-data:/data -v ./services.json:/config/services.json:ro --env-file .env -e DB_PATH=/data/console.db -e SERVICES_FILE=/config/services.json atc-console
-docker exec -it atc-console npm run admin -- create you@example.com
+docker exec -it atc-console npm run admin -- create admin
 ```
 
 The explicit storage/config values keep the container paths authoritative when a general-purpose
@@ -106,7 +106,7 @@ Environment only; see [.env.example](.env.example) for the full list, and "How i
 
 ## Security notes
 
-- Passwords: scrypt (`SCRYPT_LOG_N`), minimum 12 characters, no email-derived passwords. Lockout after `CONSOLE_LOGIN_MAX_FAILURES`. Login attempts rate-limited per IP.
+- Administrators sign in with a username (`a-z`, `0-9`, `.`, `_`, `-`, up to 64, stored lower-cased); admin accounts carry no email. Passwords: scrypt (`SCRYPT_LOG_N`), any non-empty password up to 256 characters, no other strength rules. Lockout after `CONSOLE_LOGIN_MAX_FAILURES`. Login attempts rate-limited per IP.
 - Sessions: server-side, opaque cookie (`HttpOnly; SameSite=Strict; Secure`), absolute (`CONSOLE_SESSION_TTL_MIN`) and idle (`CONSOLE_SESSION_IDLE_MIN`) expiry. Password change signs out other sessions.
 - TOTP (RFC 6238, Google Authenticator compatible) with replay protection; disabling needs password and a valid code. Recommended for every admin: the console holds every service key. The secret is sealed at rest (AES-256-GCM, `SECRETS_KEY`) — see "TOTP secret storage" below.
 - CSRF: every mutating request must carry `X-Console-Request: 1`, which cross-site pages cannot add; cookies are `SameSite=Strict` as well.

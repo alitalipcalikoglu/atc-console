@@ -9,7 +9,7 @@ import { SecretBox } from '@atc-web/atc-service-core/secrets';
 
 /** Console administrator accounts. */
 export class AdminStore {
-  static COLUMNS = 'id, email, name, password_hash, role, status, totp_secret, totp_enabled_at, failed_logins, locked_until, created_at, updated_at, last_login_at';
+  static COLUMNS = 'id, username, name, password_hash, role, status, totp_secret, totp_enabled_at, failed_logins, locked_until, created_at, updated_at, last_login_at';
 
   /**
    * @param {Database} db
@@ -22,9 +22,9 @@ export class AdminStore {
     this.keyring = keyring;
     const C = AdminStore.COLUMNS;
     this.stmt = {
-      insert: db.prepare(`INSERT INTO admins (id, email, name, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`),
+      insert: db.prepare(`INSERT INTO admins (id, username, name, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`),
       byId: db.prepare(`SELECT ${C} FROM admins WHERE id = ?`),
-      byEmail: db.prepare(`SELECT ${C} FROM admins WHERE email = ?`),
+      byUsername: db.prepare(`SELECT ${C} FROM admins WHERE username = ?`),
       all: db.prepare(`SELECT ${C} FROM admins ORDER BY created_at`),
       count: db.prepare(`SELECT COUNT(*) AS n FROM admins WHERE role = 'admin' AND status = 'active'`),
       setPassword: db.prepare(`UPDATE admins SET password_hash = ?, failed_logins = 0, locked_until = NULL, updated_at = ? WHERE id = ?`),
@@ -40,9 +40,9 @@ export class AdminStore {
     };
   }
 
-  /** @param {string} email */
-  static normalizeEmail(email) {
-    return email.trim().toLowerCase();
+  /** @param {string} username */
+  static normalizeUsername(username) {
+    return username.trim().toLowerCase();
   }
 
   /**
@@ -116,13 +116,13 @@ export class AdminStore {
   }
 
   /**
-   * @param {{ email: string, name: string, passwordHash: string, role: Role }} a
+   * @param {{ username: string, name: string, passwordHash: string, role: Role }} a
    * @param {number} [now]
    * @returns {AdminRow}
    */
   create(a, now = Date.now()) {
     const id = randomUUID();
-    this.stmt.insert.run(id, AdminStore.normalizeEmail(a.email), a.name.trim(), a.passwordHash, a.role, now, now);
+    this.stmt.insert.run(id, AdminStore.normalizeUsername(a.username), a.name.trim(), a.passwordHash, a.role, now, now);
     return /** @type {AdminRow} */ (this.stmt.byId.get(id));
   }
 
@@ -131,9 +131,9 @@ export class AdminStore {
     return /** @type {AdminRow|undefined} */ (this.stmt.byId.get(id));
   }
 
-  /** @param {string} email */
-  byEmail(email) {
-    return /** @type {AdminRow|undefined} */ (this.stmt.byEmail.get(AdminStore.normalizeEmail(email)));
+  /** @param {string} username */
+  byUsername(username) {
+    return /** @type {AdminRow|undefined} */ (this.stmt.byUsername.get(AdminStore.normalizeUsername(username)));
   }
 
   /** @returns {AdminRow[]} */

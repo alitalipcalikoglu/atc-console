@@ -20,14 +20,14 @@ test(`DB oracle: a current package (${PACKAGE_VERSION}) database reopens without
   const keyring = new TotpKeyring({ current: Buffer.alloc(32, 7) });
   let db = new Database(path);
   let admins = new AdminStore(db, keyring);
-  const admin = admins.create({ email: 'compat@migration.test', name: 'Compatibility', passwordHash: 'fixture-hash-not-a-secret', role: 'admin' }, 1_700_000_000_000);
+  const admin = admins.create({ username: 'compat', name: 'Compatibility', passwordHash: 'fixture-hash-not-a-secret', role: 'admin' }, 1_700_000_000_000);
   admins.setTotpSecret(admin.id, 'JBSWY3DPEHPK3PXP', 1_700_000_000_100);
   admins.enableTotp(admin.id, 1_700_000_000_200);
   const sessions = new SessionStore(db);
   const created = sessions.create({ adminId: admin.id, ttlMs: 60_000, totpPending: false, ip: '192.0.2.10', userAgent: 'migration-oracle' }, 1_700_000_000_300);
-  new AuditStore(db).record({ adminId: admin.id, adminEmail: admin.email, action: 'fixture.created', target: 'compat', meta: { safe: true }, ip: '192.0.2.10' }, 1_700_000_000_400);
+  new AuditStore(db).record({ adminId: admin.id, adminUsername: admin.username, action: 'fixture.created', target: 'compat', meta: { safe: true }, ip: '192.0.2.10' }, 1_700_000_000_400);
   const version = db.schemaVersion;
-  assert.equal(version, 2);
+  assert.equal(version, 3);
   db.close();
 
   db = new Database(path);
@@ -36,7 +36,7 @@ test(`DB oracle: a current package (${PACKAGE_VERSION}) database reopens without
     admins = new AdminStore(db, keyring);
     const reopened = admins.byId(admin.id);
     assert.ok(reopened);
-    assert.equal(reopened.email, 'compat@migration.test');
+    assert.equal(reopened.username, 'compat');
     assert.equal(reopened.totp_enabled_at, 1_700_000_000_200);
     const sealedSecret = reopened.totp_secret;
     if (typeof sealedSecret !== 'string') throw new Error('expected sealed TOTP metadata');
@@ -49,7 +49,7 @@ test(`DB oracle: a current package (${PACKAGE_VERSION}) database reopens without
     assert.deepEqual(audit.map((entry) => [entry.action, entry.target, entry.meta]), [['fixture.created', 'compat', '{"safe":true}']]);
     assert.deepEqual(
       db.prepare('SELECT version, name FROM schema_migrations ORDER BY version').all().map((row) => ({ ...row })),
-      [{ version: 1, name: 'v1' }, { version: 2, name: 'v2' }],
+      [{ version: 1, name: 'v1' }, { version: 2, name: 'v2' }, { version: 3, name: 'v3' }],
     );
   } finally {
     db.close();

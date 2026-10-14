@@ -32,7 +32,7 @@
 /**
  * @typedef {object} AdminRow
  * @property {string} id
- * @property {string} email
+ * @property {string} username
  * @property {string} name
  * @property {string} password_hash
  * @property {Role} role
@@ -63,7 +63,7 @@
  * @typedef {object} AuditRow
  * @property {number} id
  * @property {string|null} admin_id
- * @property {string|null} admin_email
+ * @property {string|null} admin_username
  * @property {string} action
  * @property {string|null} target
  * @property {string|null} meta

@@ -151,8 +151,8 @@ const password = { type: 'string', minLength: 1, maxLength: 1024 } as const;
 const code = { type: 'string', pattern: '^[0-9]{6}$' } as const;
 
 export const AuthSchemas = {
-  login: ApiRequest.compile(object<{ email: string; password: string }>(['email', 'password'], {
-    email: { type: 'string', format: 'email', maxLength: 254 },
+  login: ApiRequest.compile(object<{ username: string; password: string }>(['username', 'password'], {
+    username: { type: 'string', minLength: 1, maxLength: 128 },
     password,
   })),
   totp: ApiRequest.compile(object<{ code: string }>(['code'], { code })),

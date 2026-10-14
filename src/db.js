@@ -64,5 +64,17 @@ export class Database extends CoreDatabase {
       fully_sealed_at  INTEGER NOT NULL
     );
     `,
+    `
+    -- Admins sign in with a username instead of an email. Existing accounts keep the part before @,
+    -- or the whole address with @ replaced by . when that local part would clash.
+    ALTER TABLE admins RENAME COLUMN email TO username;
+    ALTER TABLE audit RENAME COLUMN admin_email TO admin_username;
+    CREATE TEMP TABLE _admin_locals AS SELECT id, lower(substr(username, 1, instr(username, '@') - 1)) AS local FROM admins WHERE instr(username, '@') > 1;
+    UPDATE admins SET username = (SELECT local FROM _admin_locals l WHERE l.id = admins.id)
+     WHERE id IN (SELECT id FROM _admin_locals WHERE local IN (SELECT local FROM _admin_locals GROUP BY local HAVING count(*) = 1))
+       AND (SELECT local FROM _admin_locals l WHERE l.id = admins.id) NOT IN (SELECT username FROM admins WHERE instr(username, '@') = 0);
+    UPDATE admins SET username = lower(replace(username, '@', '.')) WHERE instr(username, '@') > 0;
+    DROP TABLE _admin_locals;
+    `,
   ];
 }

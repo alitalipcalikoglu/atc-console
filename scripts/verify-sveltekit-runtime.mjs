@@ -73,7 +73,7 @@ async function stopRuntime(runtime) {
   const db = new Database(runtime.dbPath);
   try {
     db.ping();
-    assert.equal(db.schemaVersion, 2);
+    assert.equal(db.schemaVersion, 3);
   } finally {
     db.close();
   }
@@ -118,7 +118,7 @@ try {
     assert.deepEqual(await response.json(), {
       service: 'atc-console', version: packageVersion, apiVersion: 'v1',
       capabilities: ['totp', 'admin-roles', 'audit-trail', 'service-proxy'],
-      schemaVersion: 2, serviceCore: SERVICE_CORE_VERSION,
+      schemaVersion: 3, serviceCore: SERVICE_CORE_VERSION,
     });
 
     response = await fetch(`http://127.0.0.1:${http.port}/openapi.yaml`, {

@@ -7,7 +7,7 @@ const SESSION_CONTEXT = Symbol('console-session');
 
 /**
  * Who is signed in. Loaded once at start; kept in sync by login/logout and by 401s.
- * @typedef {{ id: string, email: string, name: string, role: 'admin'|'viewer', totpEnabled: boolean, lastLoginAt: string|null }} Admin
+ * @typedef {{ id: string, username: string, name: string, role: 'admin'|'viewer', totpEnabled: boolean, lastLoginAt: string|null }} Admin
  */
 export class Session {
   /** @param {{ admin: Admin|null, totpPending: boolean }} initial */
@@ -34,9 +34,9 @@ export class Session {
     this.totpPending = next.totpPending;
   }
 
-  /** @param {string} email @param {string} password */
-  async login(email, password) {
-    const r = /** @type {{ totpRequired: boolean, admin: Admin|null }} */ (await api.post('/session/login', { email, password }));
+  /** @param {string} username @param {string} password */
+  async login(username, password) {
+    const r = /** @type {{ totpRequired: boolean, admin: Admin|null }} */ (await api.post('/session/login', { username, password }));
     this.totpPending = r.totpRequired;
     this.admin = r.admin;
     return r;

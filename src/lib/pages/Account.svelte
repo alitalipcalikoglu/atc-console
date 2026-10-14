@@ -51,7 +51,7 @@
   <div class="two">
     <div class="stack">
       <div class="card"><div class="card-body">
-        <div class="row" style="margin-bottom:12px"><div class="avatar">{session.admin?.email.slice(0, 1).toUpperCase()}</div><div class="grow" style="min-width:0"><div style="font-weight:650">{session.admin?.name}</div><div class="small muted mono truncate">{session.admin?.email}</div></div><span class="badge {session.isAdmin ? 'info' : ''}">{t(`admins.${session.admin?.role}`)}</span></div>
+        <div class="row" style="margin-bottom:12px"><div class="avatar">{session.admin?.username.slice(0, 1).toUpperCase()}</div><div class="grow" style="min-width:0"><div style="font-weight:650">{session.admin?.name}</div><div class="small muted mono truncate">{session.admin?.username}</div></div><span class="badge {session.isAdmin ? 'info' : ''}">{t(`admins.${session.admin?.role}`)}</span></div>
         <div class="row wrap" style="gap:16px">
           <div class="field"><span class="small" style="font-weight:550;color:var(--text-2)">{t('account.theme')}</span><div class="seg">{#each MODES as m (m)}<button aria-pressed={theme.mode === m} onclick={() => theme.set(m)}>{t(`account.theme${m[0].toUpperCase()}${m.slice(1)}`)}</button>{/each}</div></div>
           <div class="field"><span class="small" style="font-weight:550;color:var(--text-2)">{t('account.language')}</span><div class="seg"><button aria-pressed={i18n.lang === 'tr'} onclick={() => i18n.set('tr')}>Türkçe</button><button aria-pressed={i18n.lang === 'en'} onclick={() => i18n.set('en')}>English</button></div></div>
@@ -60,7 +60,7 @@
 
       <Panel title={t('account.password')}><form class="stack" onsubmit={changePassword}>
         <div class="field"><label for="cp">{t('account.current')}</label><input id="cp" class="input" type="password" autocomplete="current-password" bind:value={cur} required /></div>
-        <div class="field"><label for="np">{t('account.new')}</label><input id="np" class="input" type="password" autocomplete="new-password" bind:value={next} required minlength="12" /><span class="hint">{t('account.newHint')}</span></div>
+        <div class="field"><label for="np">{t('account.new')}</label><input id="np" class="input" type="password" autocomplete="new-password" bind:value={next} required /></div>
         <div><button class="btn primary" type="submit" disabled={busy || !cur || next.length < 12}>{t('common.save')}</button></div>
       </form></Panel>
     </div>

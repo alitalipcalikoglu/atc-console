@@ -11,13 +11,13 @@ const rejectsWith = (p, code) => assert.rejects(p, (e) => e instanceof ConsoleEr
 
 test('login, session resolution, idle and absolute expiry, logout', async () => {
   const t = await testRuntime({ env: { CONSOLE_SESSION_TTL_MIN: '60', CONSOLE_SESSION_IDLE_MIN: '10' } });
-  await t.adminService.create({ email: 'a@console.local', name: 'A', password: ADMIN_PASSWORD, role: 'admin' }, null, ctx);
-  await rejectsWith(t.auth.login({ email: 'a@console.local', password: 'wrong password!!' }, ctx), 'INVALID_CREDENTIALS');
-  await rejectsWith(t.auth.login({ email: 'nobody@console.local', password: ADMIN_PASSWORD }, ctx), 'INVALID_CREDENTIALS');
-  const { token, totpRequired } = await t.auth.login({ email: 'A@console.local', password: ADMIN_PASSWORD }, ctx);
+  await t.adminService.create({ username: 'a', name: 'A', password: ADMIN_PASSWORD, role: 'admin' }, null, ctx);
+  await rejectsWith(t.auth.login({ username: 'a', password: 'wrong password!!' }, ctx), 'INVALID_CREDENTIALS');
+  await rejectsWith(t.auth.login({ username: 'nobody', password: ADMIN_PASSWORD }, ctx), 'INVALID_CREDENTIALS');
+  const { token, totpRequired } = await t.auth.login({ username: 'A', password: ADMIN_PASSWORD }, ctx);
   assert.equal(totpRequired, false);
   const resolved = t.auth.resolve(token);
-  assert.equal(resolved?.admin.email, 'a@console.local');
+  assert.equal(resolved?.admin.username, 'a');
   assert.equal(t.auth.resolve('nope'), null);
   assert.equal(t.auth.resolve(undefined), null);
 
@@ -26,12 +26,12 @@ test('login, session resolution, idle and absolute expiry, logout', async () => 
   t.clock.now += 11 * 60_000;
   assert.equal(t.auth.resolve(token), null, 'idle timeout');
 
-  const second = await t.auth.login({ email: 'a@console.local', password: ADMIN_PASSWORD }, ctx);
+  const second = await t.auth.login({ username: 'a', password: ADMIN_PASSWORD }, ctx);
   for (let i = 0; i < 6; i++) { t.clock.now += 9 * 60_000; assert.ok(t.auth.resolve(second.token), `keep-alive ${i}`); }
   t.clock.now += 9 * 60_000;
   assert.equal(t.auth.resolve(second.token), null, 'absolute 60 min ttl reached at 63 min');
 
-  const third = await t.auth.login({ email: 'a@console.local', password: ADMIN_PASSWORD }, ctx);
+  const third = await t.auth.login({ username: 'a', password: ADMIN_PASSWORD }, ctx);
   const r = /** @type {NonNullable<ReturnType<typeof t.auth.resolve>>} */ (t.auth.resolve(third.token));
   t.auth.logout(r.session, r.admin, ctx);
   assert.equal(t.auth.resolve(third.token), null);
@@ -41,33 +41,33 @@ test('login, session resolution, idle and absolute expiry, logout', async () => 
 
 test('lockout after repeated failures, disabled accounts refused', async () => {
   const t = await testRuntime({ env: { CONSOLE_LOGIN_MAX_FAILURES: '3', CONSOLE_LOGIN_LOCKOUT_MIN: '15' } });
-  const a = await t.adminService.create({ email: 'a@console.local', name: 'A', password: ADMIN_PASSWORD, role: 'admin' }, null, ctx);
-  for (let i = 0; i < 3; i++) await rejectsWith(t.auth.login({ email: 'a@console.local', password: 'wrong password!!' }, ctx), 'INVALID_CREDENTIALS');
-  const locked = await t.auth.login({ email: 'a@console.local', password: ADMIN_PASSWORD }, ctx).catch((e) => e);
+  const a = await t.adminService.create({ username: 'a', name: 'A', password: ADMIN_PASSWORD, role: 'admin' }, null, ctx);
+  for (let i = 0; i < 3; i++) await rejectsWith(t.auth.login({ username: 'a', password: 'wrong password!!' }, ctx), 'INVALID_CREDENTIALS');
+  const locked = await t.auth.login({ username: 'a', password: ADMIN_PASSWORD }, ctx).catch((e) => e);
   assert.equal(locked.code, 'ACCOUNT_LOCKED');
   assert.ok(locked.details.retryAfterSec <= 900);
   t.clock.now += 15 * 60_000 + 1;
-  await t.auth.login({ email: 'a@console.local', password: ADMIN_PASSWORD }, ctx);
-  await t.adminService.create({ email: 'b@console.local', name: 'B', password: ADMIN_PASSWORD, role: 'admin' }, null, ctx);
-  const actor = /** @type {any} */ (t.admins.byEmail('b@console.local'));
+  await t.auth.login({ username: 'a', password: ADMIN_PASSWORD }, ctx);
+  await t.adminService.create({ username: 'b', name: 'B', password: ADMIN_PASSWORD, role: 'admin' }, null, ctx);
+  const actor = /** @type {any} */ (t.admins.byUsername('b'));
   t.adminService.update(a.id, { status: 'disabled' }, actor, ctx);
-  await rejectsWith(t.auth.login({ email: 'a@console.local', password: ADMIN_PASSWORD }, ctx), 'ACCOUNT_DISABLED');
+  await rejectsWith(t.auth.login({ username: 'a', password: ADMIN_PASSWORD }, ctx), 'ACCOUNT_DISABLED');
 });
 
 test('TOTP enrolment, second step, replay refusal, disable', async () => {
   const t = await testRuntime();
-  await t.adminService.create({ email: 'a@console.local', name: 'A', password: ADMIN_PASSWORD, role: 'admin' }, null, ctx);
-  let admin = /** @type {any} */ (t.admins.byEmail('a@console.local'));
+  await t.adminService.create({ username: 'a', name: 'A', password: ADMIN_PASSWORD, role: 'admin' }, null, ctx);
+  let admin = /** @type {any} */ (t.admins.byUsername('a'));
   const { secret, uri } = t.auth.startTotp(admin);
-  assert.match(uri, /^otpauth:\/\/totp\/test%20console%3Aa%40console\.local\?secret=/);
-  assert.equal(t.auth.resolve((await t.auth.login({ email: 'a@console.local', password: ADMIN_PASSWORD }, ctx)).token)?.admin.email, 'a@console.local', 'not enforced before confirmation');
+  assert.match(uri, /^otpauth:\/\/totp\/test%20console%3Aa\?secret=/);
+  assert.equal(t.auth.resolve((await t.auth.login({ username: 'a', password: ADMIN_PASSWORD }, ctx)).token)?.admin.username, 'a', 'not enforced before confirmation');
   assert.throws(() => t.auth.confirmTotp(admin, '000000', ctx), (e) => e instanceof ConsoleError && e.code === 'INVALID_TOTP');
   const step = Math.floor(t.clock.now / 1000 / 30);
   t.auth.confirmTotp(admin, Totp.code(secret, step), ctx);
   admin = t.admins.byId(admin.id);
   assert.ok(admin.totp_enabled_at);
 
-  const login = await t.auth.login({ email: 'a@console.local', password: ADMIN_PASSWORD }, ctx);
+  const login = await t.auth.login({ username: 'a', password: ADMIN_PASSWORD }, ctx);
   assert.equal(login.totpRequired, true);
   const pending = /** @type {NonNullable<ReturnType<typeof t.auth.resolve>>} */ (t.auth.resolve(login.token));
   assert.equal(pending.session.totp_pending, 1);
@@ -77,7 +77,7 @@ test('TOTP enrolment, second step, replay refusal, disable', async () => {
   t.auth.completeTotp(pending.session, Totp.code(secret, step2), ctx);
   assert.equal(t.auth.resolve(login.token)?.session.totp_pending, 0);
 
-  const login2 = await t.auth.login({ email: 'a@console.local', password: ADMIN_PASSWORD }, ctx);
+  const login2 = await t.auth.login({ username: 'a', password: ADMIN_PASSWORD }, ctx);
   const pending2 = /** @type {NonNullable<ReturnType<typeof t.auth.resolve>>} */ (t.auth.resolve(login2.token));
   assert.throws(() => t.auth.completeTotp(pending2.session, Totp.code(secret, step2), ctx), (e) => e instanceof ConsoleError && e.code === 'INVALID_TOTP', 'same code cannot be replayed');
 
@@ -85,33 +85,36 @@ test('TOTP enrolment, second step, replay refusal, disable', async () => {
   t.clock.now += 30_000;
   await t.auth.disableTotp(admin, { password: ADMIN_PASSWORD, code: Totp.code(secret, Math.floor(t.clock.now / 1000 / 30)) }, ctx);
   assert.equal(t.admins.byId(admin.id)?.totp_secret, null);
-  assert.equal((await t.auth.login({ email: 'a@console.local', password: ADMIN_PASSWORD }, ctx)).totpRequired, false);
+  assert.equal((await t.auth.login({ username: 'a', password: ADMIN_PASSWORD }, ctx)).totpRequired, false);
 });
 
 test('password change keeps the current session and drops the others; policy enforced', async () => {
   const t = await testRuntime();
-  await t.adminService.create({ email: 'a@console.local', name: 'A', password: ADMIN_PASSWORD, role: 'admin' }, null, ctx);
-  const s1 = await t.auth.login({ email: 'a@console.local', password: ADMIN_PASSWORD }, ctx);
-  const s2 = await t.auth.login({ email: 'a@console.local', password: ADMIN_PASSWORD }, ctx);
+  await t.adminService.create({ username: 'a', name: 'A', password: ADMIN_PASSWORD, role: 'admin' }, null, ctx);
+  const s1 = await t.auth.login({ username: 'a', password: ADMIN_PASSWORD }, ctx);
+  const s2 = await t.auth.login({ username: 'a', password: ADMIN_PASSWORD }, ctx);
   const r1 = /** @type {NonNullable<ReturnType<typeof t.auth.resolve>>} */ (t.auth.resolve(s1.token));
   assert.equal(t.auth.listSessions(r1.admin, r1.session).length, 2);
   await rejectsWith(t.auth.changePassword(r1.admin, r1.session, { currentPassword: 'nope nope nope!', newPassword: 'another very long one' }, ctx), 'INVALID_CREDENTIALS');
-  await rejectsWith(t.auth.changePassword(r1.admin, r1.session, { currentPassword: ADMIN_PASSWORD, newPassword: 'short' }, ctx), 'WEAK_PASSWORD');
-  await rejectsWith(t.auth.changePassword(r1.admin, r1.session, { currentPassword: ADMIN_PASSWORD, newPassword: 'aaaaaaaaaaaaaa' }, ctx), 'WEAK_PASSWORD');
-  assert.throws(() => ConsoleAuth.assertPassword('alice has a long password', 'alice@console.local'), (e) => e instanceof ConsoleError && e.code === 'WEAK_PASSWORD', 'email local part refused');
+  await rejectsWith(t.auth.changePassword(r1.admin, r1.session, { currentPassword: ADMIN_PASSWORD, newPassword: '' }, ctx), 'WEAK_PASSWORD');
+  await rejectsWith(t.auth.changePassword(r1.admin, r1.session, { currentPassword: ADMIN_PASSWORD, newPassword: 'x'.repeat(257) }, ctx), 'WEAK_PASSWORD');
+  for (const ok of ['a', 'aaaa', 'a'.repeat(256)]) assert.doesNotThrow(() => ConsoleAuth.assertPassword(ok), 'only empty or over 256 characters is refused');
   await t.auth.changePassword(r1.admin, r1.session, { currentPassword: ADMIN_PASSWORD, newPassword: 'another very long one' }, ctx);
   assert.ok(t.auth.resolve(s1.token));
   assert.equal(t.auth.resolve(s2.token), null);
-  await t.auth.login({ email: 'a@console.local', password: 'another very long one' }, ctx);
+  await t.auth.login({ username: 'a', password: 'another very long one' }, ctx);
 });
 
 test('AdminService protects the last active administrator and self-demotion', async () => {
   const t = await testRuntime();
-  const root = await t.adminService.create({ email: 'root@console.local', name: 'Root', password: ADMIN_PASSWORD, role: 'admin' }, null, ctx);
+  const root = await t.adminService.create({ username: 'root', name: 'Root', password: ADMIN_PASSWORD, role: 'admin' }, null, ctx);
   const actor = /** @type {any} */ (t.admins.byId(root.id));
-  await rejectsWith(t.adminService.create({ email: 'root@console.local', name: 'Dup', password: ADMIN_PASSWORD, role: 'viewer' }, actor, ctx), 'EMAIL_TAKEN');
-  await rejectsWith(t.adminService.create({ email: 'not-an-email', name: 'x', password: ADMIN_PASSWORD, role: 'viewer' }, actor, ctx), 'INVALID_ARGUMENT');
-  const v = await t.adminService.create({ email: 'v@console.local', name: 'V', password: ADMIN_PASSWORD, role: 'viewer' }, actor, ctx);
+  await rejectsWith(t.adminService.create({ username: 'root', name: 'Dup', password: ADMIN_PASSWORD, role: 'viewer' }, actor, ctx), 'USERNAME_TAKEN');
+  await rejectsWith(t.adminService.create({ username: 'not a username!', name: 'x', password: ADMIN_PASSWORD, role: 'viewer' }, actor, ctx), 'INVALID_ARGUMENT');
+  await rejectsWith(t.adminService.create({ username: 'ROOT ', name: 'Dup', password: ADMIN_PASSWORD, role: 'viewer' }, actor, ctx), 'USERNAME_TAKEN');
+  await rejectsWith(t.adminService.create({ username: '.dot', name: 'x', password: ADMIN_PASSWORD, role: 'viewer' }, actor, ctx), 'INVALID_ARGUMENT');
+  assert.equal((await t.adminService.create({ username: ' Ops.Team_1 ', name: '', password: ADMIN_PASSWORD, role: 'viewer' }, actor, ctx)).name, 'ops.team_1', 'normalized username is the default name');
+  const v = await t.adminService.create({ username: 'v', name: 'V', password: ADMIN_PASSWORD, role: 'viewer' }, actor, ctx);
   assert.throws(() => t.adminService.update(root.id, { role: 'viewer' }, actor, ctx), (e) => e instanceof ConsoleError && (e.code === 'LAST_ADMIN' || e.code === 'CONFLICT'));
   assert.throws(() => t.adminService.remove(root.id, actor, ctx), (e) => e instanceof ConsoleError && e.code === 'CONFLICT');
   t.adminService.update(v.id, { role: 'admin', name: 'Vee' }, actor, ctx);
@@ -121,7 +124,7 @@ test('AdminService protects the last active administrator and self-demotion', as
   t.adminService.update(root.id, { role: 'viewer' }, vActor, ctx);
   assert.throws(() => t.adminService.update(v.id, { status: 'disabled' }, vActor, ctx), (e) => e instanceof ConsoleError && (e.code === 'CONFLICT' || e.code === 'LAST_ADMIN'));
   await t.adminService.resetPassword(root.id, 'reset to something long', vActor, ctx);
-  await t.auth.login({ email: 'root@console.local', password: 'reset to something long' }, ctx);
+  await t.auth.login({ username: 'root', password: 'reset to something long' }, ctx);
   t.adminService.remove(root.id, vActor, ctx);
   assert.equal(t.admins.byId(root.id), undefined);
   assert.ok(t.audit.list({ limit: 50, action: 'admin.' }).length >= 5);

@@ -7,7 +7,7 @@ export const GET = jsonRoute({
     const limit = number(query.limit) ?? 50;
     const rows = runtime.audit.list({ limit: limit + 1, beforeId: number(query.before), action: text(query.action) });
     const items = rows.slice(0, limit).map((entry) => ({
-      id: entry.id, adminId: entry.admin_id, adminEmail: entry.admin_email, action: entry.action,
+      id: entry.id, adminId: entry.admin_id, adminUsername: entry.admin_username, action: entry.action,
       target: entry.target, meta: entry.meta ? JSON.parse(entry.meta) : null, ip: entry.ip,
       at: new Date(entry.at).toISOString(),
     }));

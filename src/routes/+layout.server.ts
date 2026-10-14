@@ -7,7 +7,7 @@ export const load: LayoutServerLoad = ({ locals }) => {
     auth: {
       admin: principal && !pending ? {
         id: principal.id,
-        email: principal.email,
+        username: principal.username,
         name: principal.name,
         role: principal.role,
         totpEnabled: principal.totpEnabled,

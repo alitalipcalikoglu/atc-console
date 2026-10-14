@@ -34,7 +34,7 @@ test('seal/unseal round trip through the real enrolment and verification path', 
   const db = new Database(':memory:');
   const keyring = new TotpKeyring({ current: key1 });
   const admins = new AdminStore(db, keyring);
-  const admin = admins.create({ email: 'a@b.co', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
+  const admin = admins.create({ username: 'a', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
 
   const auth = fullAuth(db, keyring);
   const { secret } = auth.startTotp(admin);
@@ -51,7 +51,7 @@ test('migration: plaintext rows from before Stage 4 are re-sealed at startup, id
     // Simulate a pre-Stage-4 database: write totp_secret in plaintext, bypassing AdminStore's seal.
     const db1 = new Database(path);
     const admins1 = new AdminStore(db1, null);
-    const admin = admins1.create({ email: 'legacy@b.co', name: 'Legacy', passwordHash: 'h', role: 'admin' }, 1000);
+    const admin = admins1.create({ username: 'legacy', name: 'Legacy', passwordHash: 'h', role: 'admin' }, 1000);
     db1.prepare('UPDATE admins SET totp_secret = ? WHERE id = ?').run('LEGACYSECRETXYZ', admin.id);
     db1.close();
 
@@ -79,7 +79,7 @@ test('migration refuses to start (ConfigError) when plaintext rows exist and SEC
   try {
     const db1 = new Database(path);
     const admins1 = new AdminStore(db1, null);
-    const admin = admins1.create({ email: 'legacy2@b.co', name: 'Legacy2', passwordHash: 'h', role: 'admin' }, 1000);
+    const admin = admins1.create({ username: 'legacy2', name: 'Legacy2', passwordHash: 'h', role: 'admin' }, 1000);
     db1.prepare('UPDATE admins SET totp_secret = ? WHERE id = ?').run('STILLPLAINTEXT', admin.id);
     db1.close();
 
@@ -104,7 +104,7 @@ test('migration is a no-op (no ConfigError even without a keyring) when there is
 test('a legacy plaintext secret still verifies with no keyring configured, before the first successful reseal -- an incomplete migration never locks anyone out', () => {
   const db = new Database(':memory:');
   const admins = new AdminStore(db, null);
-  const admin = admins.create({ email: 'a@b.co', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
+  const admin = admins.create({ username: 'a', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
   db.prepare('UPDATE admins SET totp_secret = ?, totp_enabled_at = ? WHERE id = ?').run('PLAINLEGACY', 500, admin.id);
 
   const auth = fullAuth(db, null, false); // strictSealing false: this database has never completed a reseal
@@ -118,7 +118,7 @@ test('a legacy plaintext secret still verifies with no keyring configured, befor
 test('after a successful reseal, a plaintext totp_secret is treated as corruption (TOTP_SECRET_CORRUPT), not a tolerated migration state', () => {
   const db = new Database(':memory:');
   const admins = new AdminStore(db, null);
-  const admin = admins.create({ email: 'a@b.co', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
+  const admin = admins.create({ username: 'a', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
   AdminStore.reseal(db, null); // nothing to reseal yet -- marks fully sealed
   assert.equal(AdminStore.hasFullySealed(db), true);
   // Something (a bug, a bypassed write path) leaves a plaintext secret after that point.
@@ -136,7 +136,7 @@ test('a sealed secret throws TOTP_UNAVAILABLE (not a wrong-code failure) when th
   const db = new Database(':memory:');
   const keyring = new TotpKeyring({ current: key1 });
   const admins = new AdminStore(db, keyring);
-  const admin = admins.create({ email: 'a@b.co', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
+  const admin = admins.create({ username: 'a', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
   admins.setTotpSecret(admin.id, 'REALSECRET', 1000);
   admins.enableTotp(admin.id, 1000);
 
@@ -151,7 +151,7 @@ test('a sealed secret throws TOTP_UNAVAILABLE (not a wrong-code failure) when th
 test('enrolment refuses (does not silently store plaintext) when SECRETS_KEY is not configured', () => {
   const db = new Database(':memory:');
   const admins = new AdminStore(db, null);
-  const admin = admins.create({ email: 'a@b.co', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
+  const admin = admins.create({ username: 'a', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
   const auth = fullAuth(db, null);
   assert.throws(
     () => auth.startTotp(admin),
@@ -167,7 +167,7 @@ test('the raw database file never contains the plaintext secret after sealing (n
     const db = new Database(path);
     const keyring = new TotpKeyring({ current: key1 });
     const admins = new AdminStore(db, keyring);
-    const admin = admins.create({ email: 'a@b.co', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
+    const admin = admins.create({ username: 'a', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
     const auth = fullAuth(db, keyring);
     const { secret } = auth.startTotp(admin);
     db.close();

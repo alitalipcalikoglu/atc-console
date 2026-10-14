@@ -10,8 +10,8 @@ import { SessionStore } from '../src/store/session-store.js';
 
 /**
  * Console administrator CLI, run on the server where the console's database lives.
- *   npm run admin -- create <email> [--role admin|viewer] [--name "Full Name"]
- *   npm run admin -- reset-password <email>
+ *   npm run admin -- create <username> [--role admin|viewer] [--name "Full Name"]
+ *   npm run admin -- reset-password <username>
  *   npm run admin -- list
  * Passwords are prompted without echo, never taken from arguments.
  */
@@ -34,41 +34,41 @@ export class AdminCli {
       case 'reset-password': return this.#resetPassword(rest);
       case 'list': return this.#list();
       default:
-        this.out('usage: admin create <email> [--role admin|viewer] [--name "Name"] | reset-password <email> | list');
+        this.out('usage: admin create <username> [--role admin|viewer] [--name "Name"] | reset-password <username> | list');
         return 2;
     }
   }
 
   /** @param {string[]} args */
   async #create(args) {
-    const email = args.find((a) => !a.startsWith('--'));
-    if (!email) throw new Error('email is required');
+    const username = args.find((a) => !a.startsWith('--'));
+    if (!username) throw new Error('username is required');
     const role = /** @type {'admin'|'viewer'} */ (AdminCli.#flag(args, '--role') ?? 'admin');
     if (role !== 'admin' && role !== 'viewer') throw new Error('--role must be admin or viewer');
     const password = await this.#newPassword();
-    const admin = await this.service.create({ email, name: AdminCli.#flag(args, '--name') ?? '', password, role }, null, { ip: null, userAgent: 'cli' });
-    this.out(`created ${admin.role} ${admin.email} (${admin.id})`);
+    const admin = await this.service.create({ username, name: AdminCli.#flag(args, '--name') ?? '', password, role }, null, { ip: null, userAgent: 'cli' });
+    this.out(`created ${admin.role} ${admin.username} (${admin.id})`);
     return 0;
   }
 
   /** @param {string[]} args */
   async #resetPassword(args) {
-    const admin = args[0] ? this.admins.byEmail(args[0]) : undefined;
-    if (!admin) throw new Error('no admin with that email');
+    const admin = args[0] ? this.admins.byUsername(args[0]) : undefined;
+    if (!admin) throw new Error('no admin with that username');
     const password = await this.#newPassword();
-    const actor = { ...admin, email: 'cli' };
+    const actor = { ...admin, username: 'cli' };
     await this.service.resetPassword(admin.id, password, /** @type {any} */ (actor), { ip: null, userAgent: 'cli' });
-    this.out(`password updated for ${admin.email}; their sessions were signed out`);
+    this.out(`password updated for ${admin.username}; their sessions were signed out`);
     return 0;
   }
 
   #list() {
-    for (const a of this.service.list()) this.out(`${a.email}\t${a.role}\t${a.status}\ttotp=${a.totpEnabled ? 'on' : 'off'}\tlast login ${a.lastLoginAt ?? '-'}`);
+    for (const a of this.service.list()) this.out(`${a.username}\t${a.role}\t${a.status}\ttotp=${a.totpEnabled ? 'on' : 'off'}\tlast login ${a.lastLoginAt ?? '-'}`);
     return 0;
   }
 
   async #newPassword() {
-    const a = await this.prompt('New password (min 12 chars): ', true);
+    const a = await this.prompt('New password: ', true);
     const b = await this.prompt('Repeat password: ', true);
     if (a !== b) throw new Error('passwords do not match');
     return a;

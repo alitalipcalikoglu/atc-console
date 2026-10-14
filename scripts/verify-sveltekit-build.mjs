@@ -77,7 +77,7 @@ try {
   assert.match(response.headers.get('content-type') ?? '', /^text\/html/);
   const html = await response.text();
   assert.match(html, /Sign in to Console/);
-  assert.match(html, /id="email"/);
+  assert.match(html, /id="username"/);
   assert.match(html, /id="password"/);
   assert.match(html, /<script/);
   assert.match(html, /\/_app\/immutable\//);

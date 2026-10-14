@@ -15,7 +15,7 @@ declare global {
       };
       principal: {
         id: string;
-        email: string;
+        username: string;
         name: string;
         role: 'admin' | 'viewer';
         status: 'active' | 'disabled';

@@ -128,7 +128,7 @@ Cookie session (`HttpOnly`, `SameSite=Strict`, `Secure` when `COOKIE_SECURE`), C
 `totp_used`; secret sealed at rest under `SECRETS_KEY`, current/previous rotation via `TotpKeyring`,
 Stage 4.1 — README.md's "TOTP secret storage" / "Rotating SECRETS_KEY"). Two roles only,
 `admin`/`viewer`: viewers read, admins mutate (`requireSession` vs `requireAdmin` per route) — no
-finer-grained, per-service permission model. Dummy-hash login timing defence for unknown emails, same
+finer-grained, per-service permission model. Dummy-hash login timing defence for unknown usernames, same
 scrypt cost as real accounts (mirrors the fix made to `atc-auth` in Stage 0, but console's own copy of
 this logic was already correct — see `src/domain/console-auth.js`). Every secret naming a downstream
 service's API key (`apiKeyEnv` in `services.json`) is env-only, no rotation support beyond changing

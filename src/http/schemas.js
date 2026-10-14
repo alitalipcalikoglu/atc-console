@@ -1,6 +1,8 @@
 /** JSON Schemas for the console's own API. */
 export class Schemas {
   static email = { type: 'string', format: 'email', maxLength: 254 };
+  // Console admin username; AdminService trims and lower-cases it before applying the strict rule.
+  static username = { type: 'string', minLength: 1, maxLength: 128, pattern: '^\\s*[A-Za-z0-9][A-Za-z0-9._-]{0,63}\\s*$' };
   static password = { type: 'string', minLength: 1, maxLength: 1024 };
   static code = { type: 'string', pattern: '^[0-9]{6}$' };
   static uuid = { type: 'string', format: 'uuid' };
@@ -12,11 +14,11 @@ export class Schemas {
     return { type: 'object', additionalProperties: false, required, properties };
   }
 
-  static login = Schemas.body(['email', 'password'], { email: Schemas.email, password: Schemas.password });
+  static login = Schemas.body(['username', 'password'], { username: { type: 'string', minLength: 1, maxLength: 128 }, password: Schemas.password });
   static totp = Schemas.body(['code'], { code: Schemas.code });
   static changePassword = Schemas.body(['currentPassword', 'newPassword'], { currentPassword: Schemas.password, newPassword: Schemas.password });
   static disableTotp = Schemas.body(['password', 'code'], { password: Schemas.password, code: Schemas.code });
-  static createAdmin = Schemas.body(['email', 'password', 'role'], { email: Schemas.email, password: Schemas.password, name: { type: 'string', maxLength: 80 }, role: { type: 'string', enum: ['admin', 'viewer'] } });
+  static createAdmin = Schemas.body(['username', 'password', 'role'], { username: Schemas.username, password: Schemas.password, name: { type: 'string', maxLength: 80 }, role: { type: 'string', enum: ['admin', 'viewer'] } });
   static patchAdmin = { type: 'object', additionalProperties: false, minProperties: 1, properties: { name: { type: 'string', minLength: 1, maxLength: 80 }, role: { type: 'string', enum: ['admin', 'viewer'] }, status: { type: 'string', enum: ['active', 'disabled'] } } };
   static setPassword = Schemas.body(['password'], { password: Schemas.password });
   static serviceParams = { type: 'object', properties: { sid: Schemas.sid }, required: ['sid'] };

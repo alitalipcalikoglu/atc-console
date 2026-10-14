@@ -83,8 +83,8 @@ try {
   const seedRuntime = new ConsoleRuntime(Config.fromEnv({
     DB_PATH: dbPath, LOG_LEVEL: 'silent', COOKIE_SECURE: 'false', SCRYPT_LOG_N: '14', SECRETS_KEY: KEY,
   }));
-  await seedRuntime.adminService.create({ email: 'admin@m4.test', name: 'Admin', password: PASSWORD, role: 'admin' }, null, { ip: null, userAgent: null });
-  await seedRuntime.adminService.create({ email: 'viewer@m4.test', name: 'Viewer', password: PASSWORD, role: 'viewer' }, null, { ip: null, userAgent: null });
+  await seedRuntime.adminService.create({ username: 'admin', name: 'Admin', password: PASSWORD, role: 'admin' }, null, { ip: null, userAgent: null });
+  await seedRuntime.adminService.create({ username: 'viewer', name: 'Viewer', password: PASSWORD, role: 'viewer' }, null, { ip: null, userAgent: null });
   seedRuntime.finishShutdown();
 
   const port = await freePort();
@@ -114,13 +114,13 @@ try {
   assert.equal(response.status, 401);
   assert.deepEqual(await readBody(response), { error: { code: 'UNAUTHENTICATED', message: 'sign in required' } });
 
-  const login = async (email) => {
-    const result = await fetch(`${origin}/api/session/login`, json('POST', { email, password: PASSWORD }));
+  const login = async (username) => {
+    const result = await fetch(`${origin}/api/session/login`, json('POST', { username, password: PASSWORD }));
     assert.equal(result.status, 200);
     return cookiePair(result);
   };
-  const admin = await login('admin@m4.test');
-  const viewer = await login('viewer@m4.test');
+  const admin = await login('admin');
+  const viewer = await login('viewer');
 
   response = await fetch(`${origin}/api/services/atc-notify/atc-notify/messages?status=queued&limit=7&cursor=next`, { headers: { cookie: viewer } });
   assert.equal(response.status, 200, await response.clone().text());
@@ -171,9 +171,9 @@ try {
 
   response = await fetch(`${origin}/api/admins`, { headers: { cookie: viewer } });
   assert.equal(response.status, 200);
-  response = await fetch(`${origin}/api/admins`, json('POST', { email: 'new@m4.test', password: PASSWORD, role: 'viewer', extra: true }, { cookie: admin, ...CSRF }));
+  response = await fetch(`${origin}/api/admins`, json('POST', { username: 'new', password: PASSWORD, role: 'viewer', extra: true }, { cookie: admin, ...CSRF }));
   assert.equal(response.status, 400);
-  response = await fetch(`${origin}/api/admins`, json('POST', { email: 'new@m4.test', password: PASSWORD, role: 'viewer' }, { cookie: admin, ...CSRF }));
+  response = await fetch(`${origin}/api/admins`, json('POST', { username: 'new', password: PASSWORD, role: 'viewer' }, { cookie: admin, ...CSRF }));
   assert.equal(response.status, 201);
   response = await fetch(`${origin}/api/audit`, { headers: { cookie: admin } });
   assert.equal(response.status, 200);

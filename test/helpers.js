@@ -160,11 +160,11 @@ export const CSRF = { 'x-console-request': '1' };
 
 /**
  * @param {Awaited<ReturnType<typeof testConsole>>} t
- * @param {{ email?: string, role?: 'admin'|'viewer' }} [options]
+ * @param {{ username?: string, role?: 'admin'|'viewer' }} [options]
  */
-export async function signIn(t, { email = 'root@console.local', role = 'admin' } = {}) {
-  if (!t.admins.byEmail(email)) await t.adminService.create({ email, name: 'Root', password: ADMIN_PASSWORD, role }, null, { ip: null, userAgent: null });
-  const res = await t.app.inject({ method: 'POST', url: '/api/session/login', payload: { email, password: ADMIN_PASSWORD } });
+export async function signIn(t, { username = 'root', role = 'admin' } = {}) {
+  if (!t.admins.byUsername(username)) await t.adminService.create({ username, name: 'Root', password: ADMIN_PASSWORD, role }, null, { ip: null, userAgent: null });
+  const res = await t.app.inject({ method: 'POST', url: '/api/session/login', payload: { username, password: ADMIN_PASSWORD } });
   if (res.statusCode !== 200) throw new Error(`login failed: ${res.body}`);
   return { cookie: String(res.headers['set-cookie']).split(';')[0], body: res.json() };
 }

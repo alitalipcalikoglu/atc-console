@@ -46,7 +46,7 @@ test('rotation end to end: seal with K1 -> configure current K2 + previous K1 ->
     const db1 = new Database(path);
     const keyringK1 = new TotpKeyring({ current: K1 });
     const admins1 = new AdminStore(db1, keyringK1);
-    const admin = admins1.create({ email: 'a@b.co', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
+    const admin = admins1.create({ username: 'a', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
     admins1.setTotpSecret(admin.id, 'ROTATEME', 1000);
     const sealedUnderK1 = /** @type {string} */ (admins1.byId(admin.id)?.totp_secret);
     db1.close();
@@ -79,7 +79,7 @@ test('rotation end to end: seal with K1 -> configure current K2 + previous K1 ->
 test('1. current key missing entirely (no SECRETS_KEY) with a sealed row present: reseal refuses to start', () => {
   const db = new Database(':memory:');
   const admins = new AdminStore(db, new TotpKeyring({ current: K1 }));
-  const admin = admins.create({ email: 'a@b.co', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
+  const admin = admins.create({ username: 'a', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
   admins.setTotpSecret(admin.id, 'X', 1000);
 
   assert.throws(() => AdminStore.reseal(db, null), ConfigError);
@@ -89,7 +89,7 @@ test('2. required previous key missing: a row sealed under an old key that confi
   const db = new Database(':memory:');
   const sealedRow = new TotpKeyring({ current: K1 }).seal('SECRET'); // sealed under K1, v2 format with K1's id
   const admins = new AdminStore(db, new TotpKeyring({ current: K1 }));
-  const admin = admins.create({ email: 'a@b.co', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
+  const admin = admins.create({ username: 'a', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
   db.prepare('UPDATE admins SET totp_secret = ? WHERE id = ?').run(sealedRow, admin.id);
 
   // "Restart" with K2 current and NO previous configured -- K1 (needed to decrypt the existing row) is gone.
@@ -133,10 +133,10 @@ test('6. wrong key: a value sealed under one key never opens under a completely 
 test('7. partial reseal failure: one row fails to decrypt (unknown key), no row is changed -- all or nothing', () => {
   const db = new Database(':memory:');
   const admins = new AdminStore(db, new TotpKeyring({ current: K1 }));
-  const good = admins.create({ email: 'good@b.co', name: 'Good', passwordHash: 'h', role: 'admin' }, 1000);
+  const good = admins.create({ username: 'good', name: 'Good', passwordHash: 'h', role: 'admin' }, 1000);
   admins.setTotpSecret(good.id, 'GOOD', 1000); // sealed under K1
 
-  const bad = admins.create({ email: 'bad@b.co', name: 'Bad', passwordHash: 'h', role: 'viewer' }, 2000);
+  const bad = admins.create({ username: 'bad', name: 'Bad', passwordHash: 'h', role: 'viewer' }, 2000);
   const foreignSealed = new SecretBox(K3, { keyId: SecretBox.keyId(K3) }).seal('BAD'); // under an unconfigured key
   db.prepare('UPDATE admins SET totp_secret = ? WHERE id = ?').run(foreignSealed, bad.id);
 
@@ -155,7 +155,7 @@ test('7. partial reseal failure: one row fails to decrypt (unknown key), no row 
 test('8. restart during/after a successful reseal: re-running reseal (simulating a restart right after, or a retried start) is a clean no-op, not a double-encrypt or an error', () => {
   const db = new Database(':memory:');
   const admins = new AdminStore(db, new TotpKeyring({ current: K1 }));
-  const admin = admins.create({ email: 'a@b.co', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
+  const admin = admins.create({ username: 'a', name: 'A', passwordHash: 'h', role: 'admin' }, 1000);
   admins.setTotpSecret(admin.id, 'X', 1000);
   const rotating = new TotpKeyring({ current: K2, previous: K1 });
   assert.equal(AdminStore.reseal(db, rotating), 1);
