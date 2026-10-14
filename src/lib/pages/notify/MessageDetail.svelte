@@ -31,11 +31,8 @@
     <div class="card"><div class="card-body">
       <div class="row wrap" style="margin-bottom:14px"><StatusBadge status={m.status} label={t(`notify.${m.status}`)} /><span class="mono small muted">{m.id}</span><CopyButton text={m.id} /></div>
       <dl class="kv">
-        <dt>{t('notify.channel')}</dt><dd class="row"><Icon name={m.channel === 'email' ? 'mail' : 'webhook'} size={14} /> {m.channel}</dd>
-        {#if m.template}<dt>{t('notify.template')}</dt><dd><code>{m.template}</code></dd>{/if}
-        {#if m.event}<dt>{t('notify.event')}</dt><dd><code>{m.event}</code></dd>{/if}
-        {#if m.to}<dt>{t('notify.to')}</dt><dd>{m.to.join(', ')}</dd>{/if}
-        {#if m.url}<dt>{t('notify.url')}</dt><dd class="mono small">{m.url}</dd>{/if}
+        <dt>{t('notify.template')}</dt><dd><code>{m.template}</code></dd>
+        <dt>{t('notify.to')}</dt><dd>{m.to.join(', ')}</dd>
         <dt>{t('notify.attempts')}</dt><dd>{m.attempts} / {m.maxAttempts}</dd>
         {#if m.nextAttemptAt}<dt>{t('notify.nextAttempt')}</dt><dd><Time value={m.nextAttemptAt} /></dd>{/if}
         {#if m.lastError}<dt>{t('notify.lastError')}</dt><dd class="danger-text small">{m.lastError}</dd>{/if}

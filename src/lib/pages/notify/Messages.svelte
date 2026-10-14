@@ -124,13 +124,13 @@
       {:else if !items.length}<Empty title={t('notify.emptyTitle')} desc={t('notify.emptyDesc')} />
       {:else}
         <div class="table-wrap"><table class="table">
-          <thead><tr><th>{t('common.status')}</th><th>{t('notify.channel')}</th><th>{t('notify.to')}</th><th class="num">{t('notify.attempts')}</th><th class="hide-m">{t('common.created')}</th><th class="hide-m">{t('notify.lastError')}</th><th></th></tr></thead>
+          <thead><tr><th>{t('common.status')}</th><th>{t('notify.template')}</th><th>{t('notify.to')}</th><th class="num">{t('notify.attempts')}</th><th class="hide-m">{t('common.created')}</th><th class="hide-m">{t('notify.lastError')}</th><th></th></tr></thead>
           <tbody>
             {#each items as msg (msg.id)}
               <tr class="clickable" onclick={() => goto(`/atc-notify/${sid}/messages/${msg.id}`)}>
                 <td><StatusBadge status={msg.status} label={t(`notify.${msg.status}`)} /></td>
-                <td><span class="row"><Icon name={msg.channel === 'email' ? 'mail' : 'webhook'} size={14} /> {msg.template ?? msg.event}</span></td>
-                <td class="truncate" style="max-width:220px">{msg.to?.join(', ') ?? msg.url}</td>
+                <td><code>{msg.template}</code></td>
+                <td class="truncate" style="max-width:220px">{msg.to.join(', ')}</td>
                 <td class="num">{msg.attempts}/{msg.maxAttempts}</td>
                 <td class="hide-m"><Time value={msg.createdAt} /></td>
                 <td class="truncate small muted hide-m" style="max-width:260px" title={msg.lastError ?? ''}>{msg.lastError ?? ''}</td>
