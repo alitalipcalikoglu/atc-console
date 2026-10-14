@@ -26,14 +26,22 @@ const downstream = createServer((req, res) => {
     req.resume();
     const hostile = url.pathname.endsWith('/original');
     const bytes = hostile ? SVG : MEDIA;
-    res.writeHead(200, {
+    const base = {
       'content-type': hostile ? 'image/svg+xml' : 'image/webp',
-      'content-length': String(bytes.length),
       'content-disposition': hostile ? 'inline; filename="hostile.svg"' : 'inline; filename="thumb.webp"',
       etag: '"fixture-etag"',
-      'content-range': `bytes 0-${bytes.length - 1}/${bytes.length}`,
       'accept-ranges': 'bytes',
-    }).end(bytes);
+    };
+    // Mirrors media's single-range handling for the two ranges the oracle uses.
+    if (req.headers.range === 'bytes=0-3') {
+      res.writeHead(206, { ...base, 'content-length': '4', 'content-range': `bytes 0-3/${bytes.length}` }).end(bytes.subarray(0, 4));
+      return;
+    }
+    if (req.headers.range === 'bytes=99-') {
+      res.writeHead(416, { 'content-range': `bytes */${bytes.length}` }).end();
+      return;
+    }
+    res.writeHead(200, { ...base, 'content-length': String(bytes.length) }).end(bytes);
     return;
   }
 
@@ -213,8 +221,9 @@ test('media upload oracle: raw streaming, metadata headers, content length and 5
   assert.match(clientSource, /timeoutMs:\s*300_000/, 'the current upload-specific timeout is five minutes');
 });
 
-test('media bytes oracle: exact bytes and filtered headers; inbound Range is not forwarded', async () => {
-  let response = await fetch(`${consoleApp.origin}/api/services/atc-media/atc-media/files/file-1/bytes/thumb`, { headers: { cookie, range: 'bytes=0-3' } });
+test('media bytes oracle: exact bytes, filtered headers and single-range passthrough', async () => {
+  const thumb = `${consoleApp.origin}/api/services/atc-media/atc-media/files/file-1/bytes/thumb`;
+  let response = await fetch(thumb, { headers: { cookie } });
   assert.equal(response.status, 200);
   assert.deepEqual(Buffer.from(await response.arrayBuffer()), MEDIA);
   assert.equal(response.headers.get('content-type'), 'image/webp');
@@ -222,11 +231,26 @@ test('media bytes oracle: exact bytes and filtered headers; inbound Range is not
   assert.equal(response.headers.get('content-disposition'), 'inline; filename="thumb.webp"');
   assert.equal(response.headers.get('etag'), '"fixture-etag"');
   assert.equal(response.headers.get('content-range'), null);
-  assert.equal(response.headers.get('accept-ranges'), null);
-  assert.equal(response.headers.get('cache-control'), 'no-store', 'the common API onSend hook currently overrides the route cache directive');
+  assert.equal(response.headers.get('accept-ranges'), 'bytes');
+  assert.equal(response.headers.get('cache-control'), 'private, max-age=300', 'the route cache directive survives the API hook');
   assert.equal(response.headers.get('content-security-policy'), "default-src 'none'; sandbox");
-  const byteRequest = latest((entry) => entry.url === '/files/file-1/thumb');
-  assert.equal(byteRequest.headers.range, undefined, 'KNOWN CURRENT BEHAVIOR: inbound Range is not forwarded');
+  assert.equal(latest((entry) => entry.url === '/files/file-1/thumb').headers.range, undefined);
+
+  response = await fetch(thumb, { headers: { cookie, range: 'bytes=0-3' } });
+  assert.equal(response.status, 206);
+  assert.deepEqual(Buffer.from(await response.arrayBuffer()), MEDIA.subarray(0, 4));
+  assert.equal(response.headers.get('content-range'), `bytes 0-3/${MEDIA.length}`);
+  assert.equal(response.headers.get('content-length'), '4');
+  assert.equal(latest((entry) => entry.url === '/files/file-1/thumb').headers.range, 'bytes=0-3');
+
+  response = await fetch(thumb, { headers: { cookie, range: 'bytes=0-1,4-5' } });
+  assert.equal(response.status, 200, 'multi-range is not forwarded; the whole body is served');
+  assert.equal(latest((entry) => entry.url === '/files/file-1/thumb').headers.range, undefined);
+
+  response = await fetch(thumb, { headers: { cookie, range: 'bytes=99-' } });
+  assert.equal(response.status, 416);
+  assert.equal(response.headers.get('content-range'), `bytes */${MEDIA.length}`);
+  await response.arrayBuffer();
 
   response = await fetch(`${consoleApp.origin}/api/services/atc-media/atc-media/files/file-1/bytes/original`, { headers: { cookie } });
   assert.deepEqual(Buffer.from(await response.arrayBuffer()), SVG);
@@ -256,7 +280,7 @@ test('QR PNG oracle: magic bytes, headers and not-found error', async () => {
   assert.equal(response.headers.get('content-type'), 'image/png');
   assert.equal(response.headers.get('content-length'), String(PNG.length));
   assert.equal(response.headers.get('content-disposition'), 'inline; filename="abc.png"');
-  assert.equal(response.headers.get('cache-control'), 'no-store', 'the common API onSend hook currently overrides the route cache directive');
+  assert.equal(response.headers.get('cache-control'), 'private, max-age=3600', 'the route cache directive survives the API hook');
   assert.equal(response.headers.get('content-security-policy'), "default-src 'none'; sandbox");
 
   response = await fetch(`${consoleApp.origin}/api/services/atc-shortlink/atc-shortlink/links/missing/qr.png`, { headers: { cookie } });

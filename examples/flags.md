@@ -38,19 +38,19 @@ The **Evaluate** panel asks the service what this flag returns for a given envir
 
 ## History
 
-The last 20 changes of the flag: time, action, environment, actor (API key id) and which fields changed. Older entries: `GET /api/services/:id/flags/flags/:key/history?before=<id>`.
+The last 20 changes of the flag: time, action, environment, actor (API key id) and which fields changed. Older entries: `GET /api/services/:id/atc-flags/flags/:key/history?before=<id>`.
 
 ## Behind the scenes
 
 | Call | Purpose |
 |---|---|
-| `GET /api/services/:id/flags/environments`, `…/stats` | environments and counters |
-| `GET /api/services/:id/flags/flags?archived&kind&q&tag&limit&cursor` | list |
-| `POST /api/services/:id/flags/flags` | create; admin; audited `atc-flags.flag.create` |
-| `GET /api/services/:id/flags/flags/:key` | flag with every environment plus the last 20 history rows |
-| `PATCH` / `DELETE /api/services/:id/flags/flags/:key` | metadata, archive, reshuffle / delete; admin; audited |
-| `PATCH /api/services/:id/flags/flags/:key/envs/:env` | one environment's state; admin; audited `atc-flags.env.update` |
-| `POST /api/services/:id/flags/flags/:key/envs/:env/copy` | `{ to }`; admin; audited `atc-flags.env.copy` |
-| `POST /api/services/:id/flags/evaluate` | `{ env, context, keys }` with details |
+| `GET /api/services/:id/atc-flags/environments`, `…/stats` | environments and counters |
+| `GET /api/services/:id/atc-flags/flags?archived&kind&q&tag&limit&cursor` | list |
+| `POST /api/services/:id/atc-flags/flags` | create; admin; audited `atc-flags.flag.create` |
+| `GET /api/services/:id/atc-flags/flags/:key` | flag with every environment plus the last 20 history rows |
+| `PATCH` / `DELETE /api/services/:id/atc-flags/flags/:key` | metadata, archive, reshuffle / delete; admin; audited |
+| `PATCH /api/services/:id/atc-flags/flags/:key/envs/:env` | one environment's state; admin; audited `atc-flags.env.update` |
+| `POST /api/services/:id/atc-flags/flags/:key/envs/:env/copy` | `{ to }`; admin; audited `atc-flags.env.copy` |
+| `POST /api/services/:id/atc-flags/evaluate` | `{ env, context, keys }` with details |
 
 The console's key must be `readwrite` without an environment scope; a scoped key would hide the other environments from every screen.

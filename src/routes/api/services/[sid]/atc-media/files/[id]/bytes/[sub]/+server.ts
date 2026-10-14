@@ -6,8 +6,9 @@ const INLINE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gi
 export const GET = specialRoute({
   auth: 'session',
   params: Schemas.serviceIdSubParams,
-  handler: async ({ runtime, params }) => {
-    const downstream = await runtime.clients.get(params.sid, MediaClient).bytes(params.id, params.sub);
+  handler: async ({ runtime, event, params }) => {
+    const downstream = await runtime.clients.get(params.sid, MediaClient)
+      .bytes(params.id, params.sub, event.request.headers.get('range'));
     const type = (downstream.headers.get('content-type') ?? '').split(';')[0].trim().toLowerCase();
     const inline = INLINE_TYPES.has(type);
     const disposition = downstream.headers.get('content-disposition');
@@ -17,10 +18,10 @@ export const GET = specialRoute({
       'content-security-policy': SPECIAL_CONTENT_SECURITY_POLICY,
       'cache-control': 'private, max-age=300',
     });
-    for (const name of ['content-length', 'etag']) {
+    for (const name of ['content-length', 'etag', 'content-range', 'accept-ranges']) {
       const value = downstream.headers.get(name);
       if (value) headers.set(name, value);
     }
-    return new Response(downstream.body, { status: 200, headers });
+    return new Response(downstream.body, { status: downstream.status, headers });
   },
 });

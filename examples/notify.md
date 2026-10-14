@@ -10,7 +10,7 @@ The message table filters by status, loads more with a button, and shows attempt
 
 ## Retry a failed message
 
-**Retry** appears on failed rows and on the detail page. It calls `POST /api/services/:id/notify/messages/:mid/retry`, the message goes back to `queued` with attempts reset, and the audit log records `atc-notify.message.retry`. Only `failed` messages can be retried; the service answers `409` for other states and the toast shows that message.
+**Retry** appears on failed rows and on the detail page. It calls `POST /api/services/:id/atc-notify/messages/:mid/retry`, the message goes back to `queued` with attempts reset, and the audit log records `atc-notify.message.retry`. Only `failed` messages can be retried; the service answers `409` for other states and the toast shows that message.
 
 ## Send a test message
 
@@ -26,8 +26,8 @@ The message is really queued and delivered. Validation failures from notify (`VA
 
 | Call | Notify endpoint |
 |---|---|
-| `GET /api/services/:id/notify/messages?status=&limit=&cursor=` | `GET /v1/messages` |
-| `GET /api/services/:id/notify/messages/:mid` | `GET /v1/messages/:id` |
-| `POST /api/services/:id/notify/messages/:mid/retry` | `POST /v1/messages/:id/retry` |
-| `GET /api/services/:id/notify/templates` | `GET /v1/templates` |
-| `POST /api/services/:id/notify/messages` | `POST /v1/messages` |
+| `GET /api/services/:id/atc-notify/messages?status=&limit=&cursor=` | `GET /v1/messages` |
+| `GET /api/services/:id/atc-notify/messages/:mid` | `GET /v1/messages/:id` |
+| `POST /api/services/:id/atc-notify/messages/:mid/retry` | `POST /v1/messages/:id/retry` |
+| `GET /api/services/:id/atc-notify/templates` | `GET /v1/templates` |
+| `POST /api/services/:id/atc-notify/messages` | `POST /v1/messages` |

@@ -29,7 +29,7 @@ Errors from the service arrive as toasts with the service's message: `"promo" is
 ## Link page
 
 - Header: status badge, `301`/`302`, tags; the short URL (opens in a new tab, copy button); destination; clicks and remaining clicks; last click; expiry; note; who created it and when; the `+` preview page.
-- **QR code**: PNG rendered by the service and relayed through the console (`GET /api/services/:id/shortlink/links/:code/qr.png`), with a **Download PNG** button. For print, use the service's SVG output directly (`https://s.example.com/<code>/qr`).
+- **QR code**: PNG rendered by the service and relayed through the console (`GET /api/services/:id/atc-shortlink/links/:code/qr.png`), with a **Download PNG** button. For print, use the service's SVG output directly (`https://s.example.com/<code>/qr`).
 - **Last 30 days**: clicks, unique visitors, bots, mobile/desktop split; clicks per day as bars; referring sites (`direct / QR` for none); the 20 most recent clicks with device, referrer and the anonymised visitor hash.
 
 Actions in the app bar (admins): **Edit** (destination, expiry, limit, tags, note, 301/302), **Disable** / **Enable**, **Delete** (asks you to type the code; the click history goes with it). Every write is recorded in the [console log](audit.md) as `atc-shortlink.link.create|update|delete`.
@@ -44,11 +44,11 @@ Actions in the app bar (admins): **Edit** (destination, expiry, limit, tags, not
 
 | Call | Purpose |
 |---|---|
-| `GET /api/services/:id/shortlink/links?status&q&tag&limit&cursor` | list |
-| `POST /api/services/:id/shortlink/links` | create; admin; audited |
-| `GET /api/services/:id/shortlink/links/:code?days=30` | link plus statistics in one response |
-| `PATCH` / `DELETE /api/services/:id/shortlink/links/:code` | edit / delete; admin; audited |
-| `GET /api/services/:id/shortlink/links/:code/qr.png?scale=6&margin=2` | PNG relay inside a sandboxed CSP |
-| `GET /api/services/:id/shortlink/stats?days=7` | overview |
+| `GET /api/services/:id/atc-shortlink/links?status&q&tag&limit&cursor` | list |
+| `POST /api/services/:id/atc-shortlink/links` | create; admin; audited |
+| `GET /api/services/:id/atc-shortlink/links/:code?days=30` | link plus statistics in one response |
+| `PATCH` / `DELETE /api/services/:id/atc-shortlink/links/:code` | edit / delete; admin; audited |
+| `GET /api/services/:id/atc-shortlink/links/:code/qr.png?scale=6&margin=2` | PNG relay inside a sandboxed CSP |
+| `GET /api/services/:id/atc-shortlink/stats?days=7` | overview |
 
 The console never relays SVG from the service; QR codes are shown as PNG only.

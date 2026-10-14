@@ -110,7 +110,7 @@ Environment only; see [.env.example](.env.example) for the full list, and "How i
 - Sessions: server-side, opaque cookie (`HttpOnly; SameSite=Strict; Secure`), absolute (`CONSOLE_SESSION_TTL_MIN`) and idle (`CONSOLE_SESSION_IDLE_MIN`) expiry. Password change signs out other sessions.
 - TOTP (RFC 6238, Google Authenticator compatible) with replay protection; disabling needs password and a valid code. Recommended for every admin: the console holds every service key. The secret is sealed at rest (AES-256-GCM, `SECRETS_KEY`) — see "TOTP secret storage" below.
 - CSRF: every mutating request must carry `X-Console-Request: 1`, which cross-site pages cannot add; cookies are `SameSite=Strict` as well.
-- Service keys never reach the browser. Media previews and downloads are streamed through the console.
+- Service keys never reach the browser. Media previews and downloads are streamed through the console; a single byte range is forwarded so players can seek, and media bytes and QR images carry a short private cache lifetime.
 - Strict Content-Security-Policy on every page (`script-src 'self'` plus a per-response nonce for SvelteKit bootstrap scripts, no remote sources, `frame-ancestors 'none'`). Security headers on every response (`X-Frame-Options: DENY`, `nosniff`, `Referrer-Policy: same-origin`, HSTS with TLS); API and authenticated HTML responses are `no-store`.
 - The file-bytes proxy renders only raster image types inline; anything else (SVG, PDF, HTML) is delivered as `application/octet-stream` attachment inside a sandboxed CSP, so a hostile upload cannot run on the console's origin.
 - The first administrator is created from the server's command line; there is no sign-up page.

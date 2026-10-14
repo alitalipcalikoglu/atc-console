@@ -58,7 +58,8 @@ export const handle: Handle = async ({ event, resolve }) => {
     }
     response.headers.set('traceparent', trace.toString());
     if (event.url.pathname.startsWith('/api/')) {
-      response.headers.set('cache-control', 'no-store');
+      // Binary routes (media bytes, QR) declare their own private cache lifetime; everything else is no-store.
+      if (!response.headers.has('cache-control')) response.headers.set('cache-control', 'no-store');
       if (response.headers.get('content-type') === 'application/json') {
         response.headers.set('content-type', 'application/json; charset=utf-8');
       }

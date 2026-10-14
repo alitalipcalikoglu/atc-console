@@ -36,7 +36,7 @@ On very large logs the service caps one call at `VERIFY_MAX_ROWS` (default 100 0
 
 ## Exporting
 
-**Export** opens a dialog: it names how many filters are active, lets you choose **NDJSON** or **CSV**, and **Download** streams the result through the console (`GET /api/services/:id/audit/events/export?…`). The current filters apply; events come oldest first; the service stops at `EXPORT_MAX_ROWS`, so split long ranges with from/to. Every export is written to the console log as `atc-audit.events.export` with the format and the filter used.
+**Export** opens a dialog: it names how many filters are active, lets you choose **NDJSON** or **CSV**, and **Download** streams the result through the console (`GET /api/services/:id/atc-audit/events/export?…`). The current filters apply; events come oldest first; the service stops at `EXPORT_MAX_ROWS`, so split long ranges with from/to. Every export is written to the console log as `atc-audit.events.export` with the format and the filter used.
 
 ## Auto-refresh
 
@@ -46,11 +46,11 @@ The page and its overview card refresh on the service's own schedule (`polling` 
 
 | Call | Purpose |
 |---|---|
-| `GET /api/services/:id/audit/events?…` | filtered list; the console forwards only known filter names |
-| `GET /api/services/:id/audit/events/:eventId` | one event |
-| `GET /api/services/:id/audit/stats?hours=24` | window aggregates |
-| `GET /api/services/:id/audit/chain/head` | `{ seq, hash }` |
-| `GET /api/services/:id/audit/chain/verify?fromSeq&toSeq` | recompute; audited |
-| `GET /api/services/:id/audit/events/export?format=csv&…` | streamed download inside a sandboxed CSP; audited |
+| `GET /api/services/:id/atc-audit/events?…` | filtered list; the console forwards only known filter names |
+| `GET /api/services/:id/atc-audit/events/:eventId` | one event |
+| `GET /api/services/:id/atc-audit/stats?hours=24` | window aggregates |
+| `GET /api/services/:id/atc-audit/chain/head` | `{ seq, hash }` |
+| `GET /api/services/:id/atc-audit/chain/verify?fromSeq&toSeq` | recompute; audited |
+| `GET /api/services/:id/atc-audit/events/export?format=csv&…` | streamed download inside a sandboxed CSP; audited |
 
 Viewers can do everything on this page: all of it is reading. Errors from the service (`UPSTREAM_UNREACHABLE`, `RANGE_TOO_LARGE`, …) show in an error box with **Retry**.

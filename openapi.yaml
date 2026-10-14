@@ -2220,7 +2220,9 @@ paths:
         media sent; everything else (SVG, HTML, PDF, video, ...) is rewritten to `application/octet-stream`
         with `attachment; filename="{id}.bin"` so nothing can execute or render in console's origin. Every
         response also carries `content-security-policy: default-src 'none'; sandbox` and `cache-control:
-        private, max-age=300`. `{sub}` is the variant name.
+        private, max-age=300`. `{sub}` is the variant name. A single `bytes=` range is forwarded to media so
+        the browser can seek; media answers `206` with `Content-Range`, or `416` when the range is
+        unsatisfiable. Multi-range and other units are not forwarded and the whole body is served.
 
 
         Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
@@ -2228,6 +2230,13 @@ paths:
         - $ref: "#/components/parameters/SidParam"
         - $ref: "#/components/parameters/IdParam"
         - $ref: "#/components/parameters/SubParam"
+        - name: Range
+          in: header
+          required: false
+          description: One byte range (`bytes=start-end`, `bytes=start-` or `bytes=-suffix`).
+          schema:
+            type: string
+            pattern: ^bytes=\d{0,15}-\d{0,15}$
       x-required-role: session
       x-stack-visibility: operator
       responses:
@@ -2251,12 +2260,35 @@ paths:
               schema:
                 type: string
               description: Relayed when the downstream response had one.
+            Accept-Ranges:
+              schema:
+                type: string
+              description: Relayed from media (`bytes`).
+        "206":
+          description: The requested byte range, with the same content-type rules as `200`.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Range:
+              schema:
+                type: string
+              description: The range served, e.g. `bytes 0-1023/4096`.
         "400":
           $ref: "#/components/responses/ValidationFailed"
         "401":
           $ref: "#/components/responses/Unauthenticated"
         "404":
           $ref: "#/components/responses/ProxyNotFound"
+        "416":
+          description: The range is outside the file. No body.
+          headers:
+            Content-Range:
+              schema:
+                type: string
+              description: The file size, e.g. `bytes */4096`.
         "502":
           $ref: "#/components/responses/Unreachable"
         default:

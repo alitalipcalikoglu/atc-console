@@ -73,7 +73,7 @@ const downstream = createServer((request, response) => {
     response.writeHead(200, {
       'content-type': 'image/webp', 'content-length': String(MEDIA.length),
       'content-disposition': 'inline; filename="thumb.webp"', etag: '"m5-etag"',
-      'content-range': `bytes 0-${MEDIA.length - 1}/${MEDIA.length}`, 'accept-ranges': 'bytes',
+      'accept-ranges': 'bytes',
       'set-cookie': 'downstream=secret', 'x-internal-secret': 'hidden',
     });
     response.write(MEDIA.subarray(0, 4));
@@ -312,13 +312,13 @@ try {
   assert.equal(response.headers.get('content-disposition'), 'inline; filename="thumb.webp"');
   assert.equal(response.headers.get('etag'), '"m5-etag"');
   assert.equal(response.headers.get('content-range'), null);
-  assert.equal(response.headers.get('accept-ranges'), null);
+  assert.equal(response.headers.get('accept-ranges'), 'bytes');
   assert.equal(response.headers.get('set-cookie'), null);
   assert.equal(response.headers.get('x-internal-secret'), null);
-  assert.equal(response.headers.get('cache-control'), 'no-store');
+  assert.equal(response.headers.get('cache-control'), 'private, max-age=300');
   assert.equal(response.headers.get('content-security-policy'), "default-src 'none'; sandbox");
   request = latest((entry) => entry.url === '/delivery/thumb');
-  assert.equal(request.headers.range, undefined);
+  assert.equal(request.headers.range, 'bytes=0-3');
   assert.equal(request.headers.authorization, undefined);
   const mediaUrls = latest((entry) => entry.url.startsWith('/v1/files/file-1/urls'));
   assert.equal(mediaUrls.headers.authorization, `Bearer ${API_KEY}`);
@@ -362,7 +362,7 @@ try {
   assert.equal(response.headers.get('content-type'), 'image/png');
   assert.equal(response.headers.get('content-length'), String(PNG.length));
   assert.equal(response.headers.get('content-disposition'), 'inline; filename="a:b.png"');
-  assert.equal(response.headers.get('cache-control'), 'no-store');
+  assert.equal(response.headers.get('cache-control'), 'private, max-age=3600');
   assert.equal(response.headers.get('set-cookie'), null);
   request = latest((entry) => entry.url.startsWith('/v1/links/a%3Ab/qr'));
   assert.equal(request.url, '/v1/links/a%3Ab/qr?format=png&scale=4&margin=2');
