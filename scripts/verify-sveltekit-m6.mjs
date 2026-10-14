@@ -44,10 +44,10 @@ const requestJson = (body, headers = {}) => ({
 
 let child;
 try {
-  assert.equal(routes.length, 40);
+  assert.equal(routes.length, 42);
   const dbPath = join(scratch, 'console.db');
   const servicesFile = join(scratch, 'services.json');
-  const serviceTypes = ['atc-notify', 'atc-auth', 'atc-media', 'atc-gateway', 'atc-audit', 'atc-shortlink', 'atc-flags', 'atc-scheduler', 'atc-webhook-out', 'atc-search', 'atc-ratelimit', 'atc-geo', 'atc-content', 'atc-export', 'atc-render'];
+  const serviceTypes = ['atc-notify', 'atc-auth', 'atc-media', 'atc-gateway', 'atc-audit', 'atc-shortlink', 'atc-flags', 'atc-scheduler', 'atc-webhook-out', 'atc-search', 'atc-ratelimit', 'atc-geo', 'atc-content', 'atc-export', 'atc-render', 'atc-queue'];
   writeFileSync(servicesFile, JSON.stringify({ services: serviceTypes.map((type) => ({
     id: type === 'atc-webhook-out' ? 'webhooks' : type,
     type,
@@ -173,7 +173,7 @@ try {
   child.kill('SIGTERM');
   assert.deepEqual(await childExit(child), { code: 0, signal: null }, diagnostics);
   child = undefined;
-  console.log('SvelteKit M6 SSR auth, 40 routes, roles, deep links, 404, logout and binary UI contracts: OK');
+  console.log('SvelteKit M6 SSR auth, 42 routes, roles, deep links, 404, logout and binary UI contracts: OK');
 } finally {
   if (child && child.exitCode === null && child.signalCode === null) child.kill('SIGKILL');
   rmSync(scratch, { recursive: true, force: true });

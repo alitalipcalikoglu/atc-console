@@ -34,6 +34,8 @@
   "/atc-export/:sid/exports/:id",
   "/atc-render/:sid",
   "/atc-render/:sid/templates/:id",
+  "/atc-queue/:sid",
+  "/atc-queue/:sid/queues/:id",
   "/audit",
   "/admins",
   "/docs",

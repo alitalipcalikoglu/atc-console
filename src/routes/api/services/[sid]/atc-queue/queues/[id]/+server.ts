@@ -1,0 +1,5 @@
+import { QueueClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, record, text } from '#lib/server/m4.js';
+export const GET = jsonRoute({ auth: 'session', params: Schemas.queueParams, handler: ({ runtime, params }) => runtime.clients.get(params.sid, QueueClient).queue(params.id) });
+export const PUT = jsonRoute({ auth: 'admin', params: Schemas.queueParams, body: Schemas.queuePut, handler: async (context) => { const output = await context.runtime.clients.get(context.params.sid, QueueClient).putQueue(context.params.id, context.body) as any; record(context, 'atc-queue.queue.upsert', context.params.id, { service: context.params.sid, created: output.created, settings: context.body }); return output; } });
+export const DELETE = jsonRoute({ auth: 'admin', params: Schemas.queueParams, query: Schemas.queueDeleteQuery, status: 204, handler: async (context) => { const force = text(context.query.force) === 'true'; await context.runtime.clients.get(context.params.sid, QueueClient).deleteQueue(context.params.id, force); record(context, 'atc-queue.queue.delete', context.params.id, { service: context.params.sid, force }); } });

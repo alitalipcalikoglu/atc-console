@@ -190,7 +190,7 @@ try {
   downstreamOrigin = `http://127.0.0.1:${downstreamAddress.port}`;
   const dbPath = join(scratch, 'console.db');
   const servicesFile = join(scratch, 'services.json');
-  const serviceTypes = ['atc-notify', 'atc-auth', 'atc-media', 'atc-gateway', 'atc-audit', 'atc-shortlink', 'atc-flags', 'atc-scheduler', 'atc-webhook-out', 'atc-search', 'atc-ratelimit', 'atc-geo', 'atc-content', 'atc-export', 'atc-render'];
+  const serviceTypes = ['atc-notify', 'atc-auth', 'atc-media', 'atc-gateway', 'atc-audit', 'atc-shortlink', 'atc-flags', 'atc-scheduler', 'atc-webhook-out', 'atc-search', 'atc-ratelimit', 'atc-geo', 'atc-content', 'atc-export', 'atc-render', 'atc-queue'];
   writeFileSync(servicesFile, JSON.stringify({ services: serviceTypes.map((type) => ({
     id: type === 'atc-webhook-out' ? 'webhooks' : type,
     type,

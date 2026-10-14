@@ -138,6 +138,16 @@ export class Schemas {
   static renderDescribe = Schemas.body(['description'], { description: { type: 'string', maxLength: 500 } });
   static renderPublish = Schemas.body(['layout'], { layout: Schemas.renderLayout, note: { type: 'string', maxLength: 500 } });
   static renderPreview = Schemas.body(['layout'], { layout: Schemas.renderLayout, data: { type: 'object' } });
+  static queueName = { type: 'string', pattern: '^[a-z][a-z0-9._-]{0,63}$' };
+  static queueMessageId = { type: 'string', pattern: '^msg_[0-9a-z]{6,12}[0-9a-f]{16}$' };
+  static queueParams = { type: 'object', properties: { sid: Schemas.sid, id: Schemas.queueName }, required: ['sid', 'id'] };
+  static queueMessageParams = { type: 'object', properties: { sid: Schemas.sid, id: Schemas.queueName, sub: Schemas.queueMessageId }, required: ['sid', 'id', 'sub'] };
+  static queuePut = { type: 'object', additionalProperties: false, properties: { description: { type: 'string', maxLength: 500 }, visibilitySec: { type: 'integer', minimum: 1, maximum: 43200 }, maxAttempts: { type: 'integer', minimum: 1, maximum: 100 }, backoffBaseSec: { type: 'integer', minimum: 0, maximum: 86400 }, backoffMaxSec: { type: 'integer', minimum: 0, maximum: 604800 }, paused: { type: 'boolean' } } };
+  static queueDeleteQuery = { type: 'object', additionalProperties: false, properties: { force: { type: 'string', enum: ['true', 'false'] } } };
+  static queuePurge = Schemas.body(['state'], { state: { type: 'string', enum: ['ready', 'dead', 'all'] } });
+  static queueRedrive = { type: 'object', additionalProperties: false, properties: { ids: { type: 'array', minItems: 1, maxItems: 1000, items: Schemas.queueMessageId }, all: { const: true } } };
+  static queueEnqueue = Schemas.body(['body'], { body: {}, delaySec: { type: 'integer', minimum: 0, maximum: 1209600 }, priority: { type: 'integer', minimum: -100, maximum: 100 }, dedupeKey: { type: 'string', minLength: 1, maxLength: 200 } });
+  static queueMessagesQuery = { type: 'object', additionalProperties: false, properties: { state: { type: 'string', enum: ['ready', 'delayed', 'leased', 'dead'] }, limit: { type: 'string', pattern: '^([1-9]|[1-9][0-9]|1[0-9][0-9]|200)$' }, cursor: { type: 'string', pattern: '^[0-9]{1,15}$' } } };
   static flagsQuery = {
     type: 'object', additionalProperties: false,
     properties: {

@@ -1,0 +1,4 @@
+import { QueueClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, number, record, text } from '#lib/server/m4.js';
+export const GET = jsonRoute({ auth: 'session', params: Schemas.queueParams, query: Schemas.queueMessagesQuery, handler: ({ runtime, params, query }) => runtime.clients.get(params.sid, QueueClient).messages(params.id, { state: text(query.state), limit: number(query.limit), cursor: text(query.cursor) }) });
+export const POST = jsonRoute({ auth: 'admin', params: Schemas.queueParams, body: Schemas.queueEnqueue, handler: async (context) => { const output = await context.runtime.clients.get(context.params.sid, QueueClient).enqueue(context.params.id, context.body) as any; record(context, 'atc-queue.message.enqueue', context.params.id, { service: context.params.sid, message: output.message?.id, deduplicated: output.deduplicated }); return output; } });

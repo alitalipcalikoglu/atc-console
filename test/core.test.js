@@ -120,7 +120,7 @@ test('AuditStore records and pages, filters by action prefix', () => {
 
 test('ServiceRegistry parses, resolves secrets, rejects broken files', () => {
   const r = testRegistry({ auth: 'http://10.0.0.2:3002/' });
-  assert.deepEqual(r.services.map((s) => s.id), ['atc-notify', 'atc-auth', 'atc-media', 'atc-gateway', 'atc-audit', 'atc-shortlink', 'atc-flags', 'atc-scheduler', 'webhooks', 'atc-search', 'atc-ratelimit', 'atc-geo', 'atc-content', 'atc-export', 'atc-render']);
+  assert.deepEqual(r.services.map((s) => s.id), ['atc-notify', 'atc-auth', 'atc-media', 'atc-gateway', 'atc-audit', 'atc-shortlink', 'atc-flags', 'atc-scheduler', 'webhooks', 'atc-search', 'atc-ratelimit', 'atc-geo', 'atc-content', 'atc-export', 'atc-render', 'atc-queue']);
   assert.equal(r.get('atc-auth')?.url, 'http://10.0.0.2:3002');
   assert.equal(r.get('atc-auth')?.apiKey, servicesEnv.AUTH_API_KEY);
   assert.equal(r.get('atc-auth')?.label, 'Auth (prod)');

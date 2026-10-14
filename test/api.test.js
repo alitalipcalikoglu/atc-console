@@ -37,6 +37,21 @@ const fake = createServer((req, res) => {
         return res.writeHead(200, { 'content-type': 'application/pdf', 'content-length': '8', 'x-render-pages': '1', 'content-disposition': 'inline; filename="x.html"' }).end('%PDF-1.3');
       }
     }
+    if (String(req.headers.authorization).endsWith('u'.repeat(40))) {
+      const M = 'msg_mv8abcde0123456789abcdef';
+      const Q = { name: 'emails', description: '', visibilitySec: 30, maxAttempts: 5, backoffBaseSec: 5, backoffMaxSec: 900, paused: false };
+      if (p === '/v1/stats') return json(200, { queues: 2, ready: 12, delayed: 1, leased: 3, dead: 4, oldestReadySec: 9, items: [] });
+      if (p === '/v1/queues') return json(200, { items: [{ ...Q, ready: 12, delayed: 1, leased: 3, dead: 4, oldestReadySec: 9 }] });
+      if (p === '/v1/queues/emails' && req.method === 'GET') return json(200, { queue: Q, depth: { ready: 12, delayed: 1, leased: 3, dead: 4 }, oldestReadySec: 9, counters: { enqueued: 20 } });
+      if (p === '/v1/queues/emails' && req.method === 'PUT') return json(200, { created: false, queue: { ...Q, ...JSON.parse(body) } });
+      if (p === '/v1/queues/emails' && req.method === 'DELETE') return res.writeHead(204).end();
+      if (p === '/v1/queues/emails/purge') return json(200, { removed: 4 });
+      if (p === '/v1/queues/emails/redrive') return json(200, { redriven: JSON.parse(body).all ? 4 : 1 });
+      if (p === '/v1/queues/emails/messages' && req.method === 'GET') return json(200, { items: [{ id: M, state: 'dead', body: { a: 1 }, attempts: 5 }], nextCursor: null });
+      if (p === '/v1/queues/emails/messages' && req.method === 'POST') return json(201, { message: { id: M, body: JSON.parse(body).body }, deduplicated: false });
+      if (p === `/v1/queues/emails/messages/${M}` && req.method === 'GET') return json(200, { message: { id: M } });
+      if (p === `/v1/queues/emails/messages/${M}` && req.method === 'DELETE') return res.writeHead(204).end();
+    }
     if (p === '/metrics') return res.writeHead(200, { 'content-type': 'text/plain' }).end('notify_messages{status="queued"} 3\nnotify_messages{status="failed"} 1\nnotify_oldest_queued_age_seconds 4.5\nauth_users{status="active"} 12\nmedia_files 7\ngateway_requests_total{route="web",status="2xx"} 10\ngateway_request_duration_ms_bucket{route="web",le="50"} 8\ngateway_request_duration_ms_bucket{route="web",le="+Inf"} 10\ngateway_request_duration_ms_count{route="web"} 10\ngateway_rejected_total{reason="rate_limited"} 2\naudit_events_total 42\naudit_events_by_source{source="atc-auth"} 40\naudit_events_received_last_hour 5\naudit_chain_head_seq 42\naudit_db_bytes 8192\nshortlink_links{state="active"} 9\nshortlink_links{state="inactive"} 1\nshortlink_clicks_total 120\nshortlink_clicks_last_hour 4\nflags_total{state="active"} 3\nflags_total{state="archived"} 1\nflags_enabled{env="prod"} 2\nflags_evaluations_total{env="prod"} 77\nscheduler_jobs{state="enabled"} 5\nscheduler_jobs{state="disabled"} 1\nscheduler_runs{status="succeeded"} 40\nscheduler_runs{status="failed"} 2\nscheduler_runs_finished_total{status="failed"} 1\nscheduler_in_flight 0\nscheduler_next_due_seconds 120\nwebhook_subscriptions{status="active"} 4\nwebhook_subscriptions{status="disabled"} 1\nwebhook_events_total 90\nwebhook_deliveries{status="succeeded"} 80\nwebhook_deliveries{status="failed"} 3\nwebhook_backlog 2\nwebhook_oldest_queued_age_seconds 30\nwebhook_deliveries_finished_total{status="failed"} 1\nsearch_indexes 2\nsearch_documents_total 150\nsearch_queries_total{index="products"} 30\nsearch_db_bytes 4096\nratelimit_policies 3\nratelimit_decisions_total{policy="api",decision="allowed"} 500\nratelimit_decisions_total{policy="api",decision="denied"} 7\nratelimit_decisions_total{policy="login",decision="denied"} 3\nratelimit_counters 12\nratelimit_db_bytes 2048\ngeo_ip_lookups_total{result="hit"} 40\ngeo_ip_lookups_total{result="miss"} 2\ngeo_database_loaded 1\ngeo_database_build_epoch 1758067200\ngeo_collections 1\ngeo_places_total 3\ngeo_db_bytes 4096\n');
     if (p === '/v1/messages' && req.method === 'GET') return json(200, { items: [{ id: 'm1', status: 'failed' }], nextCursor: null });
     if (p === '/v1/messages/m1/retry') return json(200, { id: 'm1', status: 'queued' });
@@ -208,7 +223,7 @@ let origin = '';
 before(async () => {
   await new Promise((r) => fake.listen(0, '127.0.0.1', () => r(undefined)));
   origin = `http://127.0.0.1:${/** @type {any} */ (fake.address()).port}`;
-  t = await testConsole({ urls: { notify: origin, auth: origin, media: origin, gateway: origin, audit: origin, shortlink: origin, flags: origin, scheduler: origin, 'webhook-out': origin, search: origin, ratelimit: origin, geo: origin, content: origin, export: origin, render: origin }, env: { RATE_LIMIT_MAX: '60' } });
+  t = await testConsole({ urls: { notify: origin, auth: origin, media: origin, gateway: origin, audit: origin, shortlink: origin, flags: origin, scheduler: origin, 'webhook-out': origin, search: origin, ratelimit: origin, geo: origin, content: origin, export: origin, render: origin, queue: origin }, env: { RATE_LIMIT_MAX: '60' } });
 });
 after(async () => { await t.app.close(); fake.close(); });
 
@@ -237,7 +252,7 @@ test('documentation API is authenticated, allowlisted and serves local and upstr
   const headers = { cookie };
   const list = await t.app.inject({ url: '/api/docs/services', headers });
   assert.equal(list.statusCode, 200);
-  assert.equal(list.json().items.length, 16);
+  assert.equal(list.json().items.length, 17);
   assert.deepEqual(list.json().items[0], { id: 'atc-console', type: 'atc-console', label: 'Console' });
   assert.equal(list.body.includes('apiKey'), false, 'registry secrets are never serialized');
 
@@ -355,7 +370,9 @@ test('overview aggregates health and parsed metrics per service', async () => {
   const res = await t.app.inject({ url: '/api/services/overview', headers: { cookie } });
   assert.equal(res.statusCode, 200);
   const items = res.json().items;
-  assert.equal(items.length, 15);
+  assert.equal(items.length, 16);
+  const qus = items.find((/** @type {any} */ i) => i.id === 'atc-queue').summary;
+  assert.deepEqual([qus.queues, qus.ready, qus.leased, qus.dead], [2, 12, 3, 4]);
   const rds = items.find((/** @type {any} */ i) => i.id === 'atc-render').summary;
   assert.deepEqual([rds.templates, rds.renders24h, rds.failed24h, rds.avgMs, rds.pages24h], [2, 40, 1, 35, 90]);
   const exs = items.find((/** @type {any} */ i) => i.id === 'atc-export').summary;
@@ -394,7 +411,7 @@ test('about aggregates /v1/info per service; unreachable and malformed responses
   const res = await t.app.inject({ url: '/api/services/about', headers: { cookie } });
   assert.equal(res.statusCode, 200);
   const items = res.json().items;
-  assert.equal(items.length, 15);
+  assert.equal(items.length, 16);
   const notify = items.find((/** @type {any} */ i) => i.id === 'atc-notify');
   assert.equal(notify.ok, true);
   assert.deepEqual(notify.data, { service: 'fake', version: '1.2.3', apiVersion: 'v1', capabilities: ['x'], schemaVersion: 4, serviceCore: '1.10.0' });
@@ -940,4 +957,34 @@ test('acting admin: X-Actor carries the signed-in username to content, export an
   assert.equal(res.statusCode, 413, 'other routes keep 64 KiB');
   res = await t.app.inject({ method: 'POST', url: '/api/services/atc-content/atc-content/namespaces/web/import', headers: { cookie, ...CSRF }, payload: { locale: 'tr', strings: { a: 'x'.repeat(2 * 1024 * 1024) } } });
   assert.equal(res.statusCode, 413, 'and import stops at 2 MiB');
+});
+
+test('queue: queues, settings, messages, redrive, purge, delete (audited, admin only)', async () => {
+  const { cookie } = await signIn(t);
+  const viewer = await signIn(t, { username: 'viewer13', role: 'viewer' });
+  seen.length = 0;
+  const B = '/api/services/atc-queue/atc-queue';
+  const M = 'msg_mv8abcde0123456789abcdef';
+  let res = await t.app.inject({ url: `${B}/queues`, headers: { cookie: viewer.cookie } });
+  assert.deepEqual([res.statusCode, res.json().items[0].name], [200, 'emails']);
+  assert.equal(seen.at(-1)?.headers.authorization, `Bearer ${'u'.repeat(40)}`, 'queue key injected');
+  assert.equal((await t.app.inject({ url: `${B}/stats`, headers: { cookie } })).json().dead, 4);
+  assert.equal((await t.app.inject({ url: `${B}/queues/emails`, headers: { cookie } })).json().depth.dead, 4);
+  assert.equal((await t.app.inject({ method: 'PUT', url: `${B}/queues/emails`, headers: { cookie: viewer.cookie, ...CSRF }, payload: { paused: true } })).statusCode, 403);
+  assert.equal((await t.app.inject({ method: 'PUT', url: `${B}/queues/Bad`, headers: { cookie, ...CSRF }, payload: {} })).statusCode, 400);
+  assert.equal((await t.app.inject({ method: 'PUT', url: `${B}/queues/emails`, headers: { cookie, ...CSRF }, payload: { paused: true } })).json().queue.paused, true);
+  res = await t.app.inject({ url: `${B}/queues/emails/messages?state=dead&limit=20`, headers: { cookie } });
+  assert.deepEqual([res.json().items[0].id, seen.at(-1)?.url], [M, '/v1/queues/emails/messages?state=dead&limit=20']);
+  assert.equal((await t.app.inject({ url: `${B}/queues/emails/messages?state=gone`, headers: { cookie } })).statusCode, 400);
+  assert.equal((await t.app.inject({ url: `${B}/queues/emails/messages/${M}`, headers: { cookie } })).json().message.id, M);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/queues/emails/messages`, headers: { cookie, ...CSRF }, payload: { body: { hello: 'world' }, priority: 3 } })).json().message.body.hello, 'world');
+  assert.deepEqual((await t.app.inject({ method: 'POST', url: `${B}/queues/emails/redrive`, headers: { cookie, ...CSRF }, payload: { ids: [M] } })).json(), { redriven: 1 });
+  assert.deepEqual((await t.app.inject({ method: 'POST', url: `${B}/queues/emails/redrive`, headers: { cookie, ...CSRF }, payload: { all: true } })).json(), { redriven: 4 });
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/queues/emails/purge`, headers: { cookie, ...CSRF }, payload: { state: 'everything' } })).statusCode, 400);
+  assert.deepEqual((await t.app.inject({ method: 'POST', url: `${B}/queues/emails/purge`, headers: { cookie, ...CSRF }, payload: { state: 'dead' } })).json(), { removed: 4 });
+  assert.equal((await t.app.inject({ method: 'DELETE', url: `${B}/queues/emails/messages/${M}`, headers: { cookie, ...CSRF } })).statusCode, 204);
+  res = await t.app.inject({ method: 'DELETE', url: `${B}/queues/emails?force=true`, headers: { cookie, ...CSRF } });
+  assert.deepEqual([res.statusCode, seen.at(-1)?.url], [204, '/v1/queues/emails?force=true']);
+  const log = await t.app.inject({ url: '/api/audit?action=atc-queue.', headers: { cookie } });
+  assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-queue.queue.delete', 'atc-queue.message.delete', 'atc-queue.queue.purge', 'atc-queue.message.redrive', 'atc-queue.message.redrive', 'atc-queue.message.enqueue', 'atc-queue.queue.upsert']);
 });

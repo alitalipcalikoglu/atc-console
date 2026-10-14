@@ -80,7 +80,7 @@ test('Docs oracle: authentication, fixed registry, local spec, credential-free u
   response = await fetch(`${consoleApp.origin}/api/docs/services`, { headers: { cookie } });
   assert.equal(response.status, 200);
   const list = await response.json();
-  assert.equal(list.items.length, 16);
+  assert.equal(list.items.length, 17);
   assert.deepEqual(list.items[0], { id: 'atc-console', type: 'atc-console', label: 'Console' });
   assert.equal(JSON.stringify(list).includes('apiKey'), false);
 

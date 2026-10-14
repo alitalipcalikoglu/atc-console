@@ -14,6 +14,7 @@
     { "id": "atc-geo", "type": "atc-geo", "label": "Geo", "url": "http://10.0.0.12:3012", "apiKeyEnv": "GEO_API_KEY" },
     { "id": "atc-content", "type": "atc-content", "label": "Content", "url": "http://10.0.0.13:3013", "apiKeyEnv": "CONTENT_API_KEY" },
     { "id": "atc-export", "type": "atc-export", "label": "Exports", "url": "http://10.0.0.14:3014", "apiKeyEnv": "EXPORT_API_KEY" },
-    { "id": "atc-render", "type": "atc-render", "label": "Render", "url": "http://10.0.0.15:3015", "apiKeyEnv": "RENDER_API_KEY" }
+    { "id": "atc-render", "type": "atc-render", "label": "Render", "url": "http://10.0.0.15:3015", "apiKeyEnv": "RENDER_API_KEY" },
+    { "id": "atc-queue", "type": "atc-queue", "label": "Queues", "url": "http://10.0.0.16:3016", "apiKeyEnv": "QUEUE_API_KEY" }
   ]
 }

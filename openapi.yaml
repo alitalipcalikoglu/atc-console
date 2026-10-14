@@ -10,7 +10,7 @@ info:
 
     Two things shape the whole document. First, authentication is a **cookie session**
     (`console_session`) plus an `x-console-request: 1` CSRF header on mutations, not the
-    `Authorization: Bearer` API key the fifteen backend services use — and downstream calls are made
+    `Authorization: Bearer` API key the sixteen backend services use — and downstream calls are made
     with console's own per-service API key, never the administrator's identity. Second, console
     declares **no Fastify `response:` schema anywhere**: request shapes are real, enforced Ajv
     schemas and are documented here exactly, while the body of a pass-through route is the target
@@ -70,6 +70,8 @@ tags:
     description: Pass-through to an export instance.
   - name: atc-render
     description: Pass-through to a render instance.
+  - name: atc-queue
+    description: Pass-through to a queue instance.
 paths:
   /openapi.yaml:
     get:
@@ -131,7 +133,7 @@ paths:
         - operational
       summary: Service identity and capabilities.
       description: The one operational route console takes from the shared `registerInfo` helper, so its shape is
-        identical across all 16 services.
+        identical across all 17 services.
       security: []
       x-stack-visibility: public
       responses:
@@ -9305,6 +9307,469 @@ paths:
               schema:
                 type: string
                 format: binary
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-queue/stats:
+    get:
+      operationId: atc-console.atc-queue.stats.get
+      tags:
+        - atc-queue
+      summary: "Queue totals."
+      description: >-
+        Typed pass-through to the **queue** service instance named by `sid` — console relays this to its `GET
+        /v1/stats`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the queue service's own `GET /v1/stats` response body, relayed
+            unchanged. See the queue service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-queue/queues:
+    get:
+      operationId: atc-console.atc-queue.queues.list
+      tags:
+        - atc-queue
+      summary: "List queues with depth."
+      description: >-
+        Typed pass-through to the **queue** service instance named by `sid` — console relays this to its `GET
+        /v1/queues`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the queue service's own `GET /v1/queues` response body, relayed
+            unchanged. See the queue service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-queue/queues/{id}:
+    get:
+      operationId: atc-console.atc-queue.queues.get
+      tags:
+        - atc-queue
+      summary: "Get one queue with depth and counters."
+      description: >-
+        Typed pass-through to the **queue** service instance named by `sid` — console relays this to its `GET
+        /v1/queues/{name}`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the queue service's own `GET /v1/queues/{name}` response body, relayed
+            unchanged. See the queue service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    put:
+      operationId: atc-console.atc-queue.queues.upsert
+      tags:
+        - atc-queue
+      summary: "Create a queue or change its settings."
+      description: >-
+        Typed pass-through to the **queue** service instance named by `sid` — console relays this to its `PUT
+        /v1/queues/{name}`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"properties":{"description":{"type":"string","maxLength":500},"visibilitySec":{"type":"integer","minimum":1,"maximum":43200},"maxAttempts":{"type":"integer","minimum":1,"maximum":100},"backoffBaseSec":{"type":"integer","minimum":0,"maximum":86400},"backoffMaxSec":{"type":"integer","minimum":0,"maximum":604800},"paused":{"type":"boolean"}}}
+      responses:
+        "200":
+          description: Pass-through of the queue service's own `PUT /v1/queues/{name}` response body, relayed
+            unchanged. See the queue service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    delete:
+      operationId: atc-console.atc-queue.queues.delete
+      tags:
+        - atc-queue
+      summary: "Delete a queue."
+      description: >-
+        Typed pass-through to the **queue** service instance named by `sid` — console relays this to its `DELETE
+        /v1/queues/{name}`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - name: force
+          in: query
+          required: false
+          schema: {"type":"string","enum":["true","false"]}
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "204":
+          description: Done. console discards queue's response body.
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-queue/queues/{id}/purge:
+    post:
+      operationId: atc-console.atc-queue.queues.purge
+      tags:
+        - atc-queue
+      summary: "Purge ready, dead or all messages."
+      description: >-
+        Typed pass-through to the **queue** service instance named by `sid` — console relays this to its `POST
+        /v1/queues/{name}/purge`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["state"],"properties":{"state":{"type":"string","enum":["ready","dead","all"]}}}
+      responses:
+        "200":
+          description: Pass-through of the queue service's own `POST /v1/queues/{name}/purge` response body, relayed
+            unchanged. See the queue service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-queue/queues/{id}/redrive:
+    post:
+      operationId: atc-console.atc-queue.queues.redrive
+      tags:
+        - atc-queue
+      summary: "Move dead letters back to ready."
+      description: >-
+        Typed pass-through to the **queue** service instance named by `sid` — console relays this to its `POST
+        /v1/queues/{name}/redrive`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"properties":{"ids":{"type":"array","minItems":1,"maxItems":1000,"items":{"type":"string","pattern":"^msg_[0-9a-z]{6,12}[0-9a-f]{16}$"}},"all":{"const":true}}}
+      responses:
+        "200":
+          description: Pass-through of the queue service's own `POST /v1/queues/{name}/redrive` response body, relayed
+            unchanged. See the queue service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-queue/queues/{id}/messages:
+    get:
+      operationId: atc-console.atc-queue.messages.list
+      tags:
+        - atc-queue
+      summary: "Browse messages by state."
+      description: >-
+        Typed pass-through to the **queue** service instance named by `sid` — console relays this to its `GET
+        /v1/queues/{name}/messages`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - name: state
+          in: query
+          required: false
+          schema: {"type":"string","enum":["ready","delayed","leased","dead"]}
+        - name: limit
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^([1-9]|[1-9][0-9]|1[0-9][0-9]|200)$"}
+        - name: cursor
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^[0-9]{1,15}$"}
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the queue service's own `GET /v1/queues/{name}/messages` response body, relayed
+            unchanged. See the queue service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    post:
+      operationId: atc-console.atc-queue.messages.enqueue
+      tags:
+        - atc-queue
+      summary: "Enqueue a message."
+      description: >-
+        Typed pass-through to the **queue** service instance named by `sid` — console relays this to its `POST
+        /v1/queues/{name}/messages`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["body"],"properties":{"body":{},"delaySec":{"type":"integer","minimum":0,"maximum":1209600},"priority":{"type":"integer","minimum":-100,"maximum":100},"dedupeKey":{"type":"string","minLength":1,"maxLength":200}}}
+      responses:
+        "200":
+          description: Pass-through of the queue service's own `POST /v1/queues/{name}/messages` response body, relayed
+            unchanged. See the queue service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-queue/queues/{id}/messages/{sub}:
+    get:
+      operationId: atc-console.atc-queue.messages.get
+      tags:
+        - atc-queue
+      summary: "Get one message."
+      description: >-
+        Typed pass-through to the **queue** service instance named by `sid` — console relays this to its `GET
+        /v1/queues/{name}/messages/{id}`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/SubParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the queue service's own `GET /v1/queues/{name}/messages/{id}` response body, relayed
+            unchanged. See the queue service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    delete:
+      operationId: atc-console.atc-queue.messages.delete
+      tags:
+        - atc-queue
+      summary: "Delete one message."
+      description: >-
+        Typed pass-through to the **queue** service instance named by `sid` — console relays this to its `DELETE
+        /v1/queues/{name}/messages/{id}`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/SubParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "204":
+          description: Done. console discards queue's response body.
         "400":
           $ref: "#/components/responses/ValidationFailed"
         "401":
