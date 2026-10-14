@@ -1,0 +1,3 @@
+import { ContentClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, record } from '#lib/server/m4.js';
+export const POST = jsonRoute({ auth: 'admin', params: Schemas.serviceIdParams, body: Schemas.contentImport, handler: async (context) => { const output = await context.runtime.clients.get(context.params.sid, ContentClient).importLocale(context.params.id, context.body) as any; record(context, 'atc-content.translations.import', context.params.id, { service: context.params.sid, locale: output.locale, added: output.added, updated: output.updated, unchanged: output.unchanged, invalid: output.invalidCount }); return output; } });

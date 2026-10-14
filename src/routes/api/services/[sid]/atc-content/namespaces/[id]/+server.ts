@@ -1,0 +1,5 @@
+import { ContentClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, record } from '#lib/server/m4.js';
+export const GET = jsonRoute({ auth: 'session', params: Schemas.serviceIdParams, handler: ({ runtime, params }) => runtime.clients.get(params.sid, ContentClient).namespace(params.id) });
+export const PATCH = jsonRoute({ auth: 'admin', params: Schemas.serviceIdParams, body: Schemas.contentNamespacePatch, handler: async (context) => { const output = await context.runtime.clients.get(context.params.sid, ContentClient).patchNamespace(context.params.id, context.body); record(context, 'atc-content.namespace.update', context.params.id, { service: context.params.sid, patch: context.body }); return output; } });
+export const DELETE = jsonRoute({ auth: 'admin', params: Schemas.serviceIdParams, status: 204, handler: async (context) => { await context.runtime.clients.get(context.params.sid, ContentClient).deleteNamespace(context.params.id); record(context, 'atc-content.namespace.delete', context.params.id, { service: context.params.sid }); } });

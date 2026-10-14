@@ -28,6 +28,8 @@
   "/atc-geo/:sid",
   "/atc-geo/:sid/reference",
   "/atc-geo/:sid/collections/:id",
+  "/atc-content/:sid",
+  "/atc-content/:sid/namespaces/:id",
   "/audit",
   "/admins",
   "/docs",

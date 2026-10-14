@@ -2,6 +2,7 @@ export { Schemas } from '../../http/schemas.js';
 export { ConsoleError } from '../../domain/errors.js';
 export { AuditClient } from '../../services/audit-client.js';
 export { AuthClient } from '../../services/auth-client.js';
+export { ContentClient } from '../../services/content-client.js';
 export { FlagsClient } from '../../services/flags-client.js';
 export { GeoClient } from '../../services/geo-client.js';
 export { MediaClient } from '../../services/media-client.js';

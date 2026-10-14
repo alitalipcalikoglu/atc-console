@@ -20,6 +20,7 @@ Walkthroughs for every feature of the admin console. Screens are described as th
 | [Searching from the console](search.md) | Indexes, the search page with facets and highlights, documents, clearing and deleting |
 | [Rate limits from the console](ratelimit.md) | Policies and windows, decision charts, subject lookup and reset, overrides and blocks |
 | [Geo from the console](geo.md) | IP, phone and distance lookups, the IP database, reference tables, place collections and nearby search |
+| [Content from the console](content.md) | Namespaces, locales and fallback chains, the key editor with placeholder checks, import/export, publish and rollback |
 | [Console log](audit.md) | What the console records about its own admins, filtering, retention |
 | [Installing as an app and updates](pwa.md) | Install on phone/desktop, offline behaviour, update prompt, theme and language |
 | [Operations](operations.md) | Health, environment, PM2, Docker, TLS, backups |

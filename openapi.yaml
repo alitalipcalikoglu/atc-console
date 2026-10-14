@@ -10,7 +10,7 @@ info:
 
     Two things shape the whole document. First, authentication is a **cookie session**
     (`console_session`) plus an `x-console-request: 1` CSRF header on mutations, not the
-    `Authorization: Bearer` API key the twelve backend services use — and downstream calls are made
+    `Authorization: Bearer` API key the thirteen backend services use — and downstream calls are made
     with console's own per-service API key, never the administrator's identity. Second, console
     declares **no Fastify `response:` schema anywhere**: request shapes are real, enforced Ajv
     schemas and are documented here exactly, while the body of a pass-through route is the target
@@ -64,6 +64,8 @@ tags:
     description: Pass-through to a ratelimit instance.
   - name: atc-geo
     description: Pass-through to a geo instance.
+  - name: atc-content
+    description: Pass-through to a content instance.
 paths:
   /openapi.yaml:
     get:
@@ -125,7 +127,7 @@ paths:
         - operational
       summary: Service identity and capabilities.
       description: The one operational route console takes from the shared `registerInfo` helper, so its shape is
-        identical across all 13 services.
+        identical across all 14 services.
       security: []
       x-stack-visibility: public
       responses:
@@ -7723,6 +7725,779 @@ paths:
           description: Pass-through of the geo service's own `GET /v1/collections/{name}/nearby` response body, relayed
             unchanged. console declares no response schema for this route, so no precise shape is asserted
             here — see the geo service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-content/stats:
+    get:
+      operationId: atc-console.atc-content.stats.get
+      tags:
+        - atc-content
+      summary: "Content totals and per-namespace counts."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its `GET
+        /v1/stats`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the content service's own `GET /v1/stats` response body, relayed
+            unchanged. See the content service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-content/namespaces:
+    get:
+      operationId: atc-console.atc-content.namespaces.list
+      tags:
+        - atc-content
+      summary: "List namespaces."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its `GET
+        /v1/namespaces`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the content service's own `GET /v1/namespaces` response body, relayed
+            unchanged. See the content service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    post:
+      operationId: atc-console.atc-content.namespaces.create
+      tags:
+        - atc-content
+      summary: "Create a namespace."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its `POST
+        /v1/namespaces`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["name","defaultLocale"],"properties":{"name":{"type":"string","pattern":"^[a-z][a-z0-9-]{0,63}$"},"defaultLocale":{"type":"string","minLength":2,"maxLength":35,"pattern":"^[A-Za-z0-9-]+$"},"description":{"type":"string","maxLength":500},"locales":{"type":"array","maxItems":500,"items":{"type":"object","additionalProperties":false,"required":["locale"],"properties":{"locale":{"type":"string","minLength":2,"maxLength":35,"pattern":"^[A-Za-z0-9-]+$"},"fallback":{"anyOf":[{"type":"string","minLength":2,"maxLength":35,"pattern":"^[A-Za-z0-9-]+$"},{"type":"null"}]}}}}}}
+      responses:
+        "201":
+          description: Pass-through of the content service's own `POST /v1/namespaces` response body, relayed
+            unchanged. See the content service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-content/namespaces/{id}:
+    get:
+      operationId: atc-console.atc-content.namespaces.get
+      tags:
+        - atc-content
+      summary: "Get one namespace with locales and counts."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its `GET
+        /v1/namespaces/{ns}`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the content service's own `GET /v1/namespaces/{ns}` response body, relayed
+            unchanged. See the content service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    patch:
+      operationId: atc-console.atc-content.namespaces.update
+      tags:
+        - atc-content
+      summary: "Change a namespace's description or default locale."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its
+        `PATCH /v1/namespaces/{ns}`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"minProperties":1,"properties":{"description":{"type":"string","maxLength":500},"defaultLocale":{"type":"string","minLength":2,"maxLength":35,"pattern":"^[A-Za-z0-9-]+$"}}}
+      responses:
+        "200":
+          description: Pass-through of the content service's own `PATCH /v1/namespaces/{ns}` response body, relayed
+            unchanged. See the content service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    delete:
+      operationId: atc-console.atc-content.namespaces.delete
+      tags:
+        - atc-content
+      summary: "Delete a namespace and every release."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its
+        `DELETE /v1/namespaces/{ns}`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "204":
+          description: Done. console discards content's response body.
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-content/namespaces/{id}/locales/{sub}:
+    put:
+      operationId: atc-console.atc-content.locales.upsert
+      tags:
+        - atc-content
+      summary: "Add a locale or set its fallback."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its `PUT
+        /v1/namespaces/{ns}/locales/{locale}`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/SubParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":[],"properties":{"fallback":{"anyOf":[{"type":"string","minLength":2,"maxLength":35,"pattern":"^[A-Za-z0-9-]+$"},{"type":"null"}]}}}
+      responses:
+        "200":
+          description: Pass-through of the content service's own `PUT /v1/namespaces/{ns}/locales/{locale}` response body, relayed
+            unchanged. See the content service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    delete:
+      operationId: atc-console.atc-content.locales.delete
+      tags:
+        - atc-content
+      summary: "Delete a locale and its draft values."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its
+        `DELETE /v1/namespaces/{ns}/locales/{locale}`. There is no generic proxy anywhere in console: this route
+        is hand-written, individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/SubParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "204":
+          description: Done. console discards content's response body.
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-content/namespaces/{id}/keys:
+    get:
+      operationId: atc-console.atc-content.keys.list
+      tags:
+        - atc-content
+      summary: "List draft keys with values."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its `GET
+        /v1/namespaces/{ns}/keys`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - name: q
+          in: query
+          required: false
+          schema: {"type":"string","minLength":1,"maxLength":120}
+        - name: missing
+          in: query
+          required: false
+          schema: {"type":"string","minLength":2,"maxLength":35,"pattern":"^[A-Za-z0-9-]+$"}
+        - name: limit
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^([1-9]|[1-9][0-9]|1[0-9][0-9]|200)$"}
+        - name: cursor
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^[a-z0-9][a-z0-9._-]{0,127}$"}
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the content service's own `GET /v1/namespaces/{ns}/keys` response body, relayed
+            unchanged. See the content service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-content/namespaces/{id}/keys/{sub}:
+    get:
+      operationId: atc-console.atc-content.keys.get
+      tags:
+        - atc-content
+      summary: "Get one key."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its `GET
+        /v1/namespaces/{ns}/keys/{key}`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/SubParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the content service's own `GET /v1/namespaces/{ns}/keys/{key}` response body, relayed
+            unchanged. See the content service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    put:
+      operationId: atc-console.atc-content.keys.upsert
+      tags:
+        - atc-content
+      summary: "Create or update a key (values merged, null removes)."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its `PUT
+        /v1/namespaces/{ns}/keys/{key}`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/SubParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":[],"properties":{"description":{"type":"string","maxLength":500},"values":{"type":"object","maxProperties":500,"additionalProperties":{"anyOf":[{"type":"string","maxLength":100000},{"type":"null"}]}}}}
+      responses:
+        "200":
+          description: Pass-through of the content service's own `PUT /v1/namespaces/{ns}/keys/{key}` response body, relayed
+            unchanged. See the content service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    delete:
+      operationId: atc-console.atc-content.keys.delete
+      tags:
+        - atc-content
+      summary: "Delete a key from the draft."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its
+        `DELETE /v1/namespaces/{ns}/keys/{key}`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/SubParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "204":
+          description: Done. console discards content's response body.
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-content/namespaces/{id}/import:
+    post:
+      operationId: atc-console.atc-content.translations.import
+      tags:
+        - atc-content
+      summary: "Import a flat or nested JSON object into one locale."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its `POST
+        /v1/namespaces/{ns}/import`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["locale","strings"],"properties":{"locale":{"type":"string","minLength":2,"maxLength":35,"pattern":"^[A-Za-z0-9-]+$"},"strings":{"type":"object"}}}
+      responses:
+        "200":
+          description: Pass-through of the content service's own `POST /v1/namespaces/{ns}/import` response body, relayed
+            unchanged. See the content service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-content/namespaces/{id}/export/{sub}:
+    get:
+      operationId: atc-console.atc-content.translations.export
+      tags:
+        - atc-content
+      summary: "Export one locale's own values."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its `GET
+        /v1/namespaces/{ns}/export/{locale}`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/SubParam"
+        - name: source
+          in: query
+          required: false
+          schema: {"type":"string","enum":["draft","published"]}
+        - name: format
+          in: query
+          required: false
+          schema: {"type":"string","enum":["flat","nested"]}
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the content service's own `GET /v1/namespaces/{ns}/export/{locale}` response body, relayed
+            unchanged. See the content service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-content/namespaces/{id}/publish:
+    post:
+      operationId: atc-console.atc-content.releases.publish
+      tags:
+        - atc-content
+      summary: "Publish the draft as the next release."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its `POST
+        /v1/namespaces/{ns}/publish`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":[],"properties":{"note":{"type":"string","maxLength":500}}}
+      responses:
+        "201":
+          description: Pass-through of the content service's own `POST /v1/namespaces/{ns}/publish` response body, relayed
+            unchanged. See the content service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-content/namespaces/{id}/rollback:
+    post:
+      operationId: atc-console.atc-content.releases.rollback
+      tags:
+        - atc-content
+      summary: "Publish an earlier release's content as a new release."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its `POST
+        /v1/namespaces/{ns}/rollback`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["release"],"properties":{"release":{"type":"integer","minimum":1,"maximum":1000000000},"note":{"type":"string","maxLength":500},"restoreDraft":{"type":"boolean"}}}
+      responses:
+        "201":
+          description: Pass-through of the content service's own `POST /v1/namespaces/{ns}/rollback` response body, relayed
+            unchanged. See the content service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-content/namespaces/{id}/releases:
+    get:
+      operationId: atc-console.atc-content.releases.list
+      tags:
+        - atc-content
+      summary: "List releases, newest first."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its `GET
+        /v1/namespaces/{ns}/releases`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - name: limit
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^([1-9]|[1-9][0-9]|100)$"}
+        - name: before
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^[0-9]{1,10}$"}
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the content service's own `GET /v1/namespaces/{ns}/releases` response body, relayed
+            unchanged. See the content service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-content/namespaces/{id}/releases/{sub}:
+    get:
+      operationId: atc-console.atc-content.releases.get
+      tags:
+        - atc-content
+      summary: "Get one release with its content."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its `GET
+        /v1/namespaces/{ns}/releases/{number}`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/SubParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the content service's own `GET /v1/namespaces/{ns}/releases/{number}` response body, relayed
+            unchanged. See the content service's own OpenAPI document for the authoritative body.
           content:
             application/json:
               schema:

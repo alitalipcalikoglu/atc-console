@@ -45,6 +45,7 @@
       case 'atc-search': return [[t('se.indexes'), fmt.int(m.indexes)], [t('se.documents'), fmt.int(m.documents)], [t('se.searches'), fmt.int(Object.values(m.queriesByIndex ?? {}).reduce((a, n) => a + Number(n), 0))], [t('se.dbSize'), fmt.bytes(m.dbBytes)]];
       case 'atc-ratelimit': return [[t('rl.policies'), fmt.int(m.policies)], [t('rl.allowedShort'), fmt.int(m.allowed)], [t('rl.deniedShort'), fmt.int(m.denied)], [t('rl.counters'), fmt.int(m.counters)]];
       case 'atc-geo': return [[t('ge.lookups'), fmt.int(m.lookupsTotal)], [t('ge.database'), m.databaseLoaded ? t('ge.loaded') : t('ge.none')], [t('ge.collections'), fmt.int(m.collections)], [t('ge.places'), fmt.int(m.places)]];
+      case 'atc-content': return [[t('ct.namespaces'), fmt.int(m.namespaces)], [t('ct.keys'), fmt.int(m.keys)], [t('ct.missing'), fmt.int(m.missing)], [t('ct.lastPublish'), m.lastPublish ?? t('ct.never')]];
       default: return [];
     }
   }

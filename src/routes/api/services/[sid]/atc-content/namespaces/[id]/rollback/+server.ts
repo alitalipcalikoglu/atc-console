@@ -1,0 +1,3 @@
+import { ContentClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, record } from '#lib/server/m4.js';
+export const POST = jsonRoute({ auth: 'admin', params: Schemas.serviceIdParams, body: Schemas.contentRollback, status: 201, handler: async (context) => { const output = await context.runtime.clients.get(context.params.sid, ContentClient).rollback(context.params.id, context.body) as any; record(context, 'atc-content.release.rollback', context.params.id, { service: context.params.sid, release: output.release.number, rollbackOf: context.body.release, restoreDraft: context.body.restoreDraft === true }); return output; } });

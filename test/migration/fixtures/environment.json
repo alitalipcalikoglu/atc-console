@@ -32,5 +32,6 @@
   "WEBHOOK_OUT_API_KEY": { "class": ["downstream", "secret", "configuration-dependent"] },
   "SEARCH_API_KEY": { "class": ["downstream", "secret", "configuration-dependent"] },
   "RATELIMIT_API_KEY": { "class": ["downstream", "secret", "configuration-dependent"] },
-  "GEO_API_KEY": { "class": ["downstream", "secret", "configuration-dependent"] }
+  "GEO_API_KEY": { "class": ["downstream", "secret", "configuration-dependent"] },
+  "CONTENT_API_KEY": { "class": ["downstream", "secret", "configuration-dependent"] }
 }

@@ -30,8 +30,8 @@ test('SvelteKit owns all explicit endpoints and filesystem pages', () => {
   assert.equal(existsSync(new URL('../../src/routes/(app)/+page.svelte', import.meta.url)), true);
   assert.equal(existsSync(new URL('../../src/routes/(app)/+layout.server.ts', import.meta.url)), true);
   const routeFiles = readdirSync(new URL('../../src/routes/', import.meta.url), { recursive: true });
-  assert.equal(routeFiles.filter((path) => String(path).endsWith('+server.ts')).length, 122);
-  assert.equal(routeFiles.filter((path) => String(path).endsWith('+page.svelte')).length, 34);
+  assert.equal(routeFiles.filter((path) => String(path).endsWith('+server.ts')).length, 134);
+  assert.equal(routeFiles.filter((path) => String(path).endsWith('+page.svelte')).length, 36);
   assert.doesNotMatch(read('../../src/routes/(app)/+page.svelte'), /\$lib\/server/);
   assert.match(routeFiles.map(String).join('\n'), /\[sid\]/);
   assert.match(routeFiles.map(String).join('\n'), /\[id\]/);

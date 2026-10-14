@@ -3,7 +3,7 @@ import { parse } from 'yaml';
 import { ServiceError } from './client.js';
 
 const SERVICE_TYPES = new Set([
-  'atc-audit', 'atc-auth', 'atc-console', 'atc-flags', 'atc-gateway', 'atc-geo', 'atc-media', 'atc-notify',
+  'atc-audit', 'atc-auth', 'atc-console', 'atc-content', 'atc-flags', 'atc-gateway', 'atc-geo', 'atc-media', 'atc-notify',
   'atc-ratelimit', 'atc-scheduler', 'atc-search', 'atc-shortlink', 'atc-webhook-out',
 ]);
 

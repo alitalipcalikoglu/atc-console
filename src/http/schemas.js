@@ -111,6 +111,20 @@ export class Schemas {
   static geoCollectionPatch = { type: 'object', additionalProperties: false, minProperties: 1, properties: { description: { type: 'string', maxLength: 500 } } };
   static geoPlaces = Schemas.body(['places'], { places: { type: 'array', minItems: 1, maxItems: 5000, items: { type: 'object', additionalProperties: false, required: ['id', 'name', 'lat', 'lng'], properties: { id: { type: 'string', minLength: 1, maxLength: 200 }, name: { type: 'string', maxLength: 200 }, lat: { type: 'number' }, lng: { type: 'number' }, attrs: { type: 'object', maxProperties: 50 } } } } });
   static geoNearbyQuery = { type: 'object', additionalProperties: false, required: ['lat', 'lng'], properties: { lat: { type: 'string', pattern: '^-?\\d{1,3}(\\.\\d+)?$' }, lng: { type: 'string', pattern: '^-?\\d{1,3}(\\.\\d+)?$' }, radius: { type: 'string', pattern: '^\\d{1,5}(\\.\\d+)?$' }, limit: { type: 'string', pattern: '^([1-9]|[1-9][0-9]|100)$' } } };
+  static contentNs = { type: 'string', pattern: '^[a-z][a-z0-9-]{0,63}$' };
+  static contentLocale = { type: 'string', minLength: 2, maxLength: 35, pattern: '^[A-Za-z0-9-]+$' };
+  static contentFallback = { anyOf: [Schemas.contentLocale, { type: 'null' }] };
+  static contentNamespaceCreate = Schemas.body(['name', 'defaultLocale'], { name: Schemas.contentNs, defaultLocale: Schemas.contentLocale, description: { type: 'string', maxLength: 500 }, locales: { type: 'array', maxItems: 500, items: Schemas.body(['locale'], { locale: Schemas.contentLocale, fallback: Schemas.contentFallback }) } });
+  static contentNamespacePatch = { type: 'object', additionalProperties: false, minProperties: 1, properties: { description: { type: 'string', maxLength: 500 }, defaultLocale: Schemas.contentLocale } };
+  static contentLocalePut = Schemas.body([], { fallback: Schemas.contentFallback });
+  static contentKeyPut = Schemas.body([], { description: { type: 'string', maxLength: 500 }, values: { type: 'object', maxProperties: 500, additionalProperties: { anyOf: [{ type: 'string', maxLength: 100000 }, { type: 'null' }] } } });
+  static contentImport = Schemas.body(['locale', 'strings'], { locale: Schemas.contentLocale, strings: { type: 'object' } });
+  static contentPublish = Schemas.body([], { note: { type: 'string', maxLength: 500 } });
+  static contentRollback = Schemas.body(['release'], { release: { type: 'integer', minimum: 1, maximum: 1000000000 }, note: { type: 'string', maxLength: 500 }, restoreDraft: { type: 'boolean' } });
+  static contentKeysQuery = { type: 'object', additionalProperties: false, properties: { q: { type: 'string', minLength: 1, maxLength: 120 }, missing: Schemas.contentLocale, limit: { type: 'string', pattern: '^([1-9]|[1-9][0-9]|1[0-9][0-9]|200)$' }, cursor: { type: 'string', pattern: '^[a-z0-9][a-z0-9._-]{0,127}$' } } };
+  static contentExportQuery = { type: 'object', additionalProperties: false, properties: { source: { type: 'string', enum: ['draft', 'published'] }, format: { type: 'string', enum: ['flat', 'nested'] } } };
+  static contentReleaseParams = { type: 'object', properties: { sid: Schemas.sid, id: Schemas.contentNs, sub: { type: 'string', pattern: '^[1-9][0-9]{0,9}$' } }, required: ['sid', 'id', 'sub'] };
+  static contentReleasesQuery = { type: 'object', additionalProperties: false, properties: { limit: { type: 'string', pattern: '^([1-9]|[1-9][0-9]|100)$' }, before: { type: 'string', pattern: '^[0-9]{1,10}$' } } };
   static flagsQuery = {
     type: 'object', additionalProperties: false,
     properties: {

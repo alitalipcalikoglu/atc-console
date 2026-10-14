@@ -46,6 +46,26 @@ const fake = createServer((req, res) => {
     if (p === '/v1/events' && req.method === 'GET') return json(200, { items: [{ id: 'e1', seq: 42, action: 'atc-auth.login', outcome: 'failure', source: 'atc-auth' }], nextCursor: null });
     if (p === '/v1/events/export') return res.writeHead(200, { 'content-type': 'application/x-ndjson; charset=utf-8', 'content-disposition': 'attachment; filename="audit-x.ndjson"' }).end('{"seq":1}\n{"seq":2}\n');
     if (p === '/v1/events/e1') return json(200, { event: { id: 'e1', seq: 42, action: 'atc-auth.login', meta: { k: 1 } } });
+    if (String(req.headers.authorization).endsWith('c'.repeat(40))) {
+      if (p === '/v1/stats') return json(200, { namespaces: 2, keys: 40, locales: 5, missing: 7, mismatched: 1, releases: 3, lastPublish: { namespace: 'web', release: 3, at: '2026-10-14T09:00:00.000Z', by: 'atc-console' }, items: [] });
+      if (p === '/v1/namespaces' && req.method === 'GET') return json(200, { items: [{ name: 'web', defaultLocale: 'en', locales: [{ locale: 'en', fallback: null, chain: ['en'] }], keys: 1, missing: { en: 0 }, mismatched: 0, release: null, unpublishedChanges: true }] });
+      if (p === '/v1/namespaces' && req.method === 'POST') return json(201, { namespace: { name: JSON.parse(body).name } });
+      if (p === '/v1/namespaces/web' && req.method === 'GET') return json(200, { namespace: { name: 'web' } });
+      if (p === '/v1/namespaces/web' && req.method === 'PATCH') return json(200, { namespace: { name: 'web', description: JSON.parse(body).description } });
+      if (p === '/v1/namespaces/web' && req.method === 'DELETE') return res.writeHead(204).end();
+      if (p === '/v1/namespaces/web/locales/tr-CY' && req.method === 'PUT') return json(201, { created: true, locale: 'tr-CY' });
+      if (p === '/v1/namespaces/web/locales/tr-CY' && req.method === 'DELETE') return res.writeHead(204).end();
+      if (p === '/v1/namespaces/web/keys') return json(200, { items: [{ key: 'nav.home', values: { en: 'Home' }, mismatched: [] }], nextCursor: null });
+      if (p === '/v1/namespaces/web/keys/nav.home' && req.method === 'GET') return json(200, { key: { key: 'nav.home' } });
+      if (p === '/v1/namespaces/web/keys/nav.home' && req.method === 'PUT') return json(200, { created: false, mismatched: [], key: { key: 'nav.home' } });
+      if (p === '/v1/namespaces/web/keys/nav.home' && req.method === 'DELETE') return res.writeHead(204).end();
+      if (p === '/v1/namespaces/web/import') return json(200, { locale: 'tr', added: 2, updated: 0, unchanged: 1, invalidCount: 1, invalid: [{ key: 'x', reason: 'bad' }] });
+      if (p === '/v1/namespaces/web/export/tr') return json(200, { namespace: 'web', locale: 'tr', source: 'draft', release: null, strings: { 'nav.home': 'Ana sayfa' } });
+      if (p === '/v1/namespaces/web/publish') return json(201, { release: { number: 4 } });
+      if (p === '/v1/namespaces/web/rollback') return json(201, { release: { number: 5, rollbackOf: JSON.parse(body).release } });
+      if (p === '/v1/namespaces/web/releases') return json(200, { items: [{ number: 4 }], nextBefore: null });
+      if (p === '/v1/namespaces/web/releases/4') return json(200, { release: { number: 4, content: { keys: {} } } });
+    }
     if (p === '/v1/stats' && String(req.headers.authorization).endsWith('q'.repeat(40))) return json(200, { indexes: 2, documents: 150, searchesSinceStart: 30, dbBytes: 4096, items: [] });
     if (p === '/v1/stats' && String(req.headers.authorization).endsWith('l'.repeat(40))) return json(200, { policies: 1, last24h: { allowed: 500, denied: 10 }, counters: 12, dbBytes: 2048, items: [] });
     if (p === '/v1/stats' && String(req.headers.authorization).endsWith('e'.repeat(40))) return json(200, { database: { loaded: true }, countries: 249, collections: 1, places: 3, dbBytes: 4096, items: [] });
@@ -154,7 +174,7 @@ let origin = '';
 before(async () => {
   await new Promise((r) => fake.listen(0, '127.0.0.1', () => r(undefined)));
   origin = `http://127.0.0.1:${/** @type {any} */ (fake.address()).port}`;
-  t = await testConsole({ urls: { notify: origin, auth: origin, media: origin, gateway: origin, audit: origin, shortlink: origin, flags: origin, scheduler: origin, 'webhook-out': origin, search: origin, ratelimit: origin, geo: origin } });
+  t = await testConsole({ urls: { notify: origin, auth: origin, media: origin, gateway: origin, audit: origin, shortlink: origin, flags: origin, scheduler: origin, 'webhook-out': origin, search: origin, ratelimit: origin, geo: origin, content: origin }, env: { RATE_LIMIT_MAX: '60' } });
 });
 after(async () => { await t.app.close(); fake.close(); });
 
@@ -183,7 +203,7 @@ test('documentation API is authenticated, allowlisted and serves local and upstr
   const headers = { cookie };
   const list = await t.app.inject({ url: '/api/docs/services', headers });
   assert.equal(list.statusCode, 200);
-  assert.equal(list.json().items.length, 13);
+  assert.equal(list.json().items.length, 14);
   assert.deepEqual(list.json().items[0], { id: 'atc-console', type: 'atc-console', label: 'Console' });
   assert.equal(list.body.includes('apiKey'), false, 'registry secrets are never serialized');
 
@@ -301,7 +321,9 @@ test('overview aggregates health and parsed metrics per service', async () => {
   const res = await t.app.inject({ url: '/api/services/overview', headers: { cookie } });
   assert.equal(res.statusCode, 200);
   const items = res.json().items;
-  assert.equal(items.length, 12);
+  assert.equal(items.length, 13);
+  const cts = items.find((/** @type {any} */ i) => i.id === 'atc-content').summary;
+  assert.deepEqual([cts.namespaces, cts.keys, cts.missing, cts.lastPublish], [2, 40, 7, 'web #3']);
   const geo = items.find((/** @type {any} */ i) => i.id === 'atc-geo').summary;
   assert.deepEqual([geo.lookupsTotal, geo.databaseLoaded, geo.collections, geo.places], [42, true, 1, 3]);
   const rls = items.find((/** @type {any} */ i) => i.id === 'atc-ratelimit').summary;
@@ -334,7 +356,7 @@ test('about aggregates /v1/info per service; unreachable and malformed responses
   const res = await t.app.inject({ url: '/api/services/about', headers: { cookie } });
   assert.equal(res.statusCode, 200);
   const items = res.json().items;
-  assert.equal(items.length, 12);
+  assert.equal(items.length, 13);
   const notify = items.find((/** @type {any} */ i) => i.id === 'atc-notify');
   assert.equal(notify.ok, true);
   assert.deepEqual(notify.data, { service: 'fake', version: '1.2.3', apiVersion: 'v1', capabilities: ['x'], schemaVersion: 4, serviceCore: '1.10.0' });
@@ -726,4 +748,48 @@ test('geo: lookups, reference, database reload, collections and places (audited)
   assert.equal((await t.app.inject({ url: `${B}/stats`, headers: { cookie } })).json().countries, 249);
   const log = await t.app.inject({ url: '/api/audit?action=atc-geo.', headers: { cookie } });
   assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action).slice(0, 8), ['atc-geo.collection.delete', 'atc-geo.collection.clear', 'atc-geo.collection.update', 'atc-geo.place.delete', 'atc-geo.places.upsert', 'atc-geo.collection.create', 'atc-geo.database.reload']);
+});
+
+test('content: namespaces, locales, keys, import/export, publish/rollback, releases (audited)', async () => {
+  const { cookie } = await signIn(t);
+  const viewer = await signIn(t, { username: 'viewer9', role: 'viewer' });
+  seen.length = 0;
+  const B = '/api/services/atc-content/atc-content';
+  let res = await t.app.inject({ url: `${B}/namespaces`, headers: { cookie: viewer.cookie } });
+  assert.deepEqual([res.statusCode, res.json().items[0].name], [200, 'web']);
+  assert.equal(seen.at(-1)?.headers.authorization, `Bearer ${'c'.repeat(40)}`, 'content key injected');
+  assert.equal((await t.app.inject({ url: `${B}/stats`, headers: { cookie } })).json().keys, 40);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/namespaces`, headers: { cookie: viewer.cookie, ...CSRF }, payload: { name: 'app', defaultLocale: 'en' } })).statusCode, 403);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/namespaces`, headers: { cookie, ...CSRF }, payload: { name: 'Bad', defaultLocale: 'en' } })).statusCode, 400);
+  res = await t.app.inject({ method: 'POST', url: `${B}/namespaces`, headers: { cookie, ...CSRF }, payload: { name: 'app', defaultLocale: 'en', locales: [{ locale: 'tr' }] } });
+  assert.deepEqual([res.statusCode, res.json().namespace.name], [201, 'app']);
+  assert.equal((await t.app.inject({ url: `${B}/namespaces/web`, headers: { cookie } })).json().namespace.name, 'web');
+  assert.equal((await t.app.inject({ method: 'PATCH', url: `${B}/namespaces/web`, headers: { cookie, ...CSRF }, payload: { description: 'Site' } })).json().namespace.description, 'Site');
+  res = await t.app.inject({ method: 'PUT', url: `${B}/namespaces/web/locales/tr-CY`, headers: { cookie, ...CSRF }, payload: { fallback: 'tr' } });
+  assert.deepEqual([res.statusCode, JSON.parse(seen.at(-1)?.body ?? '{}')], [200, { fallback: 'tr' }]);
+  assert.equal((await t.app.inject({ method: 'DELETE', url: `${B}/namespaces/web/locales/tr-CY`, headers: { cookie, ...CSRF } })).statusCode, 204);
+  res = await t.app.inject({ url: `${B}/namespaces/web/keys?missing=tr&q=nav&limit=20`, headers: { cookie } });
+  assert.deepEqual([res.json().items[0].key, seen.at(-1)?.url], ['nav.home', '/v1/namespaces/web/keys?q=nav&missing=tr&limit=20']);
+  assert.equal((await t.app.inject({ url: `${B}/namespaces/web/keys?limit=500`, headers: { cookie } })).statusCode, 400);
+  assert.equal((await t.app.inject({ url: `${B}/namespaces/web/keys/nav.home`, headers: { cookie } })).json().key.key, 'nav.home');
+  res = await t.app.inject({ method: 'PUT', url: `${B}/namespaces/web/keys/nav.home`, headers: { cookie, ...CSRF }, payload: { values: { en: 'Home', tr: null } } });
+  assert.deepEqual([res.statusCode, JSON.parse(seen.at(-1)?.body ?? '{}')], [200, { values: { en: 'Home', tr: null } }]);
+  assert.equal((await t.app.inject({ method: 'PUT', url: `${B}/namespaces/web/keys/nav.home`, headers: { cookie, ...CSRF }, payload: { values: { en: 1 } } })).statusCode, 400);
+  assert.equal((await t.app.inject({ method: 'DELETE', url: `${B}/namespaces/web/keys/nav.home`, headers: { cookie, ...CSRF } })).statusCode, 204);
+  res = await t.app.inject({ method: 'POST', url: `${B}/namespaces/web/import`, headers: { cookie, ...CSRF }, payload: { locale: 'tr', strings: { nav: { home: 'Ana sayfa' } } } });
+  assert.deepEqual([res.json().added, res.json().invalidCount], [2, 1]);
+  res = await t.app.inject({ url: `${B}/namespaces/web/export/tr?source=draft&format=nested`, headers: { cookie: viewer.cookie } });
+  assert.deepEqual([res.json().strings['nav.home'], seen.at(-1)?.url], ['Ana sayfa', '/v1/namespaces/web/export/tr?source=draft&format=nested']);
+  assert.equal((await t.app.inject({ url: `${B}/namespaces/web/export/tr?format=yaml`, headers: { cookie } })).statusCode, 400);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/namespaces/web/publish`, headers: { cookie: viewer.cookie, ...CSRF }, payload: {} })).statusCode, 403);
+  assert.deepEqual([(await t.app.inject({ method: 'POST', url: `${B}/namespaces/web/publish`, headers: { cookie, ...CSRF }, payload: {} })).json().release.number], [4]);
+  res = await t.app.inject({ method: 'POST', url: `${B}/namespaces/web/rollback`, headers: { cookie, ...CSRF }, payload: { release: 2, restoreDraft: true } });
+  assert.deepEqual([res.statusCode, res.json().release.rollbackOf], [201, 2]);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/namespaces/web/rollback`, headers: { cookie, ...CSRF }, payload: { release: 0 } })).statusCode, 400);
+  assert.equal((await t.app.inject({ url: `${B}/namespaces/web/releases?limit=10`, headers: { cookie } })).json().items[0].number, 4);
+  assert.equal((await t.app.inject({ url: `${B}/namespaces/web/releases/4`, headers: { cookie } })).json().release.number, 4);
+  assert.equal((await t.app.inject({ url: `${B}/namespaces/web/releases/abc`, headers: { cookie } })).statusCode, 400);
+  assert.equal((await t.app.inject({ method: 'DELETE', url: `${B}/namespaces/web`, headers: { cookie, ...CSRF } })).statusCode, 204);
+  const log = await t.app.inject({ url: '/api/audit?action=atc-content.', headers: { cookie } });
+  assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-content.namespace.delete', 'atc-content.release.rollback', 'atc-content.release.publish', 'atc-content.translations.import', 'atc-content.key.delete', 'atc-content.key.upsert', 'atc-content.locale.delete', 'atc-content.locale.upsert', 'atc-content.namespace.update', 'atc-content.namespace.create']);
 });

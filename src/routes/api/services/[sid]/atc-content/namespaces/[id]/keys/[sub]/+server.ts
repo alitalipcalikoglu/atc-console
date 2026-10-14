@@ -1,0 +1,5 @@
+import { ContentClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, record } from '#lib/server/m4.js';
+export const GET = jsonRoute({ auth: 'session', params: Schemas.serviceIdSubParams, handler: ({ runtime, params }) => runtime.clients.get(params.sid, ContentClient).key(params.id, params.sub) });
+export const PUT = jsonRoute({ auth: 'admin', params: Schemas.serviceIdSubParams, body: Schemas.contentKeyPut, handler: async (context) => { const output = await context.runtime.clients.get(context.params.sid, ContentClient).putKey(context.params.id, context.params.sub, context.body); record(context, 'atc-content.key.upsert', `${context.params.id}/${context.params.sub}`, { service: context.params.sid, locales: Object.keys(context.body.values ?? {}) }); return output; } });
+export const DELETE = jsonRoute({ auth: 'admin', params: Schemas.serviceIdSubParams, status: 204, handler: async (context) => { await context.runtime.clients.get(context.params.sid, ContentClient).deleteKey(context.params.id, context.params.sub); record(context, 'atc-content.key.delete', `${context.params.id}/${context.params.sub}`, { service: context.params.sid }); } });
