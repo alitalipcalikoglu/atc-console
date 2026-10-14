@@ -100,7 +100,7 @@
 <Page title={x ? x.name : t('se.index')} back="/atc-search/{sid}">
   {#snippet actions()}
     {#if x && session.isAdmin}
-      <button class="btn" onclick={() => { addOpen = true; }} disabled={busy}><Icon name="plus" size={16} /><span class="hide-m"> {t('se.addDocs')}</span></button>
+      <button class="btn" onclick={() => { addOpen = true; }} disabled={busy} aria-label={t('se.addDocs')} title={t('se.addDocs')}><Icon name="plus" size={16} /><span class="hide-m"> {t('se.addDocs')}</span></button>
       <button class="btn" onclick={() => { editOpen = true; }} disabled={busy}><Icon name="settings" size={16} /><span class="hide-m"> {t('se.edit')}</span></button>
       <RowMenu label={t('common.actions')} items={[
         { label: t('se.clear'), icon: 'x', danger: true, run: () => { confirm = 'clear'; } },
