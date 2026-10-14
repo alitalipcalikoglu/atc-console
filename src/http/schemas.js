@@ -154,6 +154,11 @@ export class Schemas {
   static backupParams = { type: 'object', properties: { sid: Schemas.sid, id: Schemas.backupId }, required: ['sid', 'id'] };
   static backupListQuery = { type: 'object', additionalProperties: false, properties: { source: Schemas.backupSource, status: { type: 'string', enum: ['running', 'ok', 'failed'] }, limit: { type: 'string', pattern: '^([1-9]|[1-9][0-9]|100)$' }, cursor: { type: 'string', pattern: '^[0-9]{1,15}~bk_[0-9a-z]{6,12}[0-9a-f]{16}$' } } };
   static backupRestore = { type: 'object', additionalProperties: false, properties: { target: { type: 'string', pattern: '^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$' }, overwrite: { type: 'boolean' }, live: { type: 'boolean' }, confirm: { type: 'string', maxLength: 64 } } };
+  static statusMonitorId = { type: 'string', pattern: '^[a-z0-9][a-z0-9-]{0,63}$' };
+  static statusMonitorParams = { type: 'object', properties: { sid: Schemas.sid, id: Schemas.statusMonitorId }, required: ['sid', 'id'] };
+  static statusMonitorPut = { type: 'object', additionalProperties: false, properties: { name: { type: 'string', minLength: 1, maxLength: 100 }, description: { type: 'string', maxLength: 500 }, url: { type: 'string', minLength: 8, maxLength: 2000, pattern: '^https?://' }, method: { type: 'string', enum: ['GET', 'HEAD'] }, intervalSec: { type: 'integer', minimum: 10, maximum: 86400 }, timeoutMs: { type: 'integer', minimum: 500, maximum: 60000 }, expectStatus: { type: 'array', minItems: 1, maxItems: 20, items: { type: 'integer', minimum: 100, maximum: 599 } }, failThreshold: { type: 'integer', minimum: 1, maximum: 20 }, public: { type: 'boolean' }, paused: { type: 'boolean' } } };
+  static statusChecksQuery = { type: 'object', additionalProperties: false, properties: { limit: { type: 'string', pattern: '^([1-9]|[1-9][0-9]|1[0-9][0-9]|200)$' }, cursor: { type: 'string', pattern: '^[0-9]{1,15}$' } } };
+  static statusIncidentsQuery = { type: 'object', additionalProperties: false, properties: { monitor: Schemas.statusMonitorId, state: { type: 'string', enum: ['open', 'closed'] }, limit: { type: 'string', pattern: '^([1-9]|[1-9][0-9]|100)$' }, cursor: { type: 'string', pattern: '^[0-9]{1,15}~inc_[0-9a-z]{6,12}[0-9a-f]{16}$' } } };
   static flagsQuery = {
     type: 'object', additionalProperties: false,
     properties: {

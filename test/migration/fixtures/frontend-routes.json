@@ -38,6 +38,8 @@
   "/atc-queue/:sid/queues/:id",
   "/atc-backup/:sid",
   "/atc-backup/:sid/backups/:id",
+  "/atc-status/:sid",
+  "/atc-status/:sid/monitors/:id",
   "/audit",
   "/admins",
   "/docs",

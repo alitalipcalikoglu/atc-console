@@ -1,0 +1,5 @@
+import { StatusClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, record } from '#lib/server/m4.js';
+export const GET = jsonRoute({ auth: 'session', params: Schemas.statusMonitorParams, handler: ({ runtime, params }) => runtime.clients.get(params.sid, StatusClient).monitor(params.id) });
+export const PUT = jsonRoute({ auth: 'admin', params: Schemas.statusMonitorParams, body: Schemas.statusMonitorPut, handler: async (context) => { const output = await context.runtime.clients.get(context.params.sid, StatusClient).putMonitor(context.params.id, context.body as object) as any; record(context, 'atc-status.monitor.upsert', context.params.id, { service: context.params.sid, created: output.created, settings: context.body }); return output; } });
+export const DELETE = jsonRoute({ auth: 'admin', params: Schemas.statusMonitorParams, status: 204, handler: async (context) => { await context.runtime.clients.get(context.params.sid, StatusClient).deleteMonitor(context.params.id); record(context, 'atc-status.monitor.delete', context.params.id, { service: context.params.sid }); } });

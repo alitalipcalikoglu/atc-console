@@ -37,6 +37,18 @@ const fake = createServer((req, res) => {
         return res.writeHead(200, { 'content-type': 'application/pdf', 'content-length': '8', 'x-render-pages': '1', 'content-disposition': 'inline; filename="x.html"' }).end('%PDF-1.3');
       }
     }
+    if (String(req.headers.authorization).endsWith('t'.repeat(40))) {
+      const MON = { id: 'shop', name: 'Shop', url: 'https://shop.example.com/health', state: 'up', origin: 'api', expectStatus: [200], lastCheck: { ok: true, latencyMs: 12 } };
+      const I = 'inc_mv8abcde0123456789abcdef';
+      if (p === '/v1/stats') return json(200, { monitors: 3, up: 2, down: 1, degraded: 0, unknown: 0, paused: 0, openIncidents: 1, incidents24h: 2, notify: true });
+      if (p === '/v1/monitors') return json(200, { items: [MON] });
+      if (p === '/v1/monitors/shop' && req.method === 'GET') return json(200, { monitor: MON, uptime: { '24h': { checks: 10, uptime: 90, avgMs: 12 } }, openIncident: null });
+      if (p === '/v1/monitors/shop' && req.method === 'PUT') return json(200, { created: false, monitor: { ...MON, ...JSON.parse(body) } });
+      if (p === '/v1/monitors/shop' && req.method === 'DELETE') return res.writeHead(204).end();
+      if (p === '/v1/monitors/shop/check') return json(200, { check: { ok: false, status: 503, latencyMs: 30, error: 'unexpected status 503' }, monitor: MON });
+      if (p === '/v1/monitors/shop/checks') return json(200, { items: [{ at: '2026-10-14T10:00:00.000Z', ok: true, status: 200, latencyMs: 12, error: null }], nextCursor: '5' });
+      if (p === '/v1/incidents') return json(200, { items: [{ id: I, monitor: 'shop', state: 'open' }], nextCursor: null });
+    }
     if (String(req.headers.authorization).endsWith('b'.repeat(40))) {
       const K = 'bk_mv8abcde0123456789abcdef';
       const BK = { id: K, source: 'atc-auth', status: 'ok', trigger: 'manual', file: 'atc-auth-20261014T101500Z-89abcdef.db', size: 4096, sha256: 'a'.repeat(64) };
@@ -236,7 +248,7 @@ let origin = '';
 before(async () => {
   await new Promise((r) => fake.listen(0, '127.0.0.1', () => r(undefined)));
   origin = `http://127.0.0.1:${/** @type {any} */ (fake.address()).port}`;
-  t = await testConsole({ urls: { notify: origin, auth: origin, media: origin, gateway: origin, audit: origin, shortlink: origin, flags: origin, scheduler: origin, 'webhook-out': origin, search: origin, ratelimit: origin, geo: origin, content: origin, export: origin, render: origin, queue: origin, backup: origin }, env: { RATE_LIMIT_MAX: '60' } });
+  t = await testConsole({ urls: { notify: origin, auth: origin, media: origin, gateway: origin, audit: origin, shortlink: origin, flags: origin, scheduler: origin, 'webhook-out': origin, search: origin, ratelimit: origin, geo: origin, content: origin, export: origin, render: origin, queue: origin, backup: origin, status: origin }, env: { RATE_LIMIT_MAX: '60' } });
 });
 after(async () => { await t.app.close(); fake.close(); });
 
@@ -265,7 +277,7 @@ test('documentation API is authenticated, allowlisted and serves local and upstr
   const headers = { cookie };
   const list = await t.app.inject({ url: '/api/docs/services', headers });
   assert.equal(list.statusCode, 200);
-  assert.equal(list.json().items.length, 18);
+  assert.equal(list.json().items.length, 19);
   assert.deepEqual(list.json().items[0], { id: 'atc-console', type: 'atc-console', label: 'Console' });
   assert.equal(list.body.includes('apiKey'), false, 'registry secrets are never serialized');
 
@@ -383,7 +395,9 @@ test('overview aggregates health and parsed metrics per service', async () => {
   const res = await t.app.inject({ url: '/api/services/overview', headers: { cookie } });
   assert.equal(res.statusCode, 200);
   const items = res.json().items;
-  assert.equal(items.length, 17);
+  assert.equal(items.length, 18);
+  const sts = items.find((/** @type {any} */ i) => i.id === 'atc-status').summary;
+  assert.deepEqual([sts.monitors, sts.up, sts.down, sts.degraded, sts.openIncidents], [3, 2, 1, 0, 1]);
   const bks = items.find((/** @type {any} */ i) => i.id === 'atc-backup').summary;
   assert.deepEqual([bks.sources, bks.backups, bks.bytes, bks.failing, bks.stale], [2, 5, 20480, 1, 0]);
   const qus = items.find((/** @type {any} */ i) => i.id === 'atc-queue').summary;
@@ -426,7 +440,7 @@ test('about aggregates /v1/info per service; unreachable and malformed responses
   const res = await t.app.inject({ url: '/api/services/about', headers: { cookie } });
   assert.equal(res.statusCode, 200);
   const items = res.json().items;
-  assert.equal(items.length, 17);
+  assert.equal(items.length, 18);
   const notify = items.find((/** @type {any} */ i) => i.id === 'atc-notify');
   assert.equal(notify.ok, true);
   assert.deepEqual(notify.data, { service: 'fake', version: '1.2.3', apiVersion: 'v1', capabilities: ['x'], schemaVersion: 4, serviceCore: '1.10.0' });
@@ -1035,4 +1049,30 @@ test('backup: sources, run, history, verify, restore, download, delete (audited,
   assert.equal((await t.app.inject({ method: 'DELETE', url: `${B}/backups/${K}`, headers: { cookie, ...CSRF } })).statusCode, 204);
   const log = await t.app.inject({ url: '/api/audit?action=atc-backup.', headers: { cookie } });
   assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-backup.backup.delete', 'atc-backup.backup.download', 'atc-backup.backup.restore', 'atc-backup.backup.verify', 'atc-backup.backup.create']);
+});
+
+test('status: monitors, check now, checks, incidents, edit, delete (audited, admin only)', async () => {
+  const { cookie } = await signIn(t);
+  const viewer = await signIn(t, { username: 'viewer15', role: 'viewer' });
+  seen.length = 0;
+  const B = '/api/services/atc-status/atc-status';
+  let res = await t.app.inject({ url: `${B}/monitors`, headers: { cookie: viewer.cookie } });
+  assert.deepEqual([res.statusCode, res.json().items[0].id], [200, 'shop']);
+  assert.equal(seen.at(-1)?.headers.authorization, `Bearer ${'t'.repeat(40)}`, 'status key injected');
+  assert.equal((await t.app.inject({ url: `${B}/stats`, headers: { cookie } })).json().down, 1);
+  assert.equal((await t.app.inject({ url: `${B}/monitors/shop`, headers: { cookie: viewer.cookie } })).json().uptime['24h'].uptime, 90);
+  assert.equal((await t.app.inject({ method: 'PUT', url: `${B}/monitors/shop`, headers: { cookie: viewer.cookie, ...CSRF }, payload: { paused: true } })).statusCode, 403);
+  assert.equal((await t.app.inject({ method: 'PUT', url: `${B}/monitors/Bad`, headers: { cookie, ...CSRF }, payload: {} })).statusCode, 400);
+  assert.equal((await t.app.inject({ method: 'PUT', url: `${B}/monitors/shop`, headers: { cookie, ...CSRF }, payload: { url: 'ftp://x' } })).statusCode, 400);
+  assert.equal((await t.app.inject({ method: 'PUT', url: `${B}/monitors/shop`, headers: { cookie, ...CSRF }, payload: { name: 'Shop API', expectStatus: [200, 204] } })).json().monitor.name, 'Shop API');
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/monitors/shop/check`, headers: { cookie: viewer.cookie, ...CSRF } })).statusCode, 403);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/monitors/shop/check`, headers: { cookie, ...CSRF } })).json().check.status, 503);
+  res = await t.app.inject({ url: `${B}/monitors/shop/checks?limit=20`, headers: { cookie } });
+  assert.deepEqual([res.json().nextCursor, seen.at(-1)?.url], ['5', '/v1/monitors/shop/checks?limit=20']);
+  res = await t.app.inject({ url: `${B}/incidents?state=open&monitor=shop`, headers: { cookie } });
+  assert.deepEqual([res.json().items[0].state, seen.at(-1)?.url], ['open', '/v1/incidents?monitor=shop&state=open']);
+  assert.equal((await t.app.inject({ url: `${B}/incidents?state=maybe`, headers: { cookie } })).statusCode, 400);
+  assert.equal((await t.app.inject({ method: 'DELETE', url: `${B}/monitors/shop`, headers: { cookie, ...CSRF } })).statusCode, 204);
+  const log = await t.app.inject({ url: '/api/audit?action=atc-status.', headers: { cookie } });
+  assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-status.monitor.delete', 'atc-status.monitor.check', 'atc-status.monitor.upsert']);
 });

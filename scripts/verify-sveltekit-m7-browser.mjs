@@ -115,7 +115,7 @@ try {
 
   const dbPath = join(scratch, 'console.db');
   const servicesFile = join(scratch, 'services.json');
-  const types = ['atc-notify', 'atc-auth', 'atc-media', 'atc-gateway', 'atc-audit', 'atc-shortlink', 'atc-flags', 'atc-scheduler', 'atc-webhook-out', 'atc-search', 'atc-ratelimit', 'atc-geo', 'atc-content', 'atc-export', 'atc-render', 'atc-queue', 'atc-backup'];
+  const types = ['atc-notify', 'atc-auth', 'atc-media', 'atc-gateway', 'atc-audit', 'atc-shortlink', 'atc-flags', 'atc-scheduler', 'atc-webhook-out', 'atc-search', 'atc-ratelimit', 'atc-geo', 'atc-content', 'atc-export', 'atc-render', 'atc-queue', 'atc-backup', 'atc-status'];
   writeFileSync(servicesFile, JSON.stringify({ services: types.map((type) => ({
     id: type,
     type,
@@ -219,7 +219,7 @@ try {
 
   const docsRequestStart = requests.length;
   await navigate('/docs?service=atc-notify');
-  await waitJs(`document.querySelectorAll('#docs-service option').length === 18`, 'fixed docs catalog');
+  await waitJs(`document.querySelectorAll('#docs-service option').length === 19`, 'fixed docs catalog');
   await waitJs(`document.querySelectorAll('.swagger-ui .opblock').length > 0`, 'Swagger operations', 30_000);
   assert.equal(await evaluate(`document.querySelector('.swagger-ui .info .title')?.textContent.includes('M7 Fixture API')`), true);
   assert.equal(requests.slice(docsRequestStart).some(({ url }) => url.endsWith(swaggerFile)), true, 'docs did not load local Swagger chunk');

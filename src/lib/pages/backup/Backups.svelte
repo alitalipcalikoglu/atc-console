@@ -89,7 +89,7 @@
     <Panel title={t('bk.sources')} flush>
       {#if sources.error}<ErrorBox error={sources.error} onretry={() => sources.load()} />
       {:else if sources.loading && !srcItems.length}<Skeleton rows={4} />
-      {:else if !srcItems.length}<Empty icon="history" title={t('bk.noSources')} desc={t('bk.noSourcesDesc')} />
+      {:else if !srcItems.length}<Empty icon="database" title={t('bk.noSources')} desc={t('bk.noSourcesDesc')} />
       {:else}
         <div class="table-wrap"><table class="table">
           <thead><tr><th>{t('bk.source')}</th><th>{t('bk.last')}</th><th class="hide-m">{t('bk.size')}</th><th class="hide-m">{t('bk.kept')}</th><th class="hide-m">{t('bk.nextDue')}</th>{#if session.isAdmin}<th></th>{/if}</tr></thead>
@@ -115,7 +115,7 @@
       {/snippet}
       {#if listError}<ErrorBox error={listError} onretry={() => loadBackups(null)} />
       {:else if loading && !items.length}<Skeleton rows={4} />
-      {:else if !items.length}<Empty icon="history" title={t('bk.noBackups')} />
+      {:else if !items.length}<Empty icon="database" title={t('bk.noBackups')} />
       {:else}
         <div class="table-wrap"><table class="table">
           <thead><tr><th>{t('bk.source')}</th><th>{t('bk.status')}</th><th class="hide-m">{t('bk.trigger')}</th><th class="hide-m">{t('bk.size')}</th><th>{t('bk.started')}</th></tr></thead>

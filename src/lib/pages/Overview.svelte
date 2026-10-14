@@ -50,6 +50,7 @@
       case 'atc-render': return [[t('rd.templates'), fmt.int(m.templates)], [t('rd.renders24h'), fmt.int(m.renders24h)], [t('rd.failed24h'), fmt.int(m.failed24h)], [t('rd.avgMs'), fmt.ms(m.avgMs)]];
       case 'atc-queue': return [[t('qu.queues'), fmt.int(m.queues)], [t('qu.ready'), fmt.int(m.ready)], [t('qu.leased'), fmt.int(m.leased)], [t('qu.dead'), fmt.int(m.dead)]];
       case 'atc-backup': return [[t('bk.sources'), fmt.int(m.sources)], [t('bk.kept'), fmt.int(m.backups)], [t('bk.stored'), fmt.bytes(m.bytes)], [t('bk.failing'), fmt.int(m.failing)]];
+      case 'atc-status': return [[t('stx.monitors'), fmt.int(m.monitors)], [t('stx.s.up'), fmt.int(m.up)], [t('stx.s.down'), fmt.int(m.down)], [t('stx.openIncidents'), fmt.int(m.openIncidents)]];
       default: return [];
     }
   }
