@@ -4,6 +4,7 @@ import { ContentClient } from './content-client.js';
 import { ExportClient } from './export-client.js';
 import { RenderClient } from './render-client.js';
 import { QueueClient } from './queue-client.js';
+import { BackupClient } from './backup-client.js';
 import { FlagsClient } from './flags-client.js';
 import { GatewayClient } from './gateway-client.js';
 import { GeoClient } from './geo-client.js';
@@ -21,7 +22,7 @@ const CLIENT_TYPES = new Map([
   ['GatewayClient', 'atc-gateway'], ['AuditClient', 'atc-audit'], ['ShortlinkClient', 'atc-shortlink'],
   ['FlagsClient', 'atc-flags'], ['SchedulerClient', 'atc-scheduler'], ['WebhookOutClient', 'atc-webhook-out'],
   ['SearchClient', 'atc-search'], ['RateLimitClient', 'atc-ratelimit'], ['GeoClient', 'atc-geo'],
-  ['ContentClient', 'atc-content'], ['ExportClient', 'atc-export'], ['RenderClient', 'atc-render'], ['QueueClient', 'atc-queue'],
+  ['ContentClient', 'atc-content'], ['ExportClient', 'atc-export'], ['RenderClient', 'atc-render'], ['QueueClient', 'atc-queue'], ['BackupClient', 'atc-backup'],
 ]);
 
 /** @typedef {import('./registry.js').ServiceRegistry} ServiceRegistry */
@@ -62,6 +63,7 @@ export class ServiceClients {
       case 'atc-export': return new ExportClient(def, o);
       case 'atc-render': return new RenderClient(def, o);
       case 'atc-queue': return new QueueClient(def, o);
+      case 'atc-backup': return new BackupClient(def, o);
       default: throw new Error(`unknown service type ${def.type}`);
     }
   }

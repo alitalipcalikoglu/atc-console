@@ -21,6 +21,7 @@ Walkthroughs for every feature of the admin console. Screens are described as th
 | [Rate limits from the console](ratelimit.md) | Policies and windows, decision charts, subject lookup and reset, overrides and blocks |
 | [Geo from the console](geo.md) | IP, phone and distance lookups, the IP database, reference tables, place collections and nearby search |
 | [Queues from the console](queue.md) | Queue depth and settings, browsing messages by state, sending a test message, redriving dead letters, purge and delete |
+| [Backups from the console](backup.md) | Sources and schedule, backing up now, history, download with checksum, verify, restore to a file or the live database, delete |
 | [Render templates from the console](render.md) | Template list, the layout editor with sample data, PDF preview through the console, publishing versions, delete |
 | [Exports from the console](export.md) | Starting an export with source filters, following progress, download, cancel, retry and delete |
 | [Content from the console](content.md) | Namespaces, locales and fallback chains, the key editor with placeholder checks, import/export, publish and rollback |

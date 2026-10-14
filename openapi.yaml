@@ -10,7 +10,7 @@ info:
 
     Two things shape the whole document. First, authentication is a **cookie session**
     (`console_session`) plus an `x-console-request: 1` CSRF header on mutations, not the
-    `Authorization: Bearer` API key the sixteen backend services use — and downstream calls are made
+    `Authorization: Bearer` API key the seventeen backend services use — and downstream calls are made
     with console's own per-service API key, never the administrator's identity. Second, console
     declares **no Fastify `response:` schema anywhere**: request shapes are real, enforced Ajv
     schemas and are documented here exactly, while the body of a pass-through route is the target
@@ -72,6 +72,8 @@ tags:
     description: Pass-through to a render instance.
   - name: atc-queue
     description: Pass-through to a queue instance.
+  - name: atc-backup
+    description: "Backup service: sources, run now, history, verify, restore, download and delete of database backups."
 paths:
   /openapi.yaml:
     get:
@@ -133,7 +135,7 @@ paths:
         - operational
       summary: Service identity and capabilities.
       description: The one operational route console takes from the shared `registerInfo` helper, so its shape is
-        identical across all 17 services.
+        identical across all 18 services.
       security: []
       x-stack-visibility: public
       responses:
@@ -9770,6 +9772,385 @@ paths:
       responses:
         "204":
           description: Done. console discards queue's response body.
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-backup/stats:
+    get:
+      operationId: atc-console.atc-backup.stats.get
+      tags:
+        - atc-backup
+      summary: "Backup totals, failing and stale sources."
+      description: >-
+        Typed pass-through to the **backup** service instance named by `sid` — console relays this to its `GET
+        /v1/stats`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the backup service's own `GET /v1/stats` response body, relayed
+            unchanged. See the backup service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-backup/sources:
+    get:
+      operationId: atc-console.atc-backup.sources.list
+      tags:
+        - atc-backup
+      summary: "Sources with their newest backup."
+      description: >-
+        Typed pass-through to the **backup** service instance named by `sid` — console relays this to its `GET
+        /v1/sources`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the backup service's own `GET /v1/sources` response body, relayed
+            unchanged. See the backup service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-backup/sources/{id}/backups:
+    post:
+      operationId: atc-console.atc-backup.sources.backup
+      tags:
+        - atc-backup
+      summary: "Back up a source now."
+      description: >-
+        Typed pass-through to the **backup** service instance named by `sid` — console relays this to its `POST
+        /v1/sources/{id}/backups`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "201":
+          description: Pass-through of the backup service's own `POST /v1/sources/{id}/backups` response body, relayed
+            unchanged. See the backup service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-backup/backups:
+    get:
+      operationId: atc-console.atc-backup.backups.list
+      tags:
+        - atc-backup
+      summary: "Backups, newest first."
+      description: >-
+        Typed pass-through to the **backup** service instance named by `sid` — console relays this to its `GET
+        /v1/backups`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - name: source
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^[a-z][a-z0-9-]{0,63}$"}
+        - name: status
+          in: query
+          required: false
+          schema: {"type":"string","enum":["running","ok","failed"]}
+        - name: limit
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^([1-9]|[1-9][0-9]|100)$"}
+        - name: cursor
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^[0-9]{1,15}~bk_[0-9a-z]{6,12}[0-9a-f]{16}$"}
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the backup service's own `GET /v1/backups` response body, relayed
+            unchanged. See the backup service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-backup/backups/{id}:
+    get:
+      operationId: atc-console.atc-backup.backups.get
+      tags:
+        - atc-backup
+      summary: "One backup."
+      description: >-
+        Typed pass-through to the **backup** service instance named by `sid` — console relays this to its `GET
+        /v1/backups/{id}`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the backup service's own `GET /v1/backups/{id}` response body, relayed
+            unchanged. See the backup service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    delete:
+      operationId: atc-console.atc-backup.backups.delete
+      tags:
+        - atc-backup
+      summary: "Delete a backup and its file."
+      description: >-
+        Typed pass-through to the **backup** service instance named by `sid` — console relays this to its
+        `DELETE /v1/backups/{id}`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "204":
+          description: Done. console discards backup's response body.
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-backup/backups/{id}/verify:
+    post:
+      operationId: atc-console.atc-backup.backups.verify
+      tags:
+        - atc-backup
+      summary: "Re-check a backup's checksum and integrity."
+      description: >-
+        Typed pass-through to the **backup** service instance named by `sid` — console relays this to its `POST
+        /v1/backups/{id}/verify`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the backup service's own `POST /v1/backups/{id}/verify` response body, relayed
+            unchanged. See the backup service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-backup/backups/{id}/restore:
+    post:
+      operationId: atc-console.atc-backup.backups.restore
+      tags:
+        - atc-backup
+      summary: "Restore a backup to a file or over the live database."
+      description: >-
+        Typed pass-through to the **backup** service instance named by `sid` — console relays this to its `POST
+        /v1/backups/{id}/restore`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"properties":{"target":{"type":"string","pattern":"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$"},"overwrite":{"type":"boolean"},"live":{"type":"boolean"},"confirm":{"type":"string","maxLength":64}}}
+      responses:
+        "200":
+          description: Pass-through of the backup service's own `POST /v1/backups/{id}/restore` response body, relayed
+            unchanged. See the backup service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-backup/backups/{id}/file:
+    get:
+      operationId: atc-console.atc-backup.backups.file
+      tags:
+        - atc-backup
+      summary: "Download the backup file through the console."
+      description: >-
+        Typed pass-through to the **backup** service instance named by `sid` — console relays this to its `GET
+        /v1/backups/{id}/download`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: >-
+            The backup file, streamed from the backup service as an attachment with `cache-control:
+            no-store`, `content-security-policy: default-src 'none'; sandbox` and the service's
+            `X-Checksum-SHA256`.
+          content:
+            application/vnd.sqlite3:
+              schema:
+                type: string
+                format: binary
+          headers:
+            X-Checksum-SHA256:
+              schema:
+                type: string
         "400":
           $ref: "#/components/responses/ValidationFailed"
         "401":

@@ -31,13 +31,13 @@ before(async () => {
 });
 after(async () => consoleApp.close());
 
-test('final frontend gate: filesystem pages own exactly the frozen 42 browser patterns', () => {
+test('final frontend gate: filesystem pages own exactly the frozen 44 browser patterns', () => {
   const actual = svelteKitPagePatterns();
-  assert.equal(actual.length, 42);
+  assert.equal(actual.length, 44);
   assert.deepEqual(actual.sort(), [...expectedRoutes].sort());
 });
 
-test('all 42 representative routes load directly through adapter-node', async () => {
+test('all 44 representative routes load directly through adapter-node', async () => {
   for (const pattern of expectedRoutes) {
     const response = await fetch(`${consoleApp.origin}${materialize(pattern)}`, { headers: pattern === '/login' ? {} : { cookie }, redirect: 'manual' });
     assert.equal(response.status, 200, pattern);

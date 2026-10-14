@@ -148,6 +148,12 @@ export class Schemas {
   static queueRedrive = { type: 'object', additionalProperties: false, properties: { ids: { type: 'array', minItems: 1, maxItems: 1000, items: Schemas.queueMessageId }, all: { const: true } } };
   static queueEnqueue = Schemas.body(['body'], { body: {}, delaySec: { type: 'integer', minimum: 0, maximum: 1209600 }, priority: { type: 'integer', minimum: -100, maximum: 100 }, dedupeKey: { type: 'string', minLength: 1, maxLength: 200 } });
   static queueMessagesQuery = { type: 'object', additionalProperties: false, properties: { state: { type: 'string', enum: ['ready', 'delayed', 'leased', 'dead'] }, limit: { type: 'string', pattern: '^([1-9]|[1-9][0-9]|1[0-9][0-9]|200)$' }, cursor: { type: 'string', pattern: '^[0-9]{1,15}$' } } };
+  static backupSource = { type: 'string', pattern: '^[a-z][a-z0-9-]{0,63}$' };
+  static backupId = { type: 'string', pattern: '^bk_[0-9a-z]{6,12}[0-9a-f]{16}$' };
+  static backupSourceParams = { type: 'object', properties: { sid: Schemas.sid, id: Schemas.backupSource }, required: ['sid', 'id'] };
+  static backupParams = { type: 'object', properties: { sid: Schemas.sid, id: Schemas.backupId }, required: ['sid', 'id'] };
+  static backupListQuery = { type: 'object', additionalProperties: false, properties: { source: Schemas.backupSource, status: { type: 'string', enum: ['running', 'ok', 'failed'] }, limit: { type: 'string', pattern: '^([1-9]|[1-9][0-9]|100)$' }, cursor: { type: 'string', pattern: '^[0-9]{1,15}~bk_[0-9a-z]{6,12}[0-9a-f]{16}$' } } };
+  static backupRestore = { type: 'object', additionalProperties: false, properties: { target: { type: 'string', pattern: '^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$' }, overwrite: { type: 'boolean' }, live: { type: 'boolean' }, confirm: { type: 'string', maxLength: 64 } } };
   static flagsQuery = {
     type: 'object', additionalProperties: false,
     properties: {

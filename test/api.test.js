@@ -37,6 +37,19 @@ const fake = createServer((req, res) => {
         return res.writeHead(200, { 'content-type': 'application/pdf', 'content-length': '8', 'x-render-pages': '1', 'content-disposition': 'inline; filename="x.html"' }).end('%PDF-1.3');
       }
     }
+    if (String(req.headers.authorization).endsWith('b'.repeat(40))) {
+      const K = 'bk_mv8abcde0123456789abcdef';
+      const BK = { id: K, source: 'atc-auth', status: 'ok', trigger: 'manual', file: 'atc-auth-20261014T101500Z-89abcdef.db', size: 4096, sha256: 'a'.repeat(64) };
+      if (p === '/v1/stats') return json(200, { sources: 2, backups: 5, bytes: 20480, failing: ['atc-geo'], stale: [], running: [], intervalMin: 360, retentionCount: 14, retentionDays: 30, media: true, liveRestore: false });
+      if (p === '/v1/sources') return json(200, { items: [{ id: 'atc-auth', file: 'auth.db', exists: true, size: 4096, running: false, lastBackup: BK, backups: 5, bytes: 20480 }] });
+      if (p === '/v1/sources/atc-auth/backups' && req.method === 'POST') return json(201, { backup: { ...BK, id: K } });
+      if (p === '/v1/backups') return json(200, { items: [BK], nextCursor: null });
+      if (p === `/v1/backups/${K}` && req.method === 'GET') return json(200, { backup: BK });
+      if (p === `/v1/backups/${K}` && req.method === 'DELETE') return res.writeHead(204).end();
+      if (p === `/v1/backups/${K}/verify`) return json(200, { backup: BK, checksumOk: true, integrity: 'ok' });
+      if (p === `/v1/backups/${K}/restore`) { const b = JSON.parse(body); return b.live ? json(403, { error: { code: 'LIVE_RESTORE_DISABLED', message: 'live restores are disabled' } }) : json(200, { backup: BK, live: false, target: b.target, size: 4096, sha256: BK.sha256, safetyBackupId: null }); }
+      if (p === `/v1/backups/${K}/download`) return res.writeHead(200, { 'content-type': 'application/vnd.sqlite3', 'content-length': '16', 'content-disposition': `attachment; filename="${BK.file}"`, 'x-checksum-sha256': BK.sha256 }).end('SQLite format 3\0');
+    }
     if (String(req.headers.authorization).endsWith('u'.repeat(40))) {
       const M = 'msg_mv8abcde0123456789abcdef';
       const Q = { name: 'emails', description: '', visibilitySec: 30, maxAttempts: 5, backoffBaseSec: 5, backoffMaxSec: 900, paused: false };
@@ -223,7 +236,7 @@ let origin = '';
 before(async () => {
   await new Promise((r) => fake.listen(0, '127.0.0.1', () => r(undefined)));
   origin = `http://127.0.0.1:${/** @type {any} */ (fake.address()).port}`;
-  t = await testConsole({ urls: { notify: origin, auth: origin, media: origin, gateway: origin, audit: origin, shortlink: origin, flags: origin, scheduler: origin, 'webhook-out': origin, search: origin, ratelimit: origin, geo: origin, content: origin, export: origin, render: origin, queue: origin }, env: { RATE_LIMIT_MAX: '60' } });
+  t = await testConsole({ urls: { notify: origin, auth: origin, media: origin, gateway: origin, audit: origin, shortlink: origin, flags: origin, scheduler: origin, 'webhook-out': origin, search: origin, ratelimit: origin, geo: origin, content: origin, export: origin, render: origin, queue: origin, backup: origin }, env: { RATE_LIMIT_MAX: '60' } });
 });
 after(async () => { await t.app.close(); fake.close(); });
 
@@ -252,7 +265,7 @@ test('documentation API is authenticated, allowlisted and serves local and upstr
   const headers = { cookie };
   const list = await t.app.inject({ url: '/api/docs/services', headers });
   assert.equal(list.statusCode, 200);
-  assert.equal(list.json().items.length, 17);
+  assert.equal(list.json().items.length, 18);
   assert.deepEqual(list.json().items[0], { id: 'atc-console', type: 'atc-console', label: 'Console' });
   assert.equal(list.body.includes('apiKey'), false, 'registry secrets are never serialized');
 
@@ -370,7 +383,9 @@ test('overview aggregates health and parsed metrics per service', async () => {
   const res = await t.app.inject({ url: '/api/services/overview', headers: { cookie } });
   assert.equal(res.statusCode, 200);
   const items = res.json().items;
-  assert.equal(items.length, 16);
+  assert.equal(items.length, 17);
+  const bks = items.find((/** @type {any} */ i) => i.id === 'atc-backup').summary;
+  assert.deepEqual([bks.sources, bks.backups, bks.bytes, bks.failing, bks.stale], [2, 5, 20480, 1, 0]);
   const qus = items.find((/** @type {any} */ i) => i.id === 'atc-queue').summary;
   assert.deepEqual([qus.queues, qus.ready, qus.leased, qus.dead], [2, 12, 3, 4]);
   const rds = items.find((/** @type {any} */ i) => i.id === 'atc-render').summary;
@@ -411,7 +426,7 @@ test('about aggregates /v1/info per service; unreachable and malformed responses
   const res = await t.app.inject({ url: '/api/services/about', headers: { cookie } });
   assert.equal(res.statusCode, 200);
   const items = res.json().items;
-  assert.equal(items.length, 16);
+  assert.equal(items.length, 17);
   const notify = items.find((/** @type {any} */ i) => i.id === 'atc-notify');
   assert.equal(notify.ok, true);
   assert.deepEqual(notify.data, { service: 'fake', version: '1.2.3', apiVersion: 'v1', capabilities: ['x'], schemaVersion: 4, serviceCore: '1.10.0' });
@@ -987,4 +1002,37 @@ test('queue: queues, settings, messages, redrive, purge, delete (audited, admin 
   assert.deepEqual([res.statusCode, seen.at(-1)?.url], [204, '/v1/queues/emails?force=true']);
   const log = await t.app.inject({ url: '/api/audit?action=atc-queue.', headers: { cookie } });
   assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-queue.queue.delete', 'atc-queue.message.delete', 'atc-queue.queue.purge', 'atc-queue.message.redrive', 'atc-queue.message.redrive', 'atc-queue.message.enqueue', 'atc-queue.queue.upsert']);
+});
+
+test('backup: sources, run, history, verify, restore, download, delete (audited, admin only)', async () => {
+  const { cookie } = await signIn(t);
+  const viewer = await signIn(t, { username: 'viewer14', role: 'viewer' });
+  seen.length = 0;
+  const B = '/api/services/atc-backup/atc-backup';
+  const K = 'bk_mv8abcde0123456789abcdef';
+  let res = await t.app.inject({ url: `${B}/sources`, headers: { cookie: viewer.cookie } });
+  assert.deepEqual([res.statusCode, res.json().items[0].id], [200, 'atc-auth']);
+  assert.equal(seen.at(-1)?.headers.authorization, `Bearer ${'b'.repeat(40)}`, 'backup key injected');
+  assert.equal((await t.app.inject({ url: `${B}/stats`, headers: { cookie } })).json().backups, 5);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/sources/atc-auth/backups`, headers: { cookie: viewer.cookie, ...CSRF } })).statusCode, 403);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/sources/Bad/backups`, headers: { cookie, ...CSRF } })).statusCode, 400);
+  res = await t.app.inject({ method: 'POST', url: `${B}/sources/atc-auth/backups`, headers: { cookie, ...CSRF } });
+  assert.deepEqual([res.statusCode, res.json().backup.status], [201, 'ok']);
+  res = await t.app.inject({ url: `${B}/backups?status=ok&limit=20`, headers: { cookie: viewer.cookie } });
+  assert.deepEqual([res.json().items[0].id, seen.at(-1)?.url], [K, '/v1/backups?status=ok&limit=20']);
+  assert.equal((await t.app.inject({ url: `${B}/backups?status=gone`, headers: { cookie } })).statusCode, 400);
+  assert.equal((await t.app.inject({ url: `${B}/backups/${K}`, headers: { cookie: viewer.cookie } })).json().backup.id, K);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/backups/${K}/verify`, headers: { cookie, ...CSRF } })).json().integrity, 'ok');
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/backups/${K}/restore`, headers: { cookie, ...CSRF }, payload: { target: '../x.db' } })).statusCode, 400);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/backups/${K}/restore`, headers: { cookie, ...CSRF }, payload: { target: 'auth-check.db' } })).json().target, 'auth-check.db');
+  res = await t.app.inject({ method: 'POST', url: `${B}/backups/${K}/restore`, headers: { cookie, ...CSRF }, payload: { live: true, confirm: 'atc-auth' } });
+  assert.deepEqual([res.statusCode, res.json().error.code], [403, 'LIVE_RESTORE_DISABLED'], 'the service decides');
+  assert.equal((await t.app.inject({ url: `${B}/backups/${K}/file`, headers: { cookie: viewer.cookie } })).statusCode, 403, 'downloads are admin only');
+  res = await t.app.inject({ url: `${B}/backups/${K}/file`, headers: { cookie } });
+  assert.deepEqual([res.statusCode, res.headers['content-type'], res.headers['x-checksum-sha256'], res.headers['cache-control']], [200, 'application/vnd.sqlite3', 'a'.repeat(64), 'no-store']);
+  assert.match(String(res.headers['content-disposition']), /^attachment; filename="atc-auth-20261014T101500Z-89abcdef\.db"$/);
+  assert.equal(res.rawPayload.toString('latin1'), 'SQLite format 3\0');
+  assert.equal((await t.app.inject({ method: 'DELETE', url: `${B}/backups/${K}`, headers: { cookie, ...CSRF } })).statusCode, 204);
+  const log = await t.app.inject({ url: '/api/audit?action=atc-backup.', headers: { cookie } });
+  assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-backup.backup.delete', 'atc-backup.backup.download', 'atc-backup.backup.restore', 'atc-backup.backup.verify', 'atc-backup.backup.create']);
 });

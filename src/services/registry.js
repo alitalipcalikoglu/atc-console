@@ -4,7 +4,7 @@ import { ConfigError } from '../config.js';
 /** @typedef {import('../types.js').ServiceDef} ServiceDef */
 /** @typedef {import('../types.js').ServiceType} ServiceType */
 
-const TYPES = new Set(['atc-notify', 'atc-auth', 'atc-media', 'atc-gateway', 'atc-audit', 'atc-shortlink', 'atc-flags', 'atc-scheduler', 'atc-webhook-out', 'atc-search', 'atc-ratelimit', 'atc-geo', 'atc-content', 'atc-export', 'atc-render', 'atc-queue']);
+const TYPES = new Set(['atc-notify', 'atc-auth', 'atc-media', 'atc-gateway', 'atc-audit', 'atc-shortlink', 'atc-flags', 'atc-scheduler', 'atc-webhook-out', 'atc-search', 'atc-ratelimit', 'atc-geo', 'atc-content', 'atc-export', 'atc-render', 'atc-queue', 'atc-backup']);
 
 /**
  * Loads and validates services.json; resolves secrets from the environment. Keeps the raw

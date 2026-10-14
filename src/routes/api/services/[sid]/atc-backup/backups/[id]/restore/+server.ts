@@ -1,0 +1,3 @@
+import { BackupClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, record } from '#lib/server/m4.js';
+export const POST = jsonRoute({ auth: 'admin', params: Schemas.backupParams, body: Schemas.backupRestore, handler: async (context) => { const output = await context.runtime.clients.get(context.params.sid, BackupClient).restore(context.params.id, context.body as object) as any; record(context, 'atc-backup.backup.restore', context.params.id, { service: context.params.sid, live: output.live, target: output.target, safetyBackupId: output.safetyBackupId }); return output; } });

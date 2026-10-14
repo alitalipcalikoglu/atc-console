@@ -36,5 +36,6 @@
   "CONTENT_API_KEY": { "class": ["downstream", "secret", "configuration-dependent"] },
   "EXPORT_API_KEY": { "class": ["downstream", "secret", "configuration-dependent"] },
   "RENDER_API_KEY": { "class": ["downstream", "secret", "configuration-dependent"] },
-  "QUEUE_API_KEY": { "class": ["downstream", "secret", "configuration-dependent"] }
+  "QUEUE_API_KEY": { "class": ["downstream", "secret", "configuration-dependent"] },
+  "BACKUP_API_KEY": { "class": ["downstream", "secret", "configuration-dependent"] }
 }

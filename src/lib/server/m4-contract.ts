@@ -6,6 +6,7 @@ export { ContentClient } from '../../services/content-client.js';
 export { ExportClient } from '../../services/export-client.js';
 export { RenderClient } from '../../services/render-client.js';
 export { QueueClient } from '../../services/queue-client.js';
+export { BackupClient } from '../../services/backup-client.js';
 export { FlagsClient } from '../../services/flags-client.js';
 export { GeoClient } from '../../services/geo-client.js';
 export { MediaClient } from '../../services/media-client.js';
