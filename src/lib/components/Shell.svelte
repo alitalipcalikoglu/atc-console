@@ -4,13 +4,13 @@
   import Confirm from './Confirm.svelte';
   import { afterNavigate, goto } from '$app/navigation';
   import { page as route } from '$app/state';
-  import { useSession } from '$lib/client/session.svelte.js';
+  import { useSession } from '#lib/client/session.svelte.js';
   const session = useSession();
-  import { Services, services } from '$lib/client/services.svelte.js';
-  import { theme } from '$lib/client/theme.svelte.js';
-  import { pwa } from '$lib/client/pwa.svelte.js';
-  import { page } from '$lib/client/page.svelte.js';
-  import { t } from '$lib/client/i18n.svelte.js';
+  import { Services, services } from '#lib/client/services.svelte.js';
+  import { theme } from '#lib/client/theme.svelte.js';
+  import { pwa } from '#lib/client/pwa.svelte.js';
+  import { page } from '#lib/client/page.svelte.js';
+  import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ children: import('svelte').Snippet }} */
   let { children } = $props();
   const ICONS = Services.ICONS;
@@ -18,7 +18,8 @@
   /** @param {string} href */
   const active = (href) => (href === '/' ? current === '/' : current === href || current.startsWith(`${href}/`));
   let menuOpen = $state(false);
-  afterNavigate(() => { menuOpen = false; });
+  // Query-string updates are shallow navigations and must not close the drawer.
+  afterNavigate(({ shallow }) => { if (!shallow) menuOpen = false; });
 </script>
 
 <svelte:window onkeydown={(e) => { if (e.key === 'Escape') menuOpen = false; }} />
@@ -66,7 +67,7 @@
 </div>
 
 
-<Confirm open={session.logoutPending} title={t('account.logout')} message={t('account.logoutDesc')} confirmLabel={t('account.logout')} onconfirm={() => session.logout().then(() => goto('/login', { replaceState: true, invalidateAll: true }))} oncancel={() => { session.logoutPending = false; }} />
+<Confirm open={session.logoutPending} title={t('account.logout')} message={t('account.logoutDesc')} confirmLabel={t('account.logout')} onconfirm={() => session.logout().then(() => goto('/login', { replace: true, refreshAll: true }))} oncancel={() => { session.logoutPending = false; }} />
 
 <style>
   .page-title { font-size: 1.05rem; font-weight: 650; line-height: 1.25; }

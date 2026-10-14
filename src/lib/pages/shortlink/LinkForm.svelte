@@ -1,7 +1,7 @@
 <script>
   /** Create/edit dialog body shared by the list and detail pages. Emits a plain patch/create object. */
-  import Dialog from '$lib/components/Dialog.svelte';
-  import { t } from '$lib/client/i18n.svelte.js';
+  import Dialog from '#lib/components/Dialog.svelte';
+  import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ open: boolean, title: string, submitLabel: string, initial?: any, busy?: boolean, onsubmit: (body: any) => void, onclose: () => void }} */
   let { open, title, submitLabel, initial = null, busy = false, onsubmit, onclose } = $props();
   let url = $state('');

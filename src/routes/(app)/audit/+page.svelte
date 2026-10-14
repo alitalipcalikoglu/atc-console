@@ -1,2 +1,2 @@
-<script>import Audit from '$lib/pages/Audit.svelte';</script>
+<script>import Audit from '#lib/pages/Audit.svelte';</script>
 <Audit />

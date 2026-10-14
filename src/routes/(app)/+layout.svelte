@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount, untrack } from 'svelte';
   import type { Snippet } from 'svelte';
-  import Shell from '$lib/components/Shell.svelte';
-  import { pwa } from '$lib/client/pwa.svelte.js';
-  import { services } from '$lib/client/services.svelte.js';
-  import { t } from '$lib/client/i18n.svelte.js';
-  import { toasts } from '$lib/client/toast.svelte.js';
+  import Shell from '#lib/components/Shell.svelte';
+  import { pwa } from '#lib/client/pwa.svelte.js';
+  import { services } from '#lib/client/services.svelte.js';
+  import { t } from '#lib/client/i18n.svelte.js';
+  import { toasts } from '#lib/client/toast.svelte.js';
 
   let { children }: { children: Snippet } = $props();
   let updateToast = 0;

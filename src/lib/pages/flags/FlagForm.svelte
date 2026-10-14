@@ -1,8 +1,8 @@
 <script>
   /** Create (key + kind + initial values) or edit (description, tags) dialog. */
-  import Dialog from '$lib/components/Dialog.svelte';
+  import Dialog from '#lib/components/Dialog.svelte';
   import ValueInput from './ValueInput.svelte';
-  import { t } from '$lib/client/i18n.svelte.js';
+  import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ open: boolean, initial?: any, busy?: boolean, onsubmit: (body: any) => void, onclose: () => void }} */
   let { open, initial = null, busy = false, onsubmit, onclose } = $props();
   let key = $state('');

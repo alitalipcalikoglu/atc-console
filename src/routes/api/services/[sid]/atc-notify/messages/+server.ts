@@ -1,5 +1,5 @@
-import { NotifyClient, Schemas } from '$lib/server/m4-contract';
-import { jsonRoute, number, record, text } from '$lib/server/m4';
+import { NotifyClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, number, record, text } from '#lib/server/m4.js';
 
 export const GET = jsonRoute({
   auth: 'session', params: Schemas.serviceParams, query: Schemas.paging,

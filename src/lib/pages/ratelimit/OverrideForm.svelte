@@ -1,16 +1,16 @@
 <script>
   /** Set or replace a subject override: custom windows or a block, optional note and expiry. PUT replaces, so the whole body is sent. */
-  import Dialog from '$lib/components/Dialog.svelte';
-  import LimitsEditor from '$lib/components/LimitsEditor.svelte';
-  import { LimitRows } from '$lib/client/limits.js';
-  import { t } from '$lib/client/i18n.svelte.js';
+  import Dialog from '#lib/components/Dialog.svelte';
+  import LimitsEditor from '#lib/components/LimitsEditor.svelte';
+  import { LimitRows } from '#lib/client/limits.js';
+  import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ open: boolean, subject?: string, initial?: any, policyLimits?: any[], busy?: boolean, onsubmit: (subject: string, body: any) => void, onclose: () => void }} */
   let { open, subject = '', initial = null, policyLimits = [], busy = false, onsubmit, onclose } = $props();
   let subj = $state('');
   let mode = $state('limits');
   let note = $state('');
   let expiresAt = $state('');
-  /** @type {import('$lib/client/limits.js').LimitRow[]} */ let rows = $state([LimitRows.blank()]);
+  /** @type {import('#lib/client/limits.js').LimitRow[]} */ let rows = $state([LimitRows.blank()]);
   /** @param {string|null|undefined} iso */
   const toLocal = (iso) => { if (!iso) return ''; const d = new Date(iso); const p = (/** @type {number} */ n) => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`; };
   $effect(() => {

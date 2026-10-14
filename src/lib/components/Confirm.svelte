@@ -5,7 +5,7 @@
    * be red without claiming permanence. Deletes may demand a typed word.
    */
   import Dialog from './Dialog.svelte';
-  import { t } from '$lib/client/i18n.svelte.js';
+  import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ open: boolean, title: string, message: string, confirmLabel?: string, danger?: boolean, irreversible?: boolean, typeWord?: string, busy?: boolean, onconfirm: () => void, oncancel: () => void }} */
   let { open, title, message, confirmLabel, danger = false, irreversible = danger, typeWord, busy = false, onconfirm, oncancel } = $props();
   let typed = $state('');

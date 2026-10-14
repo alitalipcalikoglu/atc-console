@@ -1,5 +1,5 @@
-import { MediaClient, Schemas } from '$lib/server/m4-contract';
-import { SPECIAL_CONTENT_SECURITY_POLICY, specialRoute } from '$lib/server/m5';
+import { MediaClient, Schemas } from '#lib/server/m4-contract.js';
+import { SPECIAL_CONTENT_SECURITY_POLICY, specialRoute } from '#lib/server/m5.js';
 
 const INLINE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']);
 

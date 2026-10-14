@@ -1,6 +1,6 @@
 <script>
   /** Switch between several instances of the same service type (e.g. media-eu / media-us). */
-  import { services } from '$lib/client/services.svelte.js';
+  import { services } from '#lib/client/services.svelte.js';
   /** @type {{ type: 'atc-notify'|'atc-auth'|'atc-media'|'atc-gateway'|'atc-audit'|'atc-shortlink'|'atc-flags'|'atc-scheduler'|'atc-webhook-out'|'atc-search'|'atc-ratelimit'|'atc-geo', sid: string }} */
   let { type, sid } = $props();
   const list = $derived(services.ofType(type));

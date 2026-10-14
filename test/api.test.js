@@ -247,6 +247,8 @@ test('CSRF header required on mutations; viewers are read-only; admins are audit
   let res = await t.app.inject({ method: 'POST', url: '/api/services/atc-notify/atc-notify/messages/m1/retry', headers: { cookie: admin.cookie } });
   assert.equal(res.statusCode, 403, 'no CSRF header');
   assert.match(res.json().error.message, /x-console-request/);
+  res = await t.app.inject({ method: 'POST', url: '/api/session/login', headers: { 'content-type': 'text/plain' }, payload: JSON.stringify({ email: 'viewer@console.local', password: 'x' }) });
+  assert.equal(res.statusCode, 403, 'a cross-site form cannot reach login without the CSRF header');
   res = await t.app.inject({ method: 'POST', url: '/api/services/atc-notify/atc-notify/messages/m1/retry', headers: { cookie: viewer.cookie, ...CSRF } });
   assert.equal(res.statusCode, 403, 'viewer cannot mutate');
   assert.equal((await t.app.inject({ url: '/api/services/atc-notify/atc-notify/messages?status=failed', headers: { cookie: viewer.cookie } })).statusCode, 200, 'viewer can read');

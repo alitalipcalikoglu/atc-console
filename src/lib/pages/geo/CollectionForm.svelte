@@ -1,7 +1,7 @@
 <script>
   /** Create or edit a place collection. Editing sends only the description when it changed. */
-  import Dialog from '$lib/components/Dialog.svelte';
-  import { t } from '$lib/client/i18n.svelte.js';
+  import Dialog from '#lib/components/Dialog.svelte';
+  import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ open: boolean, initial?: any, busy?: boolean, onsubmit: (body: any) => void, onclose: () => void }} */
   let { open, initial = null, busy = false, onsubmit, onclose } = $props();
   let name = $state('');

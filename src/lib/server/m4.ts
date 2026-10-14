@@ -1,8 +1,8 @@
 import type { RequestEvent, RequestHandler } from '@sveltejs/kit';
 import type { ValidateFunction } from 'ajv';
-import { ApiEndpoint, ApiRequest, ApiRequestError } from '$lib/server/api';
-import { AuthRequest } from '$lib/server/auth';
-import { Runtime, type ConsoleRuntime } from '$lib/server/runtime.js';
+import { ApiEndpoint, ApiRequest, ApiRequestError } from '#lib/server/api.js';
+import { AuthRequest } from '#lib/server/auth.js';
+import { Runtime, type ConsoleRuntime } from '#lib/server/runtime.js';
 import type { AdminRow, SessionRow } from '../../types.js';
 
 type Schema = Record<string, unknown>;

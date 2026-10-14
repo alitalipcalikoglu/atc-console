@@ -18,10 +18,10 @@ test('M8 final architecture has one SvelteKit application and adapter-node runti
   assert.equal(existsSync(new URL('../../vite.legacy.config.js', import.meta.url)), false);
   assert.equal(existsSync(new URL('../../src/index.js', import.meta.url)), false);
   assert.equal(existsSync(new URL('../../src/http/console-api.js', import.meta.url)), false);
-  assert.match(read('../../vite.config.ts'), /sveltekit\(\)/);
+  assert.match(read('../../vite.config.ts'), /sveltekit\(\{/);
   assert.doesNotMatch(read('../../vite.config.ts'), /fastify|proxy|fallback/i);
-  assert.match(read('../../svelte.config.js'), /adapter\(\)/);
-  assert.doesNotMatch(read('../../svelte.config.js'), /adapter-static|ssr\s*:\s*false/);
+  assert.match(read('../../vite.config.ts'), /adapter\(\)/);
+  assert.doesNotMatch(read('../../vite.config.ts'), /adapter-static|ssr\s*:\s*false/);
 });
 
 test('SvelteKit owns all explicit endpoints and filesystem pages', () => {

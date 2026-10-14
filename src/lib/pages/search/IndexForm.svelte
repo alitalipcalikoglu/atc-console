@@ -1,7 +1,7 @@
 <script>
   /** Create or edit an index. Editing sends only the fields that changed. */
-  import Dialog from '$lib/components/Dialog.svelte';
-  import { t } from '$lib/client/i18n.svelte.js';
+  import Dialog from '#lib/components/Dialog.svelte';
+  import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ open: boolean, initial?: any, busy?: boolean, onsubmit: (body: any) => void, onclose: () => void }} */
   let { open, initial = null, busy = false, onsubmit, onclose } = $props();
   let name = $state('');

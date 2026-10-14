@@ -1,5 +1,5 @@
-import { ConsoleError, Schemas } from '$lib/server/m4-contract';
-import { jsonRoute, record } from '$lib/server/m4';
+import { ConsoleError, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, record } from '#lib/server/m4.js';
 
 const body = Schemas.body(['polling'], { polling: Schemas.body(['enabled', 'intervalSec'], { enabled: { type: 'boolean' }, intervalSec: { type: 'integer', minimum: 5, maximum: 3600 } }) });
 

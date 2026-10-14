@@ -1,2 +1,2 @@
-<script>import ApiDocs from '$lib/pages/ApiDocs.svelte';</script>
+<script>import ApiDocs from '#lib/pages/ApiDocs.svelte';</script>
 <ApiDocs />

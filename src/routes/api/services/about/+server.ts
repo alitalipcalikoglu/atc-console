@@ -1,3 +1,3 @@
-import { jsonRoute } from '$lib/server/m4';
+import { jsonRoute } from '#lib/server/m4.js';
 
 export const GET = jsonRoute({ auth: 'session', handler: async ({ runtime }) => ({ items: await runtime.clients.about() }) });

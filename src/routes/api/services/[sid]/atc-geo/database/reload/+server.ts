@@ -1,4 +1,4 @@
-import { GeoClient, Schemas } from '$lib/server/m4-contract';
-import { jsonRoute, record } from '$lib/server/m4';
+import { GeoClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, record } from '#lib/server/m4.js';
 export const POST = jsonRoute({ auth: 'admin', params: Schemas.serviceParams, handler: async (context) => { const output: any = await context.runtime.clients.get(context.params.sid, GeoClient).reloadDatabase(); record(context, 'atc-geo.database.reload', context.params.sid, { service: context.params.sid, type: output?.city?.type ?? null }); return output; } });
 

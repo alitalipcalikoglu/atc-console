@@ -4,7 +4,7 @@ One installable SvelteKit application to watch and operate the atc-web services:
 
 The console depends on nothing else to run: its own administrator accounts, sessions, two-factor authentication and audit log live in its own SQLite database. Services are reached over HTTP with dedicated API keys; a service being down shows up as a red card, not as a broken console.
 
-Runtime dependencies include `@atc-web/atc-service-core`, `yaml`, `ajv` and `ajv-formats`; the locally bundled API reference uses `swagger-ui-dist`. SvelteKit, adapter-node and Vite produce the application build. Storage uses `node:sqlite` (Node 22.13+).
+Runtime dependencies include `@atc-web/atc-service-core`, `yaml`, `ajv` and `ajv-formats`; the locally bundled API reference uses `swagger-ui-dist`. SvelteKit, adapter-node and Vite produce the application build. Storage uses `node:sqlite` (Node 22.17+; SvelteKit 3 requires it).
 
 ## Run
 

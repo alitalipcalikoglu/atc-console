@@ -3,7 +3,7 @@
    * Editor for a flag value of a given kind. Emits the parsed value through `onchange`; JSON
    * that does not parse keeps the last good value and shows the error.
    */
-  import { t } from '$lib/client/i18n.svelte.js';
+  import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ kind: 'boolean'|'string'|'number'|'json', value: unknown, onchange: (v: unknown) => void, id: string, disabled?: boolean }} */
   let { kind, value, onchange, id, disabled = false } = $props();
   let text = $state('');

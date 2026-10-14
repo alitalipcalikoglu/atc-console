@@ -1,16 +1,16 @@
 <script>
   /** Reference tables: countries, currencies, time zones, in the console language or another. */
-  import Page from '$lib/components/Page.svelte';
-  import Panel from '$lib/components/Panel.svelte';
-  import Icon from '$lib/components/Icon.svelte';
-  import Skeleton from '$lib/components/Skeleton.svelte';
-  import ErrorBox from '$lib/components/ErrorBox.svelte';
-  import Empty from '$lib/components/Empty.svelte';
-  import { api } from '$lib/client/api.js';
-  import { Resource } from '$lib/client/resource.svelte.js';
+  import Page from '#lib/components/Page.svelte';
+  import Panel from '#lib/components/Panel.svelte';
+  import Icon from '#lib/components/Icon.svelte';
+  import Skeleton from '#lib/components/Skeleton.svelte';
+  import ErrorBox from '#lib/components/ErrorBox.svelte';
+  import Empty from '#lib/components/Empty.svelte';
+  import { api } from '#lib/client/api.js';
+  import { Resource } from '#lib/client/resource.svelte.js';
   import { page as route } from '$app/state';
-  import { Navigation } from '$lib/client/navigation.js';
-  import { t, i18n } from '$lib/client/i18n.svelte.js';
+  import { Navigation } from '#lib/client/navigation.js';
+  import { t, i18n } from '#lib/client/i18n.svelte.js';
   /** @type {{ sid: string }} */
   let { sid } = $props();
   const base = $derived(`/services/${sid}/atc-geo`);

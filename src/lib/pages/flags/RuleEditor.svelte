@@ -3,9 +3,9 @@
    * Ordered targeting rules for one environment. Lists are edited as comma-separated text,
    * attributes as `name: a, b` lines; ids are derived from names when empty.
    */
-  import Icon from '$lib/components/Icon.svelte';
+  import Icon from '#lib/components/Icon.svelte';
   import ValueInput from './ValueInput.svelte';
-  import { t } from '$lib/client/i18n.svelte.js';
+  import { t } from '#lib/client/i18n.svelte.js';
   /** @typedef {{ id: string, name?: string, match: { userIds?: string[], emails?: string[], attrs?: Record<string, string[]> }, value: unknown }} Rule */
   /** @type {{ kind: 'boolean'|'string'|'number'|'json', rules: Rule[], onchange: (rules: Rule[]) => void, disabled?: boolean, defaultValue: unknown }} */
   let { kind, rules, onchange, disabled = false, defaultValue } = $props();

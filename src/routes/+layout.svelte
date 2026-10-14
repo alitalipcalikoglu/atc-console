@@ -2,11 +2,11 @@
   import { onMount } from 'svelte';
   import type { Snippet } from 'svelte';
   import type { LayoutData } from './$types';
-  import Toasts from '$lib/components/Toasts.svelte';
-  import { i18n } from '$lib/client/i18n.svelte.js';
-  import { pwa } from '$lib/client/pwa.svelte.js';
-  import { provideSession } from '$lib/client/session.svelte.js';
-  import { theme } from '$lib/client/theme.svelte.js';
+  import Toasts from '#lib/components/Toasts.svelte';
+  import { i18n } from '#lib/client/i18n.svelte.js';
+  import { pwa } from '#lib/client/pwa.svelte.js';
+  import { provideSession } from '#lib/client/session.svelte.js';
+  import { theme } from '#lib/client/theme.svelte.js';
   import '../app.css';
 
   let { data, children }: { data: LayoutData; children: Snippet } = $props();

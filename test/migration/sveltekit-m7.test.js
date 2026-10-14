@@ -56,7 +56,7 @@ test('M7 layouts own cross-cutting integration exactly once and preserve CSP', (
   const app = read('../../src/app.html');
   assert.match(app, /nonce="%sveltekit\.nonce%"/);
   assert.match(app, /console\.theme/);
-  const config = read('../../svelte.config.js');
+  const config = read('../../vite.config.ts');
   assert.doesNotMatch(config, /unsafe-eval|https?:\/\/\*/);
   const copy = read('../../src/lib/components/CopyButton.svelte');
   assert.match(copy, /toasts\.ok\(t\('common\.copied'\)\)/);

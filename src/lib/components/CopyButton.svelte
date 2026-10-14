@@ -1,7 +1,7 @@
 <script>
   import Icon from './Icon.svelte';
-  import { t } from '$lib/client/i18n.svelte.js';
-  import { toasts } from '$lib/client/toast.svelte.js';
+  import { t } from '#lib/client/i18n.svelte.js';
+  import { toasts } from '#lib/client/toast.svelte.js';
   /** @type {{ text: string, label?: string, small?: boolean }} */
   let { text, label, small = true } = $props();
   let done = $state(false);

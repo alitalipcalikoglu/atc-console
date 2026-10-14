@@ -1,5 +1,5 @@
-import { Runtime } from '$lib/server/runtime.js';
-import { OperationalResponse } from '$lib/server/operational';
+import { Runtime } from '#lib/server/runtime.js';
+import { OperationalResponse } from '#lib/server/operational.js';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = () => {

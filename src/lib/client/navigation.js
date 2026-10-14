@@ -1,4 +1,4 @@
-import { replaceState } from '$app/navigation';
+import { goto } from '$app/navigation';
 
 /** Query-string updates that preserve the current filesystem route and browser history entry. */
 export class Navigation {
@@ -15,6 +15,6 @@ export class Navigation {
     const serialized = query.toString();
     const next = `${url.pathname}${serialized ? `?${serialized}` : ''}${url.hash}`;
     if (next === `${url.pathname}${url.search}${url.hash}`) return;
-    replaceState(next, {});
+    void goto(next, { shallow: true, replace: true });
   }
 }

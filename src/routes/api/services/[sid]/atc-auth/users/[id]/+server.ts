@@ -1,5 +1,5 @@
-import { AuthClient, Schemas } from '$lib/server/m4-contract';
-import { jsonRoute, record } from '$lib/server/m4';
+import { AuthClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, record } from '#lib/server/m4.js';
 
 const patch = { type: 'object', additionalProperties: false, minProperties: 1, properties: { name: { type: 'string', maxLength: 120, nullable: true }, status: { type: 'string', enum: ['active', 'disabled'] } } };
 export const GET = jsonRoute({ auth: 'session', params: Schemas.serviceIdParams, handler: async ({ runtime, params }) => { const client = runtime.clients.get(params.sid, AuthClient); const [user, sessions, events] = await Promise.all([client.getUser(params.id), client.sessions(params.id), client.events(params.id, { limit: 50 })]); return { ...(user as object), sessions: (sessions as any).items, events: (events as any).items, eventsNextBefore: (events as any).nextBefore }; } });

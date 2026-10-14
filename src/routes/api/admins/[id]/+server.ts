@@ -1,5 +1,5 @@
-import { Schemas } from '$lib/server/m4-contract';
-import { jsonRoute } from '$lib/server/m4';
+import { Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute } from '#lib/server/m4.js';
 
 const params = { type: 'object', properties: { id: Schemas.uuid }, required: ['id'] };
 

@@ -1,19 +1,19 @@
 <script>
-  import Page from '$lib/components/Page.svelte';
-  import Panel from '$lib/components/Panel.svelte';
-  import Icon from '$lib/components/Icon.svelte';
-  import Stat from '$lib/components/Stat.svelte';
-  import Skeleton from '$lib/components/Skeleton.svelte';
-  import ErrorBox from '$lib/components/ErrorBox.svelte';
-  import ServiceTabs from '$lib/components/ServiceTabs.svelte';
-  import AutoRefresh from '$lib/components/AutoRefresh.svelte';
-  import PollStats from '$lib/components/PollStats.svelte';
-  import { poller } from '$lib/client/poller.svelte.js';
-  import { api } from '$lib/client/api.js';
-  import { Resource } from '$lib/client/resource.svelte.js';
-  import { services } from '$lib/client/services.svelte.js';
-  import { Fmt } from '$lib/client/format.js';
-  import { t, i18n } from '$lib/client/i18n.svelte.js';
+  import Page from '#lib/components/Page.svelte';
+  import Panel from '#lib/components/Panel.svelte';
+  import Icon from '#lib/components/Icon.svelte';
+  import Stat from '#lib/components/Stat.svelte';
+  import Skeleton from '#lib/components/Skeleton.svelte';
+  import ErrorBox from '#lib/components/ErrorBox.svelte';
+  import ServiceTabs from '#lib/components/ServiceTabs.svelte';
+  import AutoRefresh from '#lib/components/AutoRefresh.svelte';
+  import PollStats from '#lib/components/PollStats.svelte';
+  import { poller } from '#lib/client/poller.svelte.js';
+  import { api } from '#lib/client/api.js';
+  import { Resource } from '#lib/client/resource.svelte.js';
+  import { services } from '#lib/client/services.svelte.js';
+  import { Fmt } from '#lib/client/format.js';
+  import { t, i18n } from '#lib/client/i18n.svelte.js';
   /** @type {{ sid: string }} */
   let { sid } = $props();
   const service = $derived(poller.for(sid));

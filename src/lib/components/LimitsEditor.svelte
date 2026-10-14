@@ -4,8 +4,8 @@
    * converts with LimitRows. Windows must be distinct; the editor flags duplicates and bad numbers.
    */
   import Icon from './Icon.svelte';
-  import { LimitRows } from '$lib/client/limits.js';
-  import { t } from '$lib/client/i18n.svelte.js';
+  import { LimitRows } from '#lib/client/limits.js';
+  import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ rows: import('../limits.js').LimitRow[], max?: number, disabled?: boolean }} */
   let { rows = $bindable(), max = 5, disabled = false } = $props();
   const windows = $derived(rows.map((r) => Number(r.n) * LimitRows.UNIT_SEC[r.unit]));

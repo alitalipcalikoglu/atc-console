@@ -1,5 +1,5 @@
 import { goto } from '$app/navigation';
-import { browser } from '$app/environment';
+import { browser } from '$app/env';
 import { getContext, setContext } from 'svelte';
 import { api } from './api.js';
 
@@ -21,7 +21,7 @@ export class Session {
     if (browser) {
       api.onUnauthenticated = (code) => {
         if (code === 'TOTP_REQUIRED') { this.totpPending = true; this.admin = null; } else { this.admin = null; }
-        void goto('/login', { replaceState: true, invalidateAll: true });
+        void goto('/login', { replace: true, refreshAll: true });
       };
     }
   }

@@ -1,6 +1,6 @@
-import { Schemas, ServiceError, ShortlinkClient } from '$lib/server/m4-contract';
-import { number } from '$lib/server/m4';
-import { SPECIAL_CONTENT_SECURITY_POLICY, specialRoute } from '$lib/server/m5';
+import { Schemas, ServiceError, ShortlinkClient } from '#lib/server/m4-contract.js';
+import { number } from '#lib/server/m4.js';
+import { SPECIAL_CONTENT_SECURITY_POLICY, specialRoute } from '#lib/server/m5.js';
 
 export const GET = specialRoute({
   auth: 'session',

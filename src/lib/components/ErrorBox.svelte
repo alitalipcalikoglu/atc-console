@@ -1,7 +1,7 @@
 <script>
   /** Failed-load state, same layout as Empty. `boxed` adds a card frame for use outside a panel. */
   import Icon from './Icon.svelte';
-  import { t } from '$lib/client/i18n.svelte.js';
+  import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ error: unknown, onretry?: () => void, boxed?: boolean }} */
   let { error, onretry, boxed = false } = $props();
   const e = $derived(/** @type {{ message?: string, code?: string, service?: string }} */ (error ?? {}));

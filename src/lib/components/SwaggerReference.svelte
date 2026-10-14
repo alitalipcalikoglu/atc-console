@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { swaggerOptions } from '$lib/client/swagger-config.js';
+  import { swaggerOptions } from '#lib/client/swagger-config.js';
 
   /** @type {{ document: Record<string, unknown> }} */
   let { document } = $props();

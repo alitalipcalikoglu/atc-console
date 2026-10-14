@@ -1,5 +1,5 @@
-import { NotifyClient, Schemas } from '$lib/server/m4-contract';
-import { jsonRoute, record } from '$lib/server/m4';
+import { NotifyClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, record } from '#lib/server/m4.js';
 
 export const POST = jsonRoute({
   auth: 'admin', params: Schemas.serviceIdParams,

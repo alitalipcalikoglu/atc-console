@@ -1,5 +1,5 @@
-import { AuthClient, Schemas } from '$lib/server/m4-contract';
-import { jsonRoute, number, record, text } from '$lib/server/m4';
+import { AuthClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, number, record, text } from '#lib/server/m4.js';
 
 const create = Schemas.body(['email', 'password'], { email: Schemas.email, password: Schemas.password, name: { type: 'string', maxLength: 120 } });
 export const GET = jsonRoute({ auth: 'session', params: Schemas.serviceParams, query: Schemas.paging, handler: ({ runtime, params, query }) => runtime.clients.get(params.sid, AuthClient).listUsers({ email: text(query.email), limit: number(query.limit), cursor: text(query.cursor) }) });

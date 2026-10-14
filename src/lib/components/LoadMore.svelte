@@ -1,5 +1,5 @@
 <script>
-  import { t } from '$lib/client/i18n.svelte.js';
+  import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ cursor: string|null, busy: boolean, onmore: () => void }} */
   let { cursor, busy, onmore } = $props();
 </script>

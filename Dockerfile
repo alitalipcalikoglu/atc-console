@@ -4,7 +4,7 @@ FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
-COPY svelte.config.js vite.config.ts tsconfig.json jsconfig.json ./
+COPY vite.config.ts tsconfig.json jsconfig.json ./
 COPY static ./static
 COPY src ./src
 COPY openapi.yaml ./

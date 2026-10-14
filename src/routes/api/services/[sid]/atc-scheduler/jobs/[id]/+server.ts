@@ -1,5 +1,5 @@
-import { SchedulerClient, Schemas } from '$lib/server/m4-contract';
-import { jsonRoute, record } from '$lib/server/m4';
+import { SchedulerClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, record } from '#lib/server/m4.js';
 export const GET = jsonRoute({ auth: 'session', params: Schemas.serviceIdParams, handler: async ({ runtime, params }) => { const client = runtime.clients.get(params.sid, SchedulerClient); const [job, runs] = await Promise.all([client.getJob(params.id), client.runs(params.id, { limit: 20 })]); return { ...(job as object), runs: (runs as any).items, runsNextBefore: (runs as any).nextBefore }; } });
 export const PATCH = jsonRoute({ auth: 'admin', params: Schemas.serviceIdParams, body: Schemas.schedulerPatch, handler: async (context) => { const output = await context.runtime.clients.get(context.params.sid, SchedulerClient).patchJob(context.params.id, context.body); record(context, 'atc-scheduler.job.update', context.params.id, { service: context.params.sid, patch: context.body }); return output; } });
 export const DELETE = jsonRoute({ auth: 'admin', params: Schemas.serviceIdParams, status: 204, handler: async (context) => { await context.runtime.clients.get(context.params.sid, SchedulerClient).deleteJob(context.params.id); record(context, 'atc-scheduler.job.delete', context.params.id, { service: context.params.sid }); } });

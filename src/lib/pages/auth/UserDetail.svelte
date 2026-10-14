@@ -1,21 +1,21 @@
 <script>
-  import Page from '$lib/components/Page.svelte';
-  import Panel from '$lib/components/Panel.svelte';
-  import Icon from '$lib/components/Icon.svelte';
-  import Skeleton from '$lib/components/Skeleton.svelte';
-  import ErrorBox from '$lib/components/ErrorBox.svelte';
-  import StatusBadge from '$lib/components/StatusBadge.svelte';
-  import Time from '$lib/components/Time.svelte';
-  import CopyButton from '$lib/components/CopyButton.svelte';
-  import Confirm from '$lib/components/Confirm.svelte';
-  import Empty from '$lib/components/Empty.svelte';
-  import { api } from '$lib/client/api.js';
-  import { Resource } from '$lib/client/resource.svelte.js';
+  import Page from '#lib/components/Page.svelte';
+  import Panel from '#lib/components/Panel.svelte';
+  import Icon from '#lib/components/Icon.svelte';
+  import Skeleton from '#lib/components/Skeleton.svelte';
+  import ErrorBox from '#lib/components/ErrorBox.svelte';
+  import StatusBadge from '#lib/components/StatusBadge.svelte';
+  import Time from '#lib/components/Time.svelte';
+  import CopyButton from '#lib/components/CopyButton.svelte';
+  import Confirm from '#lib/components/Confirm.svelte';
+  import Empty from '#lib/components/Empty.svelte';
+  import { api } from '#lib/client/api.js';
+  import { Resource } from '#lib/client/resource.svelte.js';
   import { goto } from '$app/navigation';
-  import { useSession } from '$lib/client/session.svelte.js';
+  import { useSession } from '#lib/client/session.svelte.js';
   const session = useSession();
-  import { t } from '$lib/client/i18n.svelte.js';
-  import { toasts } from '$lib/client/toast.svelte.js';
+  import { t } from '#lib/client/i18n.svelte.js';
+  import { toasts } from '#lib/client/toast.svelte.js';
   /** @type {{ sid: string, id: string }} */
   let { sid, id } = $props();
   const res = new Resource(() => api.get(`/services/${sid}/atc-auth/users/${id}`));

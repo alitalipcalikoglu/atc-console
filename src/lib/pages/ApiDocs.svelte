@@ -1,15 +1,15 @@
 <script>
   import { onMount } from 'svelte';
-  import Page from '$lib/components/Page.svelte';
-  import Panel from '$lib/components/Panel.svelte';
-  import Skeleton from '$lib/components/Skeleton.svelte';
-  import ErrorBox from '$lib/components/ErrorBox.svelte';
-  import SwaggerReference from '$lib/components/SwaggerReference.svelte';
-  import { api } from '$lib/client/api.js';
-  import { fetchDocServices, fetchOpenApi } from '$lib/client/api-docs.js';
+  import Page from '#lib/components/Page.svelte';
+  import Panel from '#lib/components/Panel.svelte';
+  import Skeleton from '#lib/components/Skeleton.svelte';
+  import ErrorBox from '#lib/components/ErrorBox.svelte';
+  import SwaggerReference from '#lib/components/SwaggerReference.svelte';
+  import { api } from '#lib/client/api.js';
+  import { fetchDocServices, fetchOpenApi } from '#lib/client/api-docs.js';
   import { page as route } from '$app/state';
-  import { Navigation } from '$lib/client/navigation.js';
-  import { t } from '$lib/client/i18n.svelte.js';
+  import { Navigation } from '#lib/client/navigation.js';
+  import { t } from '#lib/client/i18n.svelte.js';
 
   /** @typedef {{ id: string, type: string, label: string }} DocService */
   /** @type {DocService[]} */

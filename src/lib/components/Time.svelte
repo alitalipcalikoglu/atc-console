@@ -1,6 +1,6 @@
 <script>
-  import { Fmt } from '$lib/client/format.js';
-  import { i18n } from '$lib/client/i18n.svelte.js';
+  import { Fmt } from '#lib/client/format.js';
+  import { i18n } from '#lib/client/i18n.svelte.js';
   /** @type {{ value: string|number|null|undefined, mode?: 'relative'|'absolute' }} */
   let { value, mode = 'relative' } = $props();
   const fmt = $derived(new Fmt(i18n.lang));

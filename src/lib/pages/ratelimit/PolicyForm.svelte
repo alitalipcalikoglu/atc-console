@@ -1,14 +1,14 @@
 <script>
   /** Create or edit a policy. Editing sends only the fields that changed. */
-  import Dialog from '$lib/components/Dialog.svelte';
-  import LimitsEditor from '$lib/components/LimitsEditor.svelte';
-  import { LimitRows } from '$lib/client/limits.js';
-  import { t } from '$lib/client/i18n.svelte.js';
+  import Dialog from '#lib/components/Dialog.svelte';
+  import LimitsEditor from '#lib/components/LimitsEditor.svelte';
+  import { LimitRows } from '#lib/client/limits.js';
+  import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ open: boolean, initial?: any, busy?: boolean, onsubmit: (body: any) => void, onclose: () => void }} */
   let { open, initial = null, busy = false, onsubmit, onclose } = $props();
   let name = $state('');
   let description = $state('');
-  /** @type {import('$lib/client/limits.js').LimitRow[]} */ let rows = $state([LimitRows.blank()]);
+  /** @type {import('#lib/client/limits.js').LimitRow[]} */ let rows = $state([LimitRows.blank()]);
   $effect(() => {
     if (!open) return;
     name = initial?.name ?? ''; description = initial?.description ?? '';

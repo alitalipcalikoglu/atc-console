@@ -1,10 +1,10 @@
 <script>
   /** Delivery rows shared by the list, subscription and event pages. Columns adapt to what the context already shows. */
-  import StatusBadge from '$lib/components/StatusBadge.svelte';
-  import Time from '$lib/components/Time.svelte';
+  import StatusBadge from '#lib/components/StatusBadge.svelte';
+  import Time from '#lib/components/Time.svelte';
   import { goto } from '$app/navigation';
-  import { Fmt } from '$lib/client/format.js';
-  import { t, i18n } from '$lib/client/i18n.svelte.js';
+  import { Fmt } from '#lib/client/format.js';
+  import { t, i18n } from '#lib/client/i18n.svelte.js';
   /** @type {{ sid: string, items: any[], subscriptions?: Record<string, string>, showSubscription?: boolean, showEvent?: boolean }} */
   let { sid, items, subscriptions = {}, showSubscription = true, showEvent = true } = $props();
   const fmt = $derived(new Fmt(i18n.lang));

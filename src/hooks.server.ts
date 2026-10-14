@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { RequestContext } from '@atc-web/atc-service-core/request-context';
 import { TraceContext } from '@atc-web/atc-service-core/trace';
-import type { Handle } from '@sveltejs/kit';
-import { ApiResponse } from '$lib/server/api';
-import { AuthRequest, CSRF_HEADER } from '$lib/server/auth';
-import { OperationalResponse } from '$lib/server/operational';
-import { Runtime } from '$lib/server/runtime.js';
+import type { Handle } from '@sveltejs/kit/hooks';
+import { ApiResponse } from '#lib/server/api.js';
+import { AuthRequest, CSRF_HEADER } from '#lib/server/auth.js';
+import { OperationalResponse } from '#lib/server/operational.js';
+import { Runtime } from '#lib/server/runtime.js';
 
 const CSRF_EXEMPT = new Set(['/api/session/login', '/api/session/totp']);
 
@@ -31,8 +31,10 @@ export const handle: Handle = async ({ event, resolve }) => {
     event.locals.clientIp = clientIp(event, runtime.config.trustProxy);
     AuthRequest.attach(runtime, event.cookies, event.locals);
     const mutation = !['GET', 'HEAD', 'OPTIONS'].includes(event.request.method);
+    // Login and TOTP skip the header only for JSON, which a cross-site form cannot send without CORS.
+    const json = event.request.headers.get('content-type')?.split(';', 1)[0].trim().toLowerCase() === 'application/json';
     event.locals.csrf = {
-      required: mutation && (event.route.id?.startsWith('/api/') ?? false) && !CSRF_EXEMPT.has(event.route.id ?? ''),
+      required: mutation && (event.route.id?.startsWith('/api/') ?? false) && !(CSRF_EXEMPT.has(event.route.id ?? '') && json),
       valid: event.request.headers.get(CSRF_HEADER) === '1',
     };
 

@@ -1,4 +1,4 @@
-import { GeoClient, Schemas } from '$lib/server/m4-contract';
-import { jsonRoute, record } from '$lib/server/m4';
+import { GeoClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, record } from '#lib/server/m4.js';
 export const DELETE = jsonRoute({ auth: 'admin', params: Schemas.serviceIdSubParams, status: 204, handler: async (context) => { await context.runtime.clients.get(context.params.sid, GeoClient).deletePlace(context.params.id, context.params.sub); record(context, 'atc-geo.place.delete', context.params.sub, { service: context.params.sid, collection: context.params.id }); } });
 

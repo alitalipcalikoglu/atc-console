@@ -1,9 +1,9 @@
 <script>
-  import Icon from '$lib/components/Icon.svelte';
-  import { useSession } from '$lib/client/session.svelte.js';
+  import Icon from '#lib/components/Icon.svelte';
+  import { useSession } from '#lib/client/session.svelte.js';
   const session = useSession();
   import { goto } from '$app/navigation';
-  import { t, i18n } from '$lib/client/i18n.svelte.js';
+  import { t, i18n } from '#lib/client/i18n.svelte.js';
   let email = $state('');
   let password = $state('');
   let code = $state('');
@@ -18,7 +18,7 @@
     busy = true; error = null;
     try {
       const r = await session.login(email.trim(), password);
-      if (!r.totpRequired) goto('/', { replaceState: true, invalidateAll: true });
+      if (!r.totpRequired) goto('/', { replace: true, refreshAll: true });
     } catch (err) {
       const x = /** @type {{ code?: string, message?: string, details?: { retryAfterSec?: number } }} */ (err);
       error = x.code === 'ACCOUNT_LOCKED' ? t('login.locked', { s: x.details?.retryAfterSec ?? 900 }) : (x.message ?? t('common.error'));
@@ -28,7 +28,7 @@
   async function submitTotp(e) {
     e.preventDefault();
     busy = true; error = null;
-    try { await session.completeTotp(code.trim()); goto('/', { replaceState: true, invalidateAll: true }); }
+    try { await session.completeTotp(code.trim()); goto('/', { replace: true, refreshAll: true }); }
     catch (err) { error = /** @type {{ message?: string }} */ (err).message ?? t('common.error'); code = ''; }
     finally { busy = false; }
   }

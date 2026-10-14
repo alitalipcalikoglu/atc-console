@@ -1,17 +1,20 @@
 /// <reference lib="webworker" />
 
-import { build, files, version } from '$service-worker';
+import { version } from '$app/env';
+import { assets, immutable } from '$app/manifest';
 import {
   CACHE_PREFIX,
   isCacheableAssetRequest,
   isOwnedCache,
   isPublicStaticFile,
-} from '$lib/service-worker-policy.js';
+} from '#lib/service-worker-policy.js';
 
 const worker = self as unknown as ServiceWorkerGlobalScope;
 const CACHE = `${CACHE_PREFIX}${version}`;
-const PRECACHE = files.filter(isPublicStaticFile);
-const ASSETS = [...new Set([...build, ...PRECACHE])];
+// Manifest paths are relative to the app base, which is the worker scope.
+const pathname = (asset: { path: string }) => new URL(asset.path, worker.registration.scope).pathname;
+const PRECACHE = assets.map(pathname).filter(isPublicStaticFile);
+const ASSETS = [...new Set([...immutable.map(pathname), ...PRECACHE])];
 const ASSET_PATHS = new Set(ASSETS.map((asset) => new URL(asset, worker.location.origin).pathname));
 
 worker.addEventListener('install', (event) => {

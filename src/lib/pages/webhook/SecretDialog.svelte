@@ -1,9 +1,9 @@
 <script>
   /** Shows a freshly generated signing secret once, with a copy button. */
-  import Dialog from '$lib/components/Dialog.svelte';
-  import CopyButton from '$lib/components/CopyButton.svelte';
-  import { Fmt } from '$lib/client/format.js';
-  import { t, i18n } from '$lib/client/i18n.svelte.js';
+  import Dialog from '#lib/components/Dialog.svelte';
+  import CopyButton from '#lib/components/CopyButton.svelte';
+  import { Fmt } from '#lib/client/format.js';
+  import { t, i18n } from '#lib/client/i18n.svelte.js';
   /** @type {{ secret: string|null, previousValidUntil?: string|null, onclose: () => void }} */
   let { secret, previousValidUntil = null, onclose } = $props();
   const fmt = $derived(new Fmt(i18n.lang));

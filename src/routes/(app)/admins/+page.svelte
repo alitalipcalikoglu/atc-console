@@ -1,2 +1,2 @@
-<script>import Admins from '$lib/pages/Admins.svelte';</script>
+<script>import Admins from '#lib/pages/Admins.svelte';</script>
 <Admins />

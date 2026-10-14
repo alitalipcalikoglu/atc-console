@@ -1,6 +1,6 @@
-import { ApiEndpoint } from '$lib/server/api';
-import { AuthRequest } from '$lib/server/auth';
-import { Runtime } from '$lib/server/runtime.js';
+import { ApiEndpoint } from '#lib/server/api.js';
+import { AuthRequest } from '#lib/server/auth.js';
+import { Runtime } from '#lib/server/runtime.js';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = ({ locals }) => {

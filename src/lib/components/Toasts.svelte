@@ -1,5 +1,5 @@
 <script>
-  import { toasts } from '$lib/client/toast.svelte.js';
+  import { toasts } from '#lib/client/toast.svelte.js';
   import Icon from './Icon.svelte';
 </script>
 

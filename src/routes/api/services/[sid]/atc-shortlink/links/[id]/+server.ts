@@ -1,5 +1,5 @@
-import { Schemas, ShortlinkClient } from '$lib/server/m4-contract';
-import { jsonRoute, number, record } from '$lib/server/m4';
+import { Schemas, ShortlinkClient } from '#lib/server/m4-contract.js';
+import { jsonRoute, number, record } from '#lib/server/m4.js';
 const body = { type: 'object', additionalProperties: false, minProperties: 1, properties: { url: Schemas.shortlinkBody.url, permanent: Schemas.shortlinkBody.permanent, enabled: Schemas.shortlinkBody.enabled, expiresAt: Schemas.shortlinkBody.expiresAt, maxClicks: Schemas.shortlinkBody.maxClicks, tags: Schemas.shortlinkBody.tags, note: Schemas.shortlinkBody.note } };
 export const GET = jsonRoute({ auth: 'session', params: Schemas.serviceIdParams, query: Schemas.shortlinkQuery, handler: async ({ runtime, params, query }) => { const client = runtime.clients.get(params.sid, ShortlinkClient); const [link, stats] = await Promise.all([client.getLink(params.id), client.linkStats(params.id, number(query.days))]); return { ...(link as object), stats }; } });
 export const PATCH = jsonRoute({ auth: 'admin', params: Schemas.serviceIdParams, body, handler: async (context) => { const output = await context.runtime.clients.get(context.params.sid, ShortlinkClient).patchLink(context.params.id, context.body); record(context, 'atc-shortlink.link.update', context.params.id, { service: context.params.sid, patch: context.body }); return output; } });

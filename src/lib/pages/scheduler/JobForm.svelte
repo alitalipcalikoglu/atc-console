@@ -3,10 +3,10 @@
    * Create or edit a job. Editing sends only the fields that changed: re-sending an unchanged
    * schedule would recompute the next firing (and reject a one-shot that already fired).
    */
-  import Dialog from '$lib/components/Dialog.svelte';
-  import { api } from '$lib/client/api.js';
-  import { Fmt } from '$lib/client/format.js';
-  import { t, i18n } from '$lib/client/i18n.svelte.js';
+  import Dialog from '#lib/components/Dialog.svelte';
+  import { api } from '#lib/client/api.js';
+  import { Fmt } from '#lib/client/format.js';
+  import { t, i18n } from '#lib/client/i18n.svelte.js';
   /** @type {{ open: boolean, sid: string, initial?: any, busy?: boolean, targetKeys: string[], timezones: string[], onsubmit: (body: any) => void, onclose: () => void }} */
   let { open, sid, initial = null, busy = false, targetKeys, timezones, onsubmit, onclose } = $props();
   const fmt = $derived(new Fmt(i18n.lang));

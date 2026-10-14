@@ -5,12 +5,12 @@
    * two timers for one service.
    */
   import Icon from './Icon.svelte';
-  import { services } from '$lib/client/services.svelte.js';
-  import { useSession } from '$lib/client/session.svelte.js';
+  import { services } from '#lib/client/services.svelte.js';
+  import { useSession } from '#lib/client/session.svelte.js';
   const session = useSession();
-  import { poller } from '$lib/client/poller.svelte.js';
-  import { t } from '$lib/client/i18n.svelte.js';
-  import { toasts } from '$lib/client/toast.svelte.js';
+  import { poller } from '#lib/client/poller.svelte.js';
+  import { t } from '#lib/client/i18n.svelte.js';
+  import { toasts } from '#lib/client/toast.svelte.js';
   /** @type {{ sid: string }} */
   let { sid } = $props();
   const PRESETS = [0, 15, 30, 60, 300];

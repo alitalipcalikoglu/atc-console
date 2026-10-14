@@ -2,10 +2,10 @@
   /** Request timing of one service's poller: last ten durations, average, effective interval, queue state. */
   import Bars from './Bars.svelte';
   import Icon from './Icon.svelte';
-  import { poller } from '$lib/client/poller.svelte.js';
-  import { services } from '$lib/client/services.svelte.js';
-  import { Fmt } from '$lib/client/format.js';
-  import { t, i18n } from '$lib/client/i18n.svelte.js';
+  import { poller } from '#lib/client/poller.svelte.js';
+  import { services } from '#lib/client/services.svelte.js';
+  import { Fmt } from '#lib/client/format.js';
+  import { t, i18n } from '#lib/client/i18n.svelte.js';
   /** @type {{ sid: string }} */
   let { sid } = $props();
   const fmt = $derived(new Fmt(i18n.lang));

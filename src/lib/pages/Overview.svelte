@@ -1,13 +1,13 @@
 <script>
   import { untrack } from 'svelte';
-  import Page from '$lib/components/Page.svelte';
-  import Icon from '$lib/components/Icon.svelte';
-  import Time from '$lib/components/Time.svelte';
-  import { Services, services } from '$lib/client/services.svelte.js';
-  import { Fmt } from '$lib/client/format.js';
-  import { t, i18n } from '$lib/client/i18n.svelte.js';
-  import { toasts } from '$lib/client/toast.svelte.js';
-  import { poller } from '$lib/client/poller.svelte.js';
+  import Page from '#lib/components/Page.svelte';
+  import Icon from '#lib/components/Icon.svelte';
+  import Time from '#lib/components/Time.svelte';
+  import { Services, services } from '#lib/client/services.svelte.js';
+  import { Fmt } from '#lib/client/format.js';
+  import { t, i18n } from '#lib/client/i18n.svelte.js';
+  import { toasts } from '#lib/client/toast.svelte.js';
+  import { poller } from '#lib/client/poller.svelte.js';
   const fmt = $derived(new Fmt(i18n.lang));
   const ICONS = Services.ICONS;
   // First visit probes only the services never seen in this session; afterwards each card refreshes on demand.
