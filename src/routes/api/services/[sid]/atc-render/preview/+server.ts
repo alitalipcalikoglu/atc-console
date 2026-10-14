@@ -1,4 +1,5 @@
 import { RenderClient, Schemas } from '#lib/server/m4-contract.js';
+import { DOCUMENT_BODY_LIMIT } from '#lib/server/api.js';
 import { jsonRoute, record } from '#lib/server/m4.js';
 import { SPECIAL_CONTENT_SECURITY_POLICY } from '#lib/server/m5.js';
 
@@ -8,6 +9,7 @@ export const POST = jsonRoute({
   auth: 'admin',
   params: Schemas.serviceParams,
   body: Schemas.renderPreview,
+  bodyLimit: DOCUMENT_BODY_LIMIT,
   handler: async (context) => {
     const downstream = await context.runtime.clients.get(context.params.sid, RenderClient).preview(context.body);
     record(context, 'atc-render.document.preview', context.params.sid, { service: context.params.sid, blocks: context.body.layout.blocks.length });

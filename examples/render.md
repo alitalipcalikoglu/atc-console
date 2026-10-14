@@ -16,7 +16,7 @@ App bar:
 - **Publish as new version** (admin, confirmation naming the next number): the editor content, with the optional note, becomes the new latest version. Callers that do not pin a version use it at once.
 - ⋯ (admin): **Edit description** and **Delete template** (typed confirmation with the template name; every version goes, callers get 404, PDFs already stored in media stay).
 
-The console accepts request bodies up to 64 KiB, so very large layouts with embedded base64 images are previewed directly against the service.
+Previews accept up to 2 MiB through the console (other console requests stay at 64 KiB), enough for layouts with a few embedded base64 images; larger ones are previewed directly against the service.
 
 ## Recorded in the console log
 

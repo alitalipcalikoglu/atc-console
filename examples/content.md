@@ -15,7 +15,7 @@ The header card shows whether bundles serve the draft (*Up to date*), an older s
 ## App bar
 
 - **Publish** (admin, confirmation naming the next release number). When placeholders drifted the service refuses with `UNPUBLISHABLE`; the toast says how many values must be fixed and the *placeholder mismatch* badges in the key table show which.
-- **Import** (admin): pick a locale, paste or choose a JSON file (flat or nested). After the import the dialog shows added / updated / unchanged / invalid and the first invalid entries with reasons. The console accepts up to 64 KB per request; import larger files directly against the service.
+- **Import** (admin): pick a locale, paste or choose a JSON file (flat or nested). After the import the dialog shows added / updated / unchanged / invalid and the first invalid entries with reasons. The console accepts imports up to 2 MiB per request (other console requests stay at 64 KiB); import larger files directly against the service.
 - **Export**: locale, *Draft* or *Published*, *Flat* or *Nested*; **Load** shows the JSON with copy and download.
 - ⋯ (admin): **Edit namespace** (description, default locale) and **Delete namespace** (typed confirmation; deletes every release, bundles answer 404 at once).
 

@@ -3,7 +3,10 @@ import addFormats from 'ajv-formats';
 import { ConsoleError } from '../../domain/errors.js';
 import { ServiceError } from '../../services/client.js';
 
-const BODY_LIMIT = 64 * 1024;
+/** Default JSON body cap. Routes that carry documents (content import, render preview) pass a larger one. */
+export const BODY_LIMIT = 64 * 1024;
+/** The larger cap for those document-carrying routes. */
+export const DOCUMENT_BODY_LIMIT = 2 * 1024 * 1024;
 const ajv = new Ajv({ coerceTypes: false, removeAdditional: false });
 addFormats(ajv);
 
@@ -24,14 +27,14 @@ export class ApiRequest {
     return ajv.compile(schema);
   }
 
-  static async json<T>(request: Request, validate: ValidateFunction<T>): Promise<T> {
+  static async json<T>(request: Request, validate: ValidateFunction<T>, limit = BODY_LIMIT): Promise<T> {
     const mediaType = request.headers.get('content-type')?.split(';', 1)[0].trim().toLowerCase() ?? '';
     const jsonMedia = mediaType === 'application/json' || /^application\/[a-z0-9!#$&^_.+-]+\+json$/.test(mediaType);
     if (mediaType && mediaType !== 'text/plain' && !jsonMedia) {
       throw new ApiRequestError(415, 'FST_ERR_CTP_INVALID_MEDIA_TYPE', 'Unsupported Media Type');
     }
     const declared = Number(request.headers.get('content-length'));
-    if (Number.isFinite(declared) && declared > BODY_LIMIT) {
+    if (Number.isFinite(declared) && declared > limit) {
       throw new ApiRequestError(413, 'FST_ERR_CTP_BODY_TOO_LARGE', 'Request body is too large');
     }
 
@@ -43,7 +46,7 @@ export class ApiRequest {
         const { done, value } = await reader.read();
         if (done) break;
         size += value.byteLength;
-        if (size > BODY_LIMIT) {
+        if (size > limit) {
           await reader.cancel();
           throw new ApiRequestError(413, 'FST_ERR_CTP_BODY_TOO_LARGE', 'Request body is too large');
         }

@@ -1,4 +1,5 @@
 import { RequestContext } from '@atc-web/atc-service-core/request-context';
+import { ActingAdmin } from './acting-admin.js';
 
 /** @typedef {import('../types.js').ServiceDef} ServiceDef */
 
@@ -58,6 +59,9 @@ export class PrometheusText {
  * Base HTTP client for one service instance: bearer auth, timeouts, JSON handling, error mapping.
  */
 export class ServiceClient {
+  /** Service types that accept `X-Actor` from the console key (`ACTOR_KEYS` on their side). */
+  static ACTOR_TYPES = new Set(['atc-content', 'atc-export', 'atc-render']);
+
   /**
    * @param {ServiceDef} def
    * @param {{ timeoutMs: number, fetch?: typeof fetch }} o
@@ -81,6 +85,9 @@ export class ServiceClient {
   async request(method, path, o = {}) {
     /** @type {Record<string, string>} */
     const headers = { accept: 'application/json, text/plain;q=0.9, */*;q=0.1', ...RequestContext.get()?.propagationHeaders() };
+    // Services that attribute records to a person get the signed-in admin's username.
+    const actor = ActingAdmin.get();
+    if (actor && ServiceClient.ACTOR_TYPES.has(this.def.type)) headers['x-actor'] = actor;
     Object.assign(headers, o.headers);
     const auth = o.auth ?? 'apiKey';
     if (auth === 'apiKey' && this.def.apiKey) headers.authorization = `Bearer ${this.def.apiKey}`;

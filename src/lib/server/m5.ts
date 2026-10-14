@@ -3,6 +3,7 @@ import type { ValidateFunction } from 'ajv';
 import { ApiEndpoint, ApiRequest, ApiRequestError } from '#lib/server/api.js';
 import { AuthRequest } from '#lib/server/auth.js';
 import { Runtime, type ConsoleRuntime } from '#lib/server/runtime.js';
+import { ActingAdmin } from '../../services/acting-admin.js';
 import type { AdminRow, SessionRow } from '../../types.js';
 
 export { CONSOLE_UPLOAD_LIMIT_BYTES, UploadStream } from '../../services/upload-stream.js';
@@ -66,7 +67,7 @@ export const specialRoute = (route: SpecialRoute): RequestHandler => {
         ? AuthRequest.requireAdmin(runtime, event.locals)
         : AuthRequest.requireSession(runtime, event.locals);
       runtime.prepareM4();
-      return route.handler({ runtime, event, params, query, ...resolved });
+      return ActingAdmin.run(resolved.admin.username, () => route.handler({ runtime, event, params, query, ...resolved }));
     });
   };
 };

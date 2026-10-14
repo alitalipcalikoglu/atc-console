@@ -920,3 +920,24 @@ test('render: templates, versions, preview relay (attachment, sandbox, validatio
   const log = await t.app.inject({ url: '/api/audit?action=atc-render.', headers: { cookie } });
   assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-render.template.delete', 'atc-render.document.preview', 'atc-render.version.create', 'atc-render.template.update', 'atc-render.template.create']);
 });
+
+test('acting admin: X-Actor carries the signed-in username to content, export and render only; document routes take 2 MiB', async () => {
+  const { cookie } = await signIn(t, { username: 'ayse.k' });
+  seen.length = 0;
+  await t.app.inject({ url: '/api/services/atc-content/atc-content/namespaces', headers: { cookie } });
+  assert.equal(seen.at(-1)?.headers['x-actor'], 'ayse.k');
+  await t.app.inject({ url: '/api/services/atc-export/atc-export/sources', headers: { cookie } });
+  assert.equal(seen.at(-1)?.headers['x-actor'], 'ayse.k');
+  await t.app.inject({ url: '/api/services/atc-render/atc-render/templates', headers: { cookie } });
+  assert.equal(seen.at(-1)?.headers['x-actor'], 'ayse.k');
+  await t.app.inject({ url: '/api/services/atc-flags/atc-flags/stats', headers: { cookie } });
+  assert.equal(seen.at(-1)?.headers['x-actor'], undefined, 'other services never receive it');
+  const big = { locale: 'tr', strings: Object.fromEntries(Array.from({ length: 4000 }, (_, i) => [`k${i}`, 'x'.repeat(40)])) };
+  assert.ok(JSON.stringify(big).length > 64 * 1024 && JSON.stringify(big).length < 2 * 1024 * 1024);
+  let res = await t.app.inject({ method: 'POST', url: '/api/services/atc-content/atc-content/namespaces/web/import', headers: { cookie, ...CSRF }, payload: big });
+  assert.equal(res.statusCode, 200, 'content import accepts up to 2 MiB');
+  res = await t.app.inject({ method: 'PUT', url: '/api/services/atc-content/atc-content/namespaces/web/keys/k1', headers: { cookie, ...CSRF }, payload: { values: { en: 'x'.repeat(70 * 1024) } } });
+  assert.equal(res.statusCode, 413, 'other routes keep 64 KiB');
+  res = await t.app.inject({ method: 'POST', url: '/api/services/atc-content/atc-content/namespaces/web/import', headers: { cookie, ...CSRF }, payload: { locale: 'tr', strings: { a: 'x'.repeat(2 * 1024 * 1024) } } });
+  assert.equal(res.statusCode, 413, 'and import stops at 2 MiB');
+});

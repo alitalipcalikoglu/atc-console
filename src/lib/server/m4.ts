@@ -3,6 +3,7 @@ import type { ValidateFunction } from 'ajv';
 import { ApiEndpoint, ApiRequest, ApiRequestError } from '#lib/server/api.js';
 import { AuthRequest } from '#lib/server/auth.js';
 import { Runtime, type ConsoleRuntime } from '#lib/server/runtime.js';
+import { ActingAdmin } from '../../services/acting-admin.js';
 import type { AdminRow, SessionRow } from '../../types.js';
 
 type Schema = Record<string, unknown>;
@@ -26,6 +27,8 @@ type Route = {
   query?: Schema;
   body?: Schema;
   status?: number;
+  /** JSON body cap in bytes; defaults to BODY_LIMIT (64 KiB). */
+  bodyLimit?: number;
   handler: (context: M4Context) => unknown | Promise<unknown>;
 };
 
@@ -68,12 +71,12 @@ export const jsonRoute = (route: Route): RequestHandler => {
     return ApiEndpoint.run(runtime, async () => {
       const params = validateValue('params', { ...event.params }, paramsValidator) as Params;
       const query = validateValue('querystring', queryObject(event.url), queryValidator) as Query;
-      const body = bodyValidator ? await ApiRequest.json(event.request, bodyValidator) : undefined;
+      const body = bodyValidator ? await ApiRequest.json(event.request, bodyValidator, route.bodyLimit) : undefined;
       const resolved = route.auth === 'admin'
         ? AuthRequest.requireAdmin(runtime, event.locals)
         : AuthRequest.requireSession(runtime, event.locals);
       runtime.prepareM4();
-      const output = await route.handler({ runtime, event, params, query, body, ...resolved });
+      const output = await ActingAdmin.run(resolved.admin.username, () => route.handler({ runtime, event, params, query, body, ...resolved }));
       if (output instanceof Response) return output;
       if (route.status === 204) return new Response(null, { status: 204 });
       return Response.json(output, { status: route.status ?? 200 });

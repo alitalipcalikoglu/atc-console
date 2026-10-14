@@ -51,7 +51,7 @@ audit-log forwarder and close SQLite → exit. `server.mjs` enforces a 30 s forc
 
 ## Resource limits
 
-Request body cap 64 KiB for ordinary API calls (SvelteKit/adapter-node body handling); file uploads
+Request body cap 64 KiB for ordinary API calls (2 MiB for content import and render preview, which carry documents) (SvelteKit/adapter-node body handling); file uploads
 use the explicit 512 MiB `UploadStream` boundary and stream to `atc-media` with backpressure.
 `max_memory_restart`: 300M.
 
