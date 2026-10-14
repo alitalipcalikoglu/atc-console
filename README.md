@@ -31,8 +31,8 @@ Production with Docker (the image builds the adapter-node application itself):
 
 ```bash
 docker build -t atc-console .
-docker run -d --name console -p 3004:3004 -v console-data:/data -v ./services.json:/config/services.json:ro --env-file .env -e DB_PATH=/data/console.db -e SERVICES_FILE=/config/services.json atc-console
-docker exec -it console npm run admin -- create you@example.com
+docker run -d --name atc-console -p 3004:3004 -v atc-console-data:/data -v ./services.json:/config/services.json:ro --env-file .env -e DB_PATH=/data/console.db -e SERVICES_FILE=/config/services.json atc-console
+docker exec -it atc-console npm run admin -- create you@example.com
 ```
 
 The explicit storage/config values keep the container paths authoritative when a general-purpose
@@ -80,7 +80,7 @@ npm run typecheck
 
 **Responsibilities:** admin accounts with roles and TOTP 2FA; per-service HTTP clients for viewing and administering state; its own audit trail of admin actions.
 
-**Non-responsibilities:** console ≠ source of truth for service state — every view is a live read through each service's own HTTP API, never a direct read of another service's database (confirmed: no such access exists in this codebase). Console does not implement business logic itself — it is a client of every other service's domain rules, not a domain owner. It does not proxy end-user traffic (that's `gateway`'s job).
+**Non-responsibilities:** console ≠ source of truth for service state — every view is a live read through each service's own HTTP API, never a direct read of another service's database (confirmed: no such access exists in this codebase). Console does not implement business logic itself — it is a client of every other service's domain rules, not a domain owner. It does not proxy end-user traffic (that's `atc-gateway`'s job).
 
 ## How it connects
 
@@ -90,7 +90,7 @@ npm run typecheck
 { "id": "atc-media", "type": "atc-media", "label": "Media (EU)", "url": "http://10.0.0.3:3003", "apiKeyEnv": "MEDIA_API_KEY" }
 ```
 
-`type` is one of `notify`, `auth`, `media`, `gateway`, `audit`, `shortlink`, `flags`, `scheduler`, `webhook-out`, `search`, `ratelimit`, `geo` and selects the screens and endpoints; several instances of one type are allowed (tabs appear). `url` is the internal address the console calls; `publicUrl` is optional information for auth. The gateway needs `metricsTokenEnv` instead of an API key. The file is validated at startup with precise error messages. Changing connections means a restart (`pm2 reload console`).
+`type` is one of `atc-notify`, `atc-auth`, `atc-media`, `atc-gateway`, `atc-audit`, `atc-shortlink`, `atc-flags`, `atc-scheduler`, `atc-webhook-out`, `atc-search`, `atc-ratelimit`, `atc-geo` and selects the screens and endpoints; several instances of one type are allowed (tabs appear). `url` is the internal address the console calls; `publicUrl` is optional information for auth. The gateway needs `metricsTokenEnv` instead of an API key. The file is validated at startup with precise error messages. Changing connections means a restart (`pm2 reload console`).
 
 Each service may carry `"polling": { "enabled": false, "intervalSec": 30 }`: auto-refresh of that service's page in the UI. Admins change it from the page's app bar (Auto-refresh: Off / 15 s / 30 s / 1 min / 5 min); the console writes it back to `services.json` atomically, so the setting is shared by every admin and survives restarts. There is no global refresh; each service polls at its own interval, on its own page and on the overview card, only while that page is open and the tab is visible.
 
@@ -195,7 +195,7 @@ Installable (manifest, icons for iOS and Android, standalone display). The servi
 
 ## Visual checks
 
-Every UI change is checked in a browser at desktop and 375 px widths before it is committed. `npm run smoke:browser` exercises the canonical adapter-node application and captures the established responsive, navigation, theme, localization, toast, docs and PWA checks.
+Every UI change is checked in a browser at desktop and 375 px widths before it is committed. `npm run smoke:browser` exercises the canonical adapter-node application and captures the established responsive, navigation, theme, localization, toast, docs and PWA checks. For layout, evaluate `scripts/overflow-probe.js`'s `probe` in the page: it reports page overflow, every element that spills out of its parent box (`nested`), and whether scrolling tables show their fade hint. Any `nested` entry is a bug.
 
 ## Code layout
 
@@ -229,7 +229,7 @@ Scenario walkthroughs for every feature live in [examples/](examples/README.md).
 
 ## Forwarding the console log to the audit service
 
-When an `audit` service is configured in `services.json` with a key that has the write role, every console log entry (sign-ins, admin management, every write done through the console) is also sent to it as `console.<action>` with the admin as actor and the affected entity as target, so one hash-chained history covers the services and the people operating them. Forwarding is buffered and never slows down the console; the entries stay in the console's own log regardless.
+When an `atc-audit` service is configured in `services.json` with a key that has the write role, every console log entry (sign-ins, admin management, every write done through the console) is also sent to it as `console.<action>` with the admin as actor and the affected entity as target, so one hash-chained history covers the services and the people operating them. Forwarding is buffered and never slows down the console; the entries stay in the console's own log regardless.
 
 ## Scaling model
 
@@ -248,14 +248,14 @@ handler threads either through by hand. The request id is always self-generated
 it). The trace is self-generated by default too, but — unlike before post-production Phase 5 —
 console now *can* adopt a trusted inbound `traceparent`, gated on the same `TRUST_PROXY` flag
 (default `false`, since a browser reaches console directly with no proxy in front of it); see
-[OBSERVABILITY.md](../stack/docs/OBSERVABILITY.md). No `/metrics` of its own — it reads other
+[OBSERVABILITY.md](../atc-stack/docs/OBSERVABILITY.md). No `/metrics` of its own — it reads other
 services'.
 
 ## Backup / restore
 
 Back up the console's own database (admins, sessions, its log) and `services.json` together;
 restoring either alone leaves the connection list momentarily out of date but not unsafe.
-`stack backup`/`stack restore` from the workspace root (see `stack/docs/UPGRADE.md`) captures both
+`stack backup`/`stack restore` from the workspace root (see `atc-stack/docs/UPGRADE.md`) captures both
 together. On every start, before applying a pending migration to an existing database, the service
 itself also snapshots the database file to `DB_PATH.pre-v<N>-<timestamp>` (directory overridable
 with `DB_BACKUP_DIR`) — a manual last resort if `stack restore` is unavailable.

@@ -235,7 +235,7 @@ test('media bytes oracle: exact bytes and filtered headers; inbound Range is not
 });
 
 test('audit export oracle: bytes and download headers survive; errors stay JSON', async () => {
-  let response = await fetch(`${consoleApp.origin}/api/services/atc-audit/atc-audit/events/export?format=ndjson&source=auth`, { headers: { cookie } });
+  let response = await fetch(`${consoleApp.origin}/api/services/atc-audit/atc-audit/events/export?format=ndjson&source=atc-auth`, { headers: { cookie } });
   assert.equal(response.status, 200);
   assert.deepEqual(Buffer.from(await response.arrayBuffer()), EXPORT);
   assert.equal(response.headers.get('content-type'), 'application/x-ndjson; charset=utf-8');

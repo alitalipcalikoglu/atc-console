@@ -4,7 +4,7 @@ import { after, before, test } from 'node:test';
 import { CSRF, signIn, testConsole } from './helpers.js';
 
 /**
- * Stage 10: console forwards `traceparent` to the services it calls (`stack/docs/OBSERVABILITY.md`
+ * Stage 10: console forwards `traceparent` to the services it calls (`atc-stack/docs/OBSERVABILITY.md`
  * named this as the next thing to adopt after `X-Request-Id`). Same fake-service pattern as
  * `test/request-id.test.js`, extended to also capture `traceparent`.
  * @type {{ path: string, headers: import('node:http').IncomingHttpHeaders }[]}

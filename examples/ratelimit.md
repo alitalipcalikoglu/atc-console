@@ -1,6 +1,6 @@
 # Rate limits from the console
 
-**Rate limits** page (one per configured `ratelimit` service): totals for the last 24 hours (allowed, denied with the deny rate, live counters and database size) and every policy with its windows (`100/1min`, `20,000/1d`), override count, active subjects and 24-hour decisions. Viewers look; admins manage.
+**Rate limits** page (one per configured `atc-ratelimit` service): totals for the last 24 hours (allowed, denied with the deny rate, live counters and database size) and every policy with its windows (`100/1min`, `20,000/1d`), override count, active subjects and 24-hour decisions. Viewers look; admins manage.
 
 **Create policy** asks for a name (permanent), a description and the windows: each row is "limit / duration unit"; up to five rows with distinct lengths. Two rows with the same length, a negative limit or a zero duration are flagged inline and block saving.
 

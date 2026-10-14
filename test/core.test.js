@@ -108,10 +108,10 @@ test('SessionStore: opaque tokens, TOTP pending flag, replay guard, purge by exp
 test('AuditStore records and pages, filters by action prefix', () => {
   const audit = new AuditStore(testDb());
   audit.record({ adminId: 'a', adminEmail: 'a@b.co', action: 'login.succeeded', ip: '1.1.1.1' }, 1);
-  audit.record({ adminId: 'a', adminEmail: 'a@b.co', action: 'auth.user.disable', target: 'u1', meta: { reason: 'x' } }, 2);
+  audit.record({ adminId: 'a', adminEmail: 'a@b.co', action: 'atc-auth.user.disable', target: 'u1', meta: { reason: 'x' } }, 2);
   audit.record({ action: 'login.failed', ip: '2.2.2.2' }, 3);
   const all = audit.list({ limit: 10 });
-  assert.deepEqual(all.map((e) => e.action), ['login.failed', 'auth.user.disable', 'login.succeeded']);
+  assert.deepEqual(all.map((e) => e.action), ['login.failed', 'atc-auth.user.disable', 'login.succeeded']);
   assert.deepEqual(audit.list({ limit: 10, action: 'login' }).map((e) => e.at), [3, 1]);
   assert.deepEqual(audit.list({ limit: 10, beforeId: all[0].id }).map((e) => e.at), [2, 1]);
   assert.deepEqual(JSON.parse(all[1].meta ?? ''), { reason: 'x' });

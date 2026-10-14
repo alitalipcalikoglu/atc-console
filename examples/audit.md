@@ -33,4 +33,4 @@ sqlite3 -json data/console.db "SELECT * FROM audit ORDER BY id" > audit-$(date +
 
 ## Behind the scenes
 
-`GET /api/audit?limit=50&action=auth.&before=<id>` → `{ items, nextBefore }`. Viewers can read the log too.
+`GET /api/audit?limit=50&action=atc-auth.&before=<id>` → `{ items, nextBefore }`. Viewers can read the log too.

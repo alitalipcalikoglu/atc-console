@@ -1,6 +1,6 @@
 # Operating the audit service
 
-**Audit** page (one per configured `audit` service): the events every service pushed to the [atc-audit](https://github.com/alitalipcalikoglu/atc-audit) log, with filters, statistics, chain verification and export. The console holds a read-only key; nothing here writes to the log.
+**Audit** page (one per configured `atc-audit` service): the events every service pushed to the [atc-audit](https://github.com/alitalipcalikoglu/atc-audit) log, with filters, statistics, chain verification and export. The console holds a read-only key; nothing here writes to the log.
 
 ## Numbers at the top
 
@@ -18,7 +18,7 @@ Below them, for the same 24-hour window: top actions, top failures (failed or de
 - Segmented control: **All / Success / Failure / Denied**.
 - Action prefix box: `atc-auth.` shows everything under `atc-auth`, `atc-auth.login` exactly that action.
 - **Filters** opens the rest: source, actor type/id, target type/id, request id, IP, from/to. The badge on the button counts active filters; **Clear filters** resets them.
-- Filters live in the URL, so a filtered view can be bookmarked or sent to a colleague: `/audit/audit?actionPrefix=auth.&outcome=failure&actorId=u_1001`.
+- Filters live in the URL, so a filtered view can be bookmarked or sent to a colleague: `/atc-audit/atc-audit?actionPrefix=atc-auth.&outcome=failure&actorId=u_1001`.
 
 Typing waits 300 ms before querying. Paging is **Load more** (keyset cursor from the service, stable while new events arrive).
 

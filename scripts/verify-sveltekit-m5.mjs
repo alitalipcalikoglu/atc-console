@@ -337,7 +337,7 @@ try {
 
   response = await fetch(`${origin}/api/services/atc-audit/atc-audit/events/export?unknown=1`, { headers: { cookie: viewer } });
   assert.equal(response.status, 400);
-  response = await fetch(`${origin}/api/services/atc-audit/atc-audit/events/export?format=ndjson&source=auth`, { headers: { cookie: viewer } });
+  response = await fetch(`${origin}/api/services/atc-audit/atc-audit/events/export?format=ndjson&source=atc-auth`, { headers: { cookie: viewer } });
   if (response.status !== 200) throw new Error(`audit export returned ${response.status}: ${await response.text()}`);
   const exportReader = response.body.getReader();
   const firstExport = await exportReader.read();
@@ -348,8 +348,8 @@ try {
   assert.equal(response.headers.get('content-disposition'), 'attachment; filename="fixture.ndjson"');
   assert.equal(response.headers.get('cache-control'), 'no-store');
   assert.equal(response.headers.get('set-cookie'), null);
-  request = latest((entry) => entry.url.startsWith('/v1/events/export?') && entry.url.includes('source=auth'));
-  assert.equal(request.url, '/v1/events/export?source=auth&format=ndjson');
+  request = latest((entry) => entry.url.startsWith('/v1/events/export?') && entry.url.includes('source=atc-auth'));
+  assert.equal(request.url, '/v1/events/export?source=atc-auth&format=ndjson');
   assert.equal(request.headers.authorization, `Bearer ${API_KEY}`);
   assert.match(String(request.headers.traceparent), /^00-/);
   response = await fetch(`${origin}/api/services/atc-audit/atc-audit/events/export?source=broken`, { headers: { cookie: viewer } });

@@ -1,6 +1,6 @@
 # Geo from the console
 
-**Geo** page (one per configured `geo` service): four stats (IP database loaded or not with type and build date, lookups since start split into found / not found, collections, places) and two columns of tools. Viewers use every lookup; admins manage collections and reload the database.
+**Geo** page (one per configured `atc-geo` service): four stats (IP database loaded or not with type and build date, lookups since start split into found / not found, collections, places) and two columns of tools. Viewers use every lookup; admins manage collections and reload the database.
 
 **IP lookup**: type an address; the result shows the classification badge (public, private, loopback …), whether the database has it, then country (with an EU badge), registered country when different, region, city and postal code, coordinates with a copy button and the accuracy radius, time zone, ASN, the matched network and the source database. The address is kept in the URL (`?ip=`) so a lookup can be shared. Special ranges are answered without a database.
 

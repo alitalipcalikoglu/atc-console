@@ -3,7 +3,7 @@
 ## Purpose
 
 The administrative control plane: one SSR-enabled SvelteKit application running on adapter-node.
-It authenticates admins directly (its own accounts, sessions and TOTP — not delegated to `auth`,
+It authenticates admins directly (its own accounts, sessions and TOTP — not delegated to `atc-auth`,
 which is for end users) and exposes explicit, typed, role-checked filesystem endpoints for every
 operation sent through per-service client classes.
 
@@ -14,7 +14,7 @@ serves the UI without it" but required for that service's own pages to work: a c
 unreachable service answers `502 UPSTREAM_UNREACHABLE` from the console's own API, the UI shows
 that service as unreachable rather than the console failing. The audit service is additionally
 used (when present, with a write-capable key) as the destination for the console's own log
-(`src/lib/server/runtime.js`: `AuditClient` forwarder reading `registry.ofType('audit')[0]`).
+(`src/lib/server/runtime.js`: `AuditClient` forwarder reading `registry.ofType('atc-audit')[0]`).
 
 ## Persistence
 
@@ -52,7 +52,7 @@ audit-log forwarder and close SQLite → exit. `server.mjs` enforces a 30 s forc
 ## Resource limits
 
 Request body cap 64 KiB for ordinary API calls (SvelteKit/adapter-node body handling); file uploads
-use the explicit 512 MiB `UploadStream` boundary and stream to `media` with backpressure.
+use the explicit 512 MiB `UploadStream` boundary and stream to `atc-media` with backpressure.
 `max_memory_restart`: 300M.
 
 ## Timeouts
@@ -93,7 +93,7 @@ The console instead *reads* other services' `/metrics` (via `PrometheusText.pars
 
 `ConsoleLogger` from service-core is owned by the process runtime; sensitive authorization/cookie
 values never enter application logs. Trace/request context is established by SvelteKit hooks (see
-Tracing below). See [OBSERVABILITY.md](../../stack/docs/OBSERVABILITY.md) for the shared vocabulary.
+Tracing below). See [OBSERVABILITY.md](../../atc-stack/docs/OBSERVABILITY.md) for the shared vocabulary.
 
 ## Tracing
 
@@ -118,7 +118,7 @@ to whichever service(s) the request called. Regression-tested in `test/trace-con
 forwarding, per-request trace-id isolation (including under real concurrency), per-hop span
 freshness, trusted-inbound-adoption under `TRUST_PROXY=true`, and a malformed or spoofed inbound
 `traceparent` never crashing the request or leaking through to a downstream call. A real,
-separate-process console → audit E2E (`stack/test/integration/console-audit-trace.test.js`) proves
+separate-process console → audit E2E (`atc-stack/test/integration/console-audit-trace.test.js`) proves
 the same trace-id crosses into a real downstream service with a fresh span-id there.
 
 ## Security model
@@ -129,7 +129,7 @@ Cookie session (`HttpOnly`, `SameSite=Strict`, `Secure` when `COOKIE_SECURE`), C
 Stage 4.1 — README.md's "TOTP secret storage" / "Rotating SECRETS_KEY"). Two roles only,
 `admin`/`viewer`: viewers read, admins mutate (`requireSession` vs `requireAdmin` per route) — no
 finer-grained, per-service permission model. Dummy-hash login timing defence for unknown emails, same
-scrypt cost as real accounts (mirrors the fix made to `auth` in Stage 0, but console's own copy of
+scrypt cost as real accounts (mirrors the fix made to `atc-auth` in Stage 0, but console's own copy of
 this logic was already correct — see `src/domain/console-auth.js`). Every secret naming a downstream
 service's API key (`apiKeyEnv` in `services.json`) is env-only, no rotation support beyond changing
 the value and restarting — unlike `SECRETS_KEY`, which as of Stage 4.1 does have an online rotation
@@ -158,7 +158,7 @@ deployment model this service is built for.
   — the console's *local* audit log (its own `audit` table) is unaffected either way.
 - Process killed without SIGTERM: any buffered-but-unsent audit-forwarding events for the console's
   own log are lost (not written anywhere durable before being sent — see the outbox discussion in
-  `stack/docs/ARCHITECTURE_AUDIT.md` §4.4, planned for a later stage, not this one).
+  `atc-stack/docs/ARCHITECTURE_AUDIT.md` §4.4, planned for a later stage, not this one).
 - Two instances on one database file: unverified; avoid.
 - `SECRETS_KEY` missing while a sealed `totp_secret` exists: that one admin's second factor throws
   `TOTP_UNAVAILABLE` (503) instead of a wrong-code error — a config problem, not a client error, and

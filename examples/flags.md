@@ -1,6 +1,6 @@
 # Operating flags
 
-**Flags** page (one per configured `flags` service): every flag with its state in each environment, environment counters, and the tools to change them. Viewers see everything and can evaluate; admins change.
+**Flags** page (one per configured `atc-flags` service): every flag with its state in each environment, environment counters, and the tools to change them. Viewers see everything and can evaluate; admins change.
 
 ## Numbers at the top
 

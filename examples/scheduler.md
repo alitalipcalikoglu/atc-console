@@ -1,6 +1,6 @@
 # Operating the scheduler
 
-**Scheduler** page (one per configured `scheduler` service): every job with its schedule, next and last run, the worker's state, and recent runs across all jobs. Viewers see everything; admins change.
+**Scheduler** page (one per configured `atc-scheduler` service): every job with its schedule, next and last run, the worker's state, and recent runs across all jobs. Viewers see everything; admins change.
 
 ## Numbers at the top
 

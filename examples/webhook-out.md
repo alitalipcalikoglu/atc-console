@@ -1,6 +1,6 @@
 # Operating webhooks
 
-**Webhooks** page (one per configured `webhook-out` service): subscriptions with their state, recent deliveries and events across all subscribers. Viewers see everything; admins change.
+**Webhooks** page (one per configured `atc-webhook-out` service): subscriptions with their state, recent deliveries and events across all subscribers. Viewers see everything; admins change.
 
 ## Numbers at the top
 

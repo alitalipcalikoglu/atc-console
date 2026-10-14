@@ -42,27 +42,27 @@ tags:
     description: The configured service registry, live probes and console-side settings.
   - name: documentation
     description: Authenticated, allowlisted aggregation of canonical service OpenAPI documents.
-  - name: notify
+  - name: atc-notify
     description: Pass-through to a notify instance.
-  - name: auth
+  - name: atc-auth
     description: Pass-through to an auth instance.
-  - name: media
+  - name: atc-media
     description: Pass-through to a media instance, including the byte relay and the streaming upload.
-  - name: audit
+  - name: atc-audit
     description: Pass-through to an audit instance. Distinct from the `activity` tag, which is console's own log.
-  - name: shortlink
+  - name: atc-shortlink
     description: Pass-through to a shortlink instance.
-  - name: flags
+  - name: atc-flags
     description: Pass-through to a flags instance.
-  - name: scheduler
+  - name: atc-scheduler
     description: Pass-through to a scheduler instance.
-  - name: webhook-out
+  - name: atc-webhook-out
     description: Pass-through to a webhook-out instance.
-  - name: search
+  - name: atc-search
     description: Pass-through to a search instance.
-  - name: ratelimit
+  - name: atc-ratelimit
     description: Pass-through to a ratelimit instance.
-  - name: geo
+  - name: atc-geo
     description: Pass-through to a geo instance.
 paths:
   /openapi.yaml:
@@ -85,7 +85,7 @@ paths:
         - operational
       summary: Liveness probe.
       description: Always `200` once the process is up. No dependency check and no authentication. Hand-rolled here
-        rather than using `service-core`'s `registerProbes`.
+        rather than using `atc-service-core`'s `registerProbes`.
       security: []
       x-stack-visibility: public
       responses:
@@ -1182,7 +1182,7 @@ paths:
     get:
       operationId: atc-console.atc-notify.messages.list
       tags:
-        - notify
+        - atc-notify
       summary: List notification messages.
       description: >-
         Typed pass-through to the **notify** service instance named by `sid` — console relays this to its `GET
@@ -1233,7 +1233,7 @@ paths:
     post:
       operationId: atc-console.atc-notify.messages.send
       tags:
-        - notify
+        - atc-notify
       summary: Send a message.
       description: >-
         Typed pass-through to the **notify** service instance named by `sid` — console relays this to its
@@ -1287,7 +1287,7 @@ paths:
     get:
       operationId: atc-console.atc-notify.messages.get
       tags:
-        - notify
+        - atc-notify
       summary: Get one message.
       description: >-
         Typed pass-through to the **notify** service instance named by `sid` — console relays this to its `GET
@@ -1325,7 +1325,7 @@ paths:
     post:
       operationId: atc-console.atc-notify.messages.retry
       tags:
-        - notify
+        - atc-notify
       summary: Retry a failed message.
       description: >-
         Typed pass-through to the **notify** service instance named by `sid` — console relays this to its
@@ -1369,7 +1369,7 @@ paths:
     get:
       operationId: atc-console.atc-notify.templates.list
       tags:
-        - notify
+        - atc-notify
       summary: List message templates.
       description: >-
         Typed pass-through to the **notify** service instance named by `sid` — console relays this to its `GET
@@ -1406,7 +1406,7 @@ paths:
     get:
       operationId: atc-console.atc-auth.users.list
       tags:
-        - auth
+        - atc-auth
       summary: List users.
       description: >-
         Typed pass-through to the **auth** service instance named by `sid` — console relays this to its `GET
@@ -1457,7 +1457,7 @@ paths:
     post:
       operationId: atc-console.atc-auth.users.create
       tags:
-        - auth
+        - atc-auth
       summary: Create a user.
       description: >-
         Typed pass-through to the **auth** service instance named by `sid` — console relays this to its `POST
@@ -1522,7 +1522,7 @@ paths:
     get:
       operationId: atc-console.atc-auth.users.get
       tags:
-        - auth
+        - atc-auth
       summary: Get a user with sessions and recent events.
       description: >-
         Typed pass-through to the **auth** service instance named by `sid` — console relays this to its `GET
@@ -1557,7 +1557,7 @@ paths:
     patch:
       operationId: atc-console.atc-auth.users.update
       tags:
-        - auth
+        - atc-auth
       summary: Update a user's name or status.
       description: >-
         Typed pass-through to the **auth** service instance named by `sid` — console relays this to its `PATCH
@@ -1619,7 +1619,7 @@ paths:
     delete:
       operationId: atc-console.atc-auth.users.delete
       tags:
-        - auth
+        - atc-auth
       summary: Delete a user.
       description: >-
         Typed pass-through to the **auth** service instance named by `sid` — console relays this to its
@@ -1656,7 +1656,7 @@ paths:
     get:
       operationId: atc-console.atc-auth.users.events
       tags:
-        - auth
+        - atc-auth
       summary: Page a user's events.
       description: >-
         Typed pass-through to the **auth** service instance named by `sid` — console relays this to its `GET
@@ -1709,7 +1709,7 @@ paths:
     delete:
       operationId: atc-console.atc-auth.users.revokeAllSessions
       tags:
-        - auth
+        - atc-auth
       summary: Revoke all of a user's sessions.
       description: >-
         Typed pass-through to the **auth** service instance named by `sid` — console relays this to its
@@ -1753,7 +1753,7 @@ paths:
     delete:
       operationId: atc-console.atc-auth.users.revokeSession
       tags:
-        - auth
+        - atc-auth
       summary: Revoke one session of a user.
       description: >-
         Typed pass-through to the **auth** service instance named by `sid` — console relays this to its
@@ -1791,7 +1791,7 @@ paths:
     post:
       operationId: atc-console.atc-auth.users.resendVerification
       tags:
-        - auth
+        - atc-auth
       summary: Resend a verification email.
       description: >-
         Typed pass-through to the **auth** service instance named by `sid` — console relays this to its `POST
@@ -1854,7 +1854,7 @@ paths:
     post:
       operationId: atc-console.atc-auth.users.passwordResetEmail
       tags:
-        - auth
+        - atc-auth
       summary: Send a password-reset email.
       description: >-
         Typed pass-through to the **auth** service instance named by `sid` — console relays this to its `POST
@@ -1917,7 +1917,7 @@ paths:
     get:
       operationId: atc-console.atc-auth.jwks.get
       tags:
-        - auth
+        - atc-auth
       summary: Fetch the auth service's JWKS.
       description: >-
         Typed pass-through to the **auth** service instance named by `sid` — console relays this to its `GET
@@ -1957,7 +1957,7 @@ paths:
     get:
       operationId: atc-console.atc-media.files.list
       tags:
-        - media
+        - atc-media
       summary: List stored files.
       description: >-
         Typed pass-through to the **media** service instance named by `sid` — console relays this to its `GET
@@ -2008,7 +2008,7 @@ paths:
     put:
       operationId: atc-console.atc-media.files.uploadTicketed
       tags:
-        - media
+        - atc-media
       summary: Upload file bytes through the console.
       description: >-
         Typed pass-through to the **media** service instance named by `sid` — console relays this to its `PUT
@@ -2072,7 +2072,7 @@ paths:
     get:
       operationId: atc-console.atc-media.files.get
       tags:
-        - media
+        - atc-media
       summary: Get one file's metadata.
       description: >-
         Typed pass-through to the **media** service instance named by `sid` — console relays this to its `GET
@@ -2109,7 +2109,7 @@ paths:
     patch:
       operationId: atc-console.atc-media.files.update
       tags:
-        - media
+        - atc-media
       summary: Rename a file or change its visibility.
       description: >-
         Typed pass-through to the **media** service instance named by `sid` — console relays this to its
@@ -2170,7 +2170,7 @@ paths:
     delete:
       operationId: atc-console.atc-media.files.delete
       tags:
-        - media
+        - atc-media
       summary: Delete a file.
       description: >-
         Typed pass-through to the **media** service instance named by `sid` — console relays this to its
@@ -2207,7 +2207,7 @@ paths:
     get:
       operationId: atc-console.atc-media.files.bytes
       tags:
-        - media
+        - atc-media
       summary: Stream a file's bytes through the console.
       description: >-
         Typed pass-through to the **media** service instance named by `sid` — console relays this to its `GET
@@ -2265,7 +2265,7 @@ paths:
     post:
       operationId: atc-console.atc-media.files.restore
       tags:
-        - media
+        - atc-media
       summary: Restore a soft-deleted file.
       description: >-
         Typed pass-through to the **media** service instance named by `sid` — console relays this to its `POST
@@ -2309,7 +2309,7 @@ paths:
     post:
       operationId: atc-console.atc-media.files.urls
       tags:
-        - media
+        - atc-media
       summary: Mint signed URLs for a file.
       description: >-
         Typed pass-through to the **media** service instance named by `sid` — console relays this to its `POST
@@ -2358,7 +2358,7 @@ paths:
     post:
       operationId: atc-console.atc-media.tickets.create
       tags:
-        - media
+        - atc-media
       summary: Create a direct-upload ticket.
       description: >-
         Typed pass-through to the **media** service instance named by `sid` — console relays this to its `POST
@@ -2410,7 +2410,7 @@ paths:
     get:
       operationId: atc-console.atc-audit.events.list
       tags:
-        - audit
+        - atc-audit
       summary: Query audit events.
       description: >-
         Typed pass-through to the **audit** service instance named by `sid` — console relays this to its `GET
@@ -2465,7 +2465,7 @@ paths:
     get:
       operationId: atc-console.atc-audit.events.export
       tags:
-        - audit
+        - atc-audit
       summary: Export audit events as NDJSON or CSV.
       description: >-
         Typed pass-through to the **audit** service instance named by `sid` — console relays this to its `GET
@@ -2541,7 +2541,7 @@ paths:
     get:
       operationId: atc-console.atc-audit.events.get
       tags:
-        - audit
+        - atc-audit
       summary: Get one audit event.
       description: >-
         Typed pass-through to the **audit** service instance named by `sid` — console relays this to its `GET
@@ -2579,7 +2579,7 @@ paths:
     get:
       operationId: atc-console.atc-audit.stats.get
       tags:
-        - audit
+        - atc-audit
       summary: Audit counters.
       description: >-
         Typed pass-through to the **audit** service instance named by `sid` — console relays this to its `GET
@@ -2638,7 +2638,7 @@ paths:
     get:
       operationId: atc-console.atc-audit.chain.head
       tags:
-        - audit
+        - atc-audit
       summary: Current hash-chain head.
       description: >-
         Typed pass-through to the **audit** service instance named by `sid` — console relays this to its `GET
@@ -2675,7 +2675,7 @@ paths:
     get:
       operationId: atc-console.atc-audit.chain.verify
       tags:
-        - audit
+        - atc-audit
       summary: Verify the hash chain.
       description: >-
         Typed pass-through to the **audit** service instance named by `sid` — console relays this to its `GET
@@ -2738,7 +2738,7 @@ paths:
     get:
       operationId: atc-console.atc-shortlink.links.list
       tags:
-        - shortlink
+        - atc-shortlink
       summary: List short links.
       description: >-
         Typed pass-through to the **shortlink** service instance named by `sid` — console relays this to its
@@ -2788,7 +2788,7 @@ paths:
     post:
       operationId: atc-console.atc-shortlink.links.create
       tags:
-        - shortlink
+        - atc-shortlink
       summary: Create a short link.
       description: >-
         Typed pass-through to the **shortlink** service instance named by `sid` — console relays this to its
@@ -2873,7 +2873,7 @@ paths:
     get:
       operationId: atc-console.atc-shortlink.links.get
       tags:
-        - shortlink
+        - atc-shortlink
       summary: Get a short link with its stats.
       description: >-
         Typed pass-through to the **shortlink** service instance named by `sid` — console relays this to its
@@ -2921,7 +2921,7 @@ paths:
     patch:
       operationId: atc-console.atc-shortlink.links.update
       tags:
-        - shortlink
+        - atc-shortlink
       summary: Update a short link.
       description: >-
         Typed pass-through to the **shortlink** service instance named by `sid` — console relays this to its
@@ -3008,7 +3008,7 @@ paths:
     delete:
       operationId: atc-console.atc-shortlink.links.delete
       tags:
-        - shortlink
+        - atc-shortlink
       summary: Delete a short link.
       description: >-
         Typed pass-through to the **shortlink** service instance named by `sid` — console relays this to its
@@ -3045,7 +3045,7 @@ paths:
     get:
       operationId: atc-console.atc-shortlink.links.stats
       tags:
-        - shortlink
+        - atc-shortlink
       summary: Stats for one short link.
       description: >-
         Typed pass-through to the **shortlink** service instance named by `sid` — console relays this to its
@@ -3096,7 +3096,7 @@ paths:
     get:
       operationId: atc-console.atc-shortlink.links.qr
       tags:
-        - shortlink
+        - atc-shortlink
       summary: QR code for a short link, as PNG.
       description: >-
         Typed pass-through to the **shortlink** service instance named by `sid` — console relays this to its
@@ -3159,7 +3159,7 @@ paths:
     get:
       operationId: atc-console.atc-shortlink.stats.get
       tags:
-        - shortlink
+        - atc-shortlink
       summary: Service-wide short-link stats.
       description: >-
         Typed pass-through to the **shortlink** service instance named by `sid` — console relays this to its
@@ -3209,7 +3209,7 @@ paths:
     get:
       operationId: atc-console.atc-flags.environments.list
       tags:
-        - flags
+        - atc-flags
       summary: List flag environments.
       description: >-
         Typed pass-through to the **flags** service instance named by `sid` — console relays this to its `GET
@@ -3246,7 +3246,7 @@ paths:
     get:
       operationId: atc-console.atc-flags.stats.get
       tags:
-        - flags
+        - atc-flags
       summary: Flag counters.
       description: >-
         Typed pass-through to the **flags** service instance named by `sid` — console relays this to its `GET
@@ -3283,7 +3283,7 @@ paths:
     get:
       operationId: atc-console.atc-flags.flags.list
       tags:
-        - flags
+        - atc-flags
       summary: List feature flags.
       description: >-
         Typed pass-through to the **flags** service instance named by `sid` — console relays this to its `GET
@@ -3326,7 +3326,7 @@ paths:
     post:
       operationId: atc-console.atc-flags.flags.create
       tags:
-        - flags
+        - atc-flags
       summary: Create a feature flag.
       description: >-
         Typed pass-through to the **flags** service instance named by `sid` — console relays this to its `POST
@@ -3408,7 +3408,7 @@ paths:
     get:
       operationId: atc-console.atc-flags.flags.get
       tags:
-        - flags
+        - atc-flags
       summary: Get a flag with its recent history.
       description: >-
         Typed pass-through to the **flags** service instance named by `sid` — console relays this to its `GET
@@ -3443,7 +3443,7 @@ paths:
     patch:
       operationId: atc-console.atc-flags.flags.update
       tags:
-        - flags
+        - atc-flags
       summary: Update a flag's metadata.
       description: >-
         Typed pass-through to the **flags** service instance named by `sid` — console relays this to its
@@ -3513,7 +3513,7 @@ paths:
     delete:
       operationId: atc-console.atc-flags.flags.delete
       tags:
-        - flags
+        - atc-flags
       summary: Delete a flag.
       description: >-
         Typed pass-through to the **flags** service instance named by `sid` — console relays this to its
@@ -3550,7 +3550,7 @@ paths:
     get:
       operationId: atc-console.atc-flags.flags.history
       tags:
-        - flags
+        - atc-flags
       summary: Page one flag's change history.
       description: >-
         Typed pass-through to the **flags** service instance named by `sid` — console relays this to its `GET
@@ -3599,7 +3599,7 @@ paths:
     get:
       operationId: atc-console.atc-flags.history.list
       tags:
-        - flags
+        - atc-flags
       summary: Page the service-wide change history.
       description: >-
         Typed pass-through to the **flags** service instance named by `sid` — console relays this to its `GET
@@ -3647,7 +3647,7 @@ paths:
     patch:
       operationId: atc-console.atc-flags.envs.update
       tags:
-        - flags
+        - atc-flags
       summary: Update a flag in one environment.
       description: >-
         Typed pass-through to the **flags** service instance named by `sid` — console relays this to its
@@ -3716,7 +3716,7 @@ paths:
     post:
       operationId: atc-console.atc-flags.envs.copy
       tags:
-        - flags
+        - atc-flags
       summary: Copy a flag's configuration between environments.
       description: >-
         Typed pass-through to the **flags** service instance named by `sid` — console relays this to its `POST
@@ -3778,7 +3778,7 @@ paths:
     post:
       operationId: atc-console.atc-flags.evaluate.post
       tags:
-        - flags
+        - atc-flags
       summary: Evaluate flags for a context.
       description: >-
         Typed pass-through to the **flags** service instance named by `sid` — console relays this to its `POST
@@ -3861,7 +3861,7 @@ paths:
     get:
       operationId: atc-console.atc-scheduler.stats.get
       tags:
-        - scheduler
+        - atc-scheduler
       summary: Scheduler counters.
       description: >-
         Typed pass-through to the **scheduler** service instance named by `sid` — console relays this to its
@@ -3898,7 +3898,7 @@ paths:
     get:
       operationId: atc-console.atc-scheduler.targetKeys.list
       tags:
-        - scheduler
+        - atc-scheduler
       summary: List configured target keys.
       description: >-
         Typed pass-through to the **scheduler** service instance named by `sid` — console relays this to its
@@ -3935,7 +3935,7 @@ paths:
     get:
       operationId: atc-console.atc-scheduler.timezones.list
       tags:
-        - scheduler
+        - atc-scheduler
       summary: List supported timezones.
       description: >-
         Typed pass-through to the **scheduler** service instance named by `sid` — console relays this to its
@@ -3972,7 +3972,7 @@ paths:
     get:
       operationId: atc-console.atc-scheduler.preview.get
       tags:
-        - scheduler
+        - atc-scheduler
       summary: Preview upcoming fire times for a cron expression.
       description: >-
         Typed pass-through to the **scheduler** service instance named by `sid` — console relays this to its
@@ -4027,7 +4027,7 @@ paths:
     get:
       operationId: atc-console.atc-scheduler.jobs.list
       tags:
-        - scheduler
+        - atc-scheduler
       summary: List scheduled jobs.
       description: >-
         Typed pass-through to the **scheduler** service instance named by `sid` — console relays this to its
@@ -4074,7 +4074,7 @@ paths:
     post:
       operationId: atc-console.atc-scheduler.jobs.create
       tags:
-        - scheduler
+        - atc-scheduler
       summary: Create a scheduled job.
       description: >-
         Typed pass-through to the **scheduler** service instance named by `sid` — console relays this to its
@@ -4212,7 +4212,7 @@ paths:
     get:
       operationId: atc-console.atc-scheduler.jobs.get
       tags:
-        - scheduler
+        - atc-scheduler
       summary: Get a job with its recent runs.
       description: >-
         Typed pass-through to the **scheduler** service instance named by `sid` — console relays this to its
@@ -4247,7 +4247,7 @@ paths:
     patch:
       operationId: atc-console.atc-scheduler.jobs.update
       tags:
-        - scheduler
+        - atc-scheduler
       summary: Update a scheduled job.
       description: >-
         Typed pass-through to the **scheduler** service instance named by `sid` — console relays this to its
@@ -4381,7 +4381,7 @@ paths:
     delete:
       operationId: atc-console.atc-scheduler.jobs.delete
       tags:
-        - scheduler
+        - atc-scheduler
       summary: Delete a scheduled job.
       description: >-
         Typed pass-through to the **scheduler** service instance named by `sid` — console relays this to its
@@ -4418,7 +4418,7 @@ paths:
     post:
       operationId: atc-console.atc-scheduler.jobs.run
       tags:
-        - scheduler
+        - atc-scheduler
       summary: Trigger a job now.
       description: >-
         Typed pass-through to the **scheduler** service instance named by `sid` — console relays this to its
@@ -4462,7 +4462,7 @@ paths:
     get:
       operationId: atc-console.atc-scheduler.jobs.runs
       tags:
-        - scheduler
+        - atc-scheduler
       summary: Page one job's runs.
       description: >-
         Typed pass-through to the **scheduler** service instance named by `sid` — console relays this to its
@@ -4515,7 +4515,7 @@ paths:
     get:
       operationId: atc-console.atc-scheduler.runs.list
       tags:
-        - scheduler
+        - atc-scheduler
       summary: Page runs across jobs.
       description: >-
         Typed pass-through to the **scheduler** service instance named by `sid` — console relays this to its
@@ -4567,7 +4567,7 @@ paths:
     get:
       operationId: atc-console.atc-scheduler.runs.get
       tags:
-        - scheduler
+        - atc-scheduler
       summary: Get one run.
       description: >-
         Typed pass-through to the **scheduler** service instance named by `sid` — console relays this to its
@@ -4605,7 +4605,7 @@ paths:
     post:
       operationId: atc-console.atc-scheduler.runs.cancel
       tags:
-        - scheduler
+        - atc-scheduler
       summary: Cancel a run.
       description: >-
         Typed pass-through to the **scheduler** service instance named by `sid` — console relays this to its
@@ -4649,7 +4649,7 @@ paths:
     get:
       operationId: atc-console.atc-webhook-out.stats.get
       tags:
-        - webhook-out
+        - atc-webhook-out
       summary: Webhook counters.
       description: >-
         Typed pass-through to the **webhook-out** service instance named by `sid` — console relays this to its
@@ -4686,7 +4686,7 @@ paths:
     get:
       operationId: atc-console.atc-webhook-out.eventTypes.list
       tags:
-        - webhook-out
+        - atc-webhook-out
       summary: List known event types.
       description: >-
         Typed pass-through to the **webhook-out** service instance named by `sid` — console relays this to its
@@ -4723,7 +4723,7 @@ paths:
     get:
       operationId: atc-console.atc-webhook-out.subscriptions.list
       tags:
-        - webhook-out
+        - atc-webhook-out
       summary: List subscriptions.
       description: >-
         Typed pass-through to the **webhook-out** service instance named by `sid` — console relays this to its
@@ -4767,7 +4767,7 @@ paths:
     post:
       operationId: atc-console.atc-webhook-out.subscriptions.create
       tags:
-        - webhook-out
+        - atc-webhook-out
       summary: Create a subscription.
       description: >-
         Typed pass-through to the **webhook-out** service instance named by `sid` — console relays this to its
@@ -4851,7 +4851,7 @@ paths:
     get:
       operationId: atc-console.atc-webhook-out.subscriptions.get
       tags:
-        - webhook-out
+        - atc-webhook-out
       summary: Get a subscription with its recent deliveries.
       description: >-
         Typed pass-through to the **webhook-out** service instance named by `sid` — console relays this to its
@@ -4886,7 +4886,7 @@ paths:
     patch:
       operationId: atc-console.atc-webhook-out.subscriptions.update
       tags:
-        - webhook-out
+        - atc-webhook-out
       summary: Update a subscription.
       description: >-
         Typed pass-through to the **webhook-out** service instance named by `sid` — console relays this to its
@@ -4971,7 +4971,7 @@ paths:
     delete:
       operationId: atc-console.atc-webhook-out.subscriptions.delete
       tags:
-        - webhook-out
+        - atc-webhook-out
       summary: Delete a subscription.
       description: >-
         Typed pass-through to the **webhook-out** service instance named by `sid` — console relays this to its
@@ -5008,7 +5008,7 @@ paths:
     post:
       operationId: atc-console.atc-webhook-out.subscriptions.rotate
       tags:
-        - webhook-out
+        - atc-webhook-out
       summary: Rotate a subscription's signing secret.
       description: >-
         Typed pass-through to the **webhook-out** service instance named by `sid` — console relays this to its
@@ -5052,7 +5052,7 @@ paths:
     post:
       operationId: atc-console.atc-webhook-out.subscriptions.test
       tags:
-        - webhook-out
+        - atc-webhook-out
       summary: Send a test delivery.
       description: >-
         Typed pass-through to the **webhook-out** service instance named by `sid` — console relays this to its
@@ -5096,7 +5096,7 @@ paths:
     post:
       operationId: atc-console.atc-webhook-out.subscriptions.replay
       tags:
-        - webhook-out
+        - atc-webhook-out
       summary: Replay a time range of events to a subscription.
       description: >-
         Typed pass-through to the **webhook-out** service instance named by `sid` — console relays this to its
@@ -5160,7 +5160,7 @@ paths:
     get:
       operationId: atc-console.atc-webhook-out.deliveries.list
       tags:
-        - webhook-out
+        - atc-webhook-out
       summary: Page deliveries.
       description: >-
         Typed pass-through to the **webhook-out** service instance named by `sid` — console relays this to its
@@ -5210,7 +5210,7 @@ paths:
     get:
       operationId: atc-console.atc-webhook-out.deliveries.get
       tags:
-        - webhook-out
+        - atc-webhook-out
       summary: Get one delivery.
       description: >-
         Typed pass-through to the **webhook-out** service instance named by `sid` — console relays this to its
@@ -5248,7 +5248,7 @@ paths:
     post:
       operationId: atc-console.atc-webhook-out.deliveries.redeliver
       tags:
-        - webhook-out
+        - atc-webhook-out
       summary: Redeliver a delivery.
       description: >-
         Typed pass-through to the **webhook-out** service instance named by `sid` — console relays this to its
@@ -5292,7 +5292,7 @@ paths:
     post:
       operationId: atc-console.atc-webhook-out.deliveries.cancel
       tags:
-        - webhook-out
+        - atc-webhook-out
       summary: Cancel a pending delivery.
       description: >-
         Typed pass-through to the **webhook-out** service instance named by `sid` — console relays this to its
@@ -5336,7 +5336,7 @@ paths:
     get:
       operationId: atc-console.atc-webhook-out.events.list
       tags:
-        - webhook-out
+        - atc-webhook-out
       summary: Page emitted events.
       description: >-
         Typed pass-through to the **webhook-out** service instance named by `sid` — console relays this to its
@@ -5385,7 +5385,7 @@ paths:
     get:
       operationId: atc-console.atc-webhook-out.events.get
       tags:
-        - webhook-out
+        - atc-webhook-out
       summary: Get one emitted event.
       description: >-
         Typed pass-through to the **webhook-out** service instance named by `sid` — console relays this to its
@@ -5423,7 +5423,7 @@ paths:
     get:
       operationId: atc-console.atc-search.stats.get
       tags:
-        - search
+        - atc-search
       summary: Search counters.
       description: >-
         Typed pass-through to the **search** service instance named by `sid` — console relays this to its `GET
@@ -5460,7 +5460,7 @@ paths:
     get:
       operationId: atc-console.atc-search.indexes.list
       tags:
-        - search
+        - atc-search
       summary: List indexes.
       description: >-
         Typed pass-through to the **search** service instance named by `sid` — console relays this to its `GET
@@ -5496,7 +5496,7 @@ paths:
     post:
       operationId: atc-console.atc-search.indexes.create
       tags:
-        - search
+        - atc-search
       summary: Create an index.
       description: >-
         Typed pass-through to the **search** service instance named by `sid` — console relays this to its
@@ -5573,7 +5573,7 @@ paths:
     get:
       operationId: atc-console.atc-search.indexes.get
       tags:
-        - search
+        - atc-search
       summary: Get one index.
       description: >-
         Typed pass-through to the **search** service instance named by `sid` — console relays this to its `GET
@@ -5610,7 +5610,7 @@ paths:
     patch:
       operationId: atc-console.atc-search.indexes.update
       tags:
-        - search
+        - atc-search
       summary: Update an index.
       description: >-
         Typed pass-through to the **search** service instance named by `sid` — console relays this to its
@@ -5682,7 +5682,7 @@ paths:
     delete:
       operationId: atc-console.atc-search.indexes.delete
       tags:
-        - search
+        - atc-search
       summary: Delete an index.
       description: >-
         Typed pass-through to the **search** service instance named by `sid` — console relays this to its
@@ -5719,7 +5719,7 @@ paths:
     post:
       operationId: atc-console.atc-search.indexes.clear
       tags:
-        - search
+        - atc-search
       summary: Remove every document from an index.
       description: >-
         Typed pass-through to the **search** service instance named by `sid` — console relays this to its
@@ -5763,7 +5763,7 @@ paths:
     post:
       operationId: atc-console.atc-search.indexes.search
       tags:
-        - search
+        - atc-search
       summary: Run a search.
       description: >-
         Typed pass-through to the **search** service instance named by `sid` — console relays this to its
@@ -5854,7 +5854,7 @@ paths:
     get:
       operationId: atc-console.atc-search.documents.browse
       tags:
-        - search
+        - atc-search
       summary: Browse documents in an index.
       description: >-
         Typed pass-through to the **search** service instance named by `sid` — console relays this to its `GET
@@ -5897,7 +5897,7 @@ paths:
     put:
       operationId: atc-console.atc-search.documents.upsert
       tags:
-        - search
+        - atc-search
       summary: Upsert documents.
       description: >-
         Typed pass-through to the **search** service instance named by `sid` — console relays this to its `PUT
@@ -5983,7 +5983,7 @@ paths:
     get:
       operationId: atc-console.atc-search.documents.get
       tags:
-        - search
+        - atc-search
       summary: Get one document.
       description: >-
         Typed pass-through to the **search** service instance named by `sid` — console relays this to its `GET
@@ -6021,7 +6021,7 @@ paths:
     delete:
       operationId: atc-console.atc-search.documents.delete
       tags:
-        - search
+        - atc-search
       summary: Delete one document.
       description: >-
         Typed pass-through to the **search** service instance named by `sid` — console relays this to its
@@ -6059,7 +6059,7 @@ paths:
     get:
       operationId: atc-console.atc-ratelimit.stats.get
       tags:
-        - ratelimit
+        - atc-ratelimit
       summary: Rate-limit counters.
       description: >-
         Typed pass-through to the **ratelimit** service instance named by `sid` — console relays this to its
@@ -6096,7 +6096,7 @@ paths:
     get:
       operationId: atc-console.atc-ratelimit.policies.list
       tags:
-        - ratelimit
+        - atc-ratelimit
       summary: List policies.
       description: >-
         Typed pass-through to the **ratelimit** service instance named by `sid` — console relays this to its
@@ -6132,7 +6132,7 @@ paths:
     post:
       operationId: atc-console.atc-ratelimit.policies.create
       tags:
-        - ratelimit
+        - atc-ratelimit
       summary: Create a policy.
       description: >-
         Typed pass-through to the **ratelimit** service instance named by `sid` — console relays this to its
@@ -6212,7 +6212,7 @@ paths:
     get:
       operationId: atc-console.atc-ratelimit.policies.get
       tags:
-        - ratelimit
+        - atc-ratelimit
       summary: Get one policy.
       description: >-
         Typed pass-through to the **ratelimit** service instance named by `sid` — console relays this to its
@@ -6249,7 +6249,7 @@ paths:
     patch:
       operationId: atc-console.atc-ratelimit.policies.update
       tags:
-        - ratelimit
+        - atc-ratelimit
       summary: Update a policy.
       description: >-
         Typed pass-through to the **ratelimit** service instance named by `sid` — console relays this to its
@@ -6323,7 +6323,7 @@ paths:
     delete:
       operationId: atc-console.atc-ratelimit.policies.delete
       tags:
-        - ratelimit
+        - atc-ratelimit
       summary: Delete a policy.
       description: >-
         Typed pass-through to the **ratelimit** service instance named by `sid` — console relays this to its
@@ -6360,7 +6360,7 @@ paths:
     get:
       operationId: atc-console.atc-ratelimit.policies.stats
       tags:
-        - ratelimit
+        - atc-ratelimit
       summary: Counters for one policy.
       description: >-
         Typed pass-through to the **ratelimit** service instance named by `sid` — console relays this to its
@@ -6399,7 +6399,7 @@ paths:
     get:
       operationId: atc-console.atc-ratelimit.policies.top
       tags:
-        - ratelimit
+        - atc-ratelimit
       summary: Top subjects for a policy.
       description: >-
         Typed pass-through to the **ratelimit** service instance named by `sid` — console relays this to its
@@ -6439,7 +6439,7 @@ paths:
     get:
       operationId: atc-console.atc-ratelimit.overrides.list
       tags:
-        - ratelimit
+        - atc-ratelimit
       summary: List per-subject overrides.
       description: >-
         Typed pass-through to the **ratelimit** service instance named by `sid` — console relays this to its
@@ -6479,7 +6479,7 @@ paths:
     put:
       operationId: atc-console.atc-ratelimit.overrides.set
       tags:
-        - ratelimit
+        - atc-ratelimit
       summary: Set an override for one subject.
       description: >-
         Typed pass-through to the **ratelimit** service instance named by `sid` — console relays this to its
@@ -6561,7 +6561,7 @@ paths:
     delete:
       operationId: atc-console.atc-ratelimit.overrides.delete
       tags:
-        - ratelimit
+        - atc-ratelimit
       summary: Remove an override.
       description: >-
         Typed pass-through to the **ratelimit** service instance named by `sid` — console relays this to its
@@ -6599,7 +6599,7 @@ paths:
     get:
       operationId: atc-console.atc-ratelimit.subjects.get
       tags:
-        - ratelimit
+        - atc-ratelimit
       summary: Current usage for one subject.
       description: >-
         Typed pass-through to the **ratelimit** service instance named by `sid` — console relays this to its
@@ -6638,7 +6638,7 @@ paths:
     delete:
       operationId: atc-console.atc-ratelimit.subjects.resetUsage
       tags:
-        - ratelimit
+        - atc-ratelimit
       summary: Reset one subject's usage.
       description: >-
         Typed pass-through to the **ratelimit** service instance named by `sid` — console relays this to its
@@ -6684,7 +6684,7 @@ paths:
     post:
       operationId: atc-console.atc-ratelimit.check.post
       tags:
-        - ratelimit
+        - atc-ratelimit
       summary: Check (and by default consume) a rate-limit budget.
       description: >-
         Typed pass-through to the **ratelimit** service instance named by `sid` — console relays this to its
@@ -6760,7 +6760,7 @@ paths:
     get:
       operationId: atc-console.atc-geo.stats.get
       tags:
-        - geo
+        - atc-geo
       summary: Geo counters.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `GET
@@ -6797,7 +6797,7 @@ paths:
     get:
       operationId: atc-console.atc-geo.database.get
       tags:
-        - geo
+        - atc-geo
       summary: Loaded geo database details.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `GET
@@ -6834,7 +6834,7 @@ paths:
     post:
       operationId: atc-console.atc-geo.database.reload
       tags:
-        - geo
+        - atc-geo
       summary: Reload the geo databases from disk.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `POST
@@ -6877,7 +6877,7 @@ paths:
     get:
       operationId: atc-console.atc-geo.ip.lookup
       tags:
-        - geo
+        - atc-geo
       summary: Look up one IP address.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `GET
@@ -6916,7 +6916,7 @@ paths:
     post:
       operationId: atc-console.atc-geo.ip.batch
       tags:
-        - geo
+        - atc-geo
       summary: Look up up to 100 IP addresses.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `POST
@@ -6985,7 +6985,7 @@ paths:
     get:
       operationId: atc-console.atc-geo.countries.list
       tags:
-        - geo
+        - atc-geo
       summary: List or search countries.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `GET
@@ -7027,7 +7027,7 @@ paths:
     get:
       operationId: atc-console.atc-geo.countries.get
       tags:
-        - geo
+        - atc-geo
       summary: Get one country.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `GET
@@ -7072,7 +7072,7 @@ paths:
     get:
       operationId: atc-console.atc-geo.currencies.list
       tags:
-        - geo
+        - atc-geo
       summary: List currencies.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `GET
@@ -7116,7 +7116,7 @@ paths:
     get:
       operationId: atc-console.atc-geo.timezones.list
       tags:
-        - geo
+        - atc-geo
       summary: List or search timezones.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `GET
@@ -7156,7 +7156,7 @@ paths:
     get:
       operationId: atc-console.atc-geo.phone.lookup
       tags:
-        - geo
+        - atc-geo
       summary: Parse a phone number.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `GET
@@ -7195,7 +7195,7 @@ paths:
     get:
       operationId: atc-console.atc-geo.distance.get
       tags:
-        - geo
+        - atc-geo
       summary: Distance between two coordinate pairs.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `GET
@@ -7234,7 +7234,7 @@ paths:
     get:
       operationId: atc-console.atc-geo.collections.list
       tags:
-        - geo
+        - atc-geo
       summary: List place collections.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `GET
@@ -7270,7 +7270,7 @@ paths:
     post:
       operationId: atc-console.atc-geo.collections.create
       tags:
-        - geo
+        - atc-geo
       summary: Create a place collection.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `POST
@@ -7330,7 +7330,7 @@ paths:
     get:
       operationId: atc-console.atc-geo.collections.get
       tags:
-        - geo
+        - atc-geo
       summary: Get one collection.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `GET
@@ -7367,7 +7367,7 @@ paths:
     patch:
       operationId: atc-console.atc-geo.collections.update
       tags:
-        - geo
+        - atc-geo
       summary: Update a collection's description.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `PATCH
@@ -7422,7 +7422,7 @@ paths:
     delete:
       operationId: atc-console.atc-geo.collections.delete
       tags:
-        - geo
+        - atc-geo
       summary: Delete a collection.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `DELETE
@@ -7459,7 +7459,7 @@ paths:
     post:
       operationId: atc-console.atc-geo.collections.clear
       tags:
-        - geo
+        - atc-geo
       summary: Remove every place from a collection.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `POST
@@ -7503,7 +7503,7 @@ paths:
     put:
       operationId: atc-console.atc-geo.places.upsert
       tags:
-        - geo
+        - atc-geo
       summary: Upsert places into a collection.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `PUT
@@ -7585,7 +7585,7 @@ paths:
     get:
       operationId: atc-console.atc-geo.places.list
       tags:
-        - geo
+        - atc-geo
       summary: Page a collection's places.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `GET
@@ -7625,7 +7625,7 @@ paths:
     delete:
       operationId: atc-console.atc-geo.places.delete
       tags:
-        - geo
+        - atc-geo
       summary: Delete one place.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `DELETE
@@ -7663,7 +7663,7 @@ paths:
     get:
       operationId: atc-console.atc-geo.collections.nearby
       tags:
-        - geo
+        - atc-geo
       summary: Find places near a point.
       description: >-
         Typed pass-through to the **geo** service instance named by `sid` — console relays this to its `GET
@@ -8499,7 +8499,7 @@ components:
               type: string
             details:
               description: "Present on Ajv validation failures as `[{ path, message }]` — note console hand-rolls its error
-                handler and, unlike the shared `service-core` helper every backend service uses, omits
+                handler and, unlike the shared `atc-service-core` helper every backend service uses, omits
                 `params` from those entries. Also present on domain errors that carry structured context:
                 `retryAfterSec` (RATE_LIMITED, ACCOUNT_LOCKED) and `problems` (WEAK_PASSWORD)."
     DownstreamErrorEnvelope:
@@ -8570,7 +8570,7 @@ components:
       properties:
         service:
           type: string
-          const: console
+          const: atc-console
         version:
           type: string
           description: This package's version.
@@ -8593,8 +8593,8 @@ components:
           type: string
           description: >-
             Version of the `@atc-web/atc-service-core` copy actually running. Console imports
-            `registerInfo` from `@atc-web/atc-service-core/fastify`, so unlike `gateway` (the one
-            service in this platform with no `service-core` dependency, where this field is
+            `registerInfo` from `@atc-web/atc-service-core/fastify`, so unlike `atc-gateway` (the one
+            service in this platform with no `atc-service-core` dependency, where this field is
             always `null`) this field is always a real semver string here, never `null`.
     Admin:
       type: object
@@ -8731,7 +8731,7 @@ components:
         id: { type: string }
         type:
           type: string
-          enum: [audit, auth, console, flags, gateway, geo, media, notify, ratelimit, scheduler, search, shortlink, webhook-out]
+          enum: [atc-audit, atc-auth, atc-console, atc-flags, atc-gateway, atc-geo, atc-media, atc-notify, atc-ratelimit, atc-scheduler, atc-search, atc-shortlink, atc-webhook-out]
         label: { type: string }
     ServiceDescriptor:
       type: object
@@ -8752,18 +8752,18 @@ components:
         type:
           type: string
           enum:
-            - notify
-            - auth
-            - media
-            - gateway
-            - audit
-            - shortlink
-            - flags
-            - scheduler
-            - webhook-out
-            - search
-            - ratelimit
-            - geo
+            - atc-notify
+            - atc-auth
+            - atc-media
+            - atc-gateway
+            - atc-audit
+            - atc-shortlink
+            - atc-flags
+            - atc-scheduler
+            - atc-webhook-out
+            - atc-search
+            - atc-ratelimit
+            - atc-geo
           description: Decides which proxy routes are valid for this `sid`; a type mismatch is a `404 UNKNOWN_SERVICE`.
         label:
           type: string
@@ -8904,7 +8904,7 @@ components:
           type:
             - string
             - "null"
-          description: The events response's `nextBefore` cursor, for `GET .../auth/users/{id}/events`.
+          description: The events response's `nextBefore` cursor, for `GET .../atc-auth/users/{id}/events`.
     FlagDetail:
       type: object
       additionalProperties: true
@@ -8926,7 +8926,7 @@ components:
           type:
             - string
             - "null"
-          description: The history response's `nextBefore` cursor, for `GET .../flags/flags/{id}/history`.
+          description: The history response's `nextBefore` cursor, for `GET .../atc-flags/flags/{id}/history`.
     JobDetail:
       type: object
       additionalProperties: true
@@ -8948,7 +8948,7 @@ components:
           type:
             - string
             - "null"
-          description: The runs response's `nextBefore` cursor, for `GET .../scheduler/jobs/{id}/runs`.
+          description: The runs response's `nextBefore` cursor, for `GET .../atc-scheduler/jobs/{id}/runs`.
     SubscriptionDetail:
       type: object
       additionalProperties: true
@@ -8972,7 +8972,7 @@ components:
             - string
             - "null"
           description: The deliveries response's `nextBefore` cursor, for `GET
-            .../webhook-out/deliveries?subscription=...`.
+            .../atc-webhook-out/deliveries?subscription=...`.
     LinkDetail:
       type: object
       additionalProperties: true

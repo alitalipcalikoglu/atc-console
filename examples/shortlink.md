@@ -1,6 +1,6 @@
 # Operating shortlink
 
-**Shortlink** page (one per configured `shortlink` service): every short link with its state and clicks, a 7-day overview, and per-link statistics with the QR code. Admins create and change links here; viewers see everything.
+**Shortlink** page (one per configured `atc-shortlink` service): every short link with its state and clicks, a 7-day overview, and per-link statistics with the QR code. Admins create and change links here; viewers see everything.
 
 ## Numbers at the top
 

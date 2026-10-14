@@ -6,8 +6,8 @@ import { SecretBox } from '@atc-web/atc-service-core/secrets';
  * are console-specific and deliberately stay out of service-core (see its README: "core is a
  * generic primitive, not a domain framework").
  *
- * Only ever two keys, matching this codebase's established rotation shape (`auth`'s
- * `JWT_PREVIOUS_PUBLIC_KEY_PATH`, `audit`'s `ANCHOR_PREVIOUS_PUBLIC_KEY_PATH`): a `current` key that
+ * Only ever two keys, matching this codebase's established rotation shape (`atc-auth`'s
+ * `JWT_PREVIOUS_PUBLIC_KEY_PATH`, `atc-audit`'s `ANCHOR_PREVIOUS_PUBLIC_KEY_PATH`): a `current` key that
  * every new seal uses, and an optional `previous` key kept only long enough to decrypt and reseal
  * whatever was sealed under it. There is no arbitrary history of old keys — once a reseal pass
  * confirms nothing is left under `previous`, drop it from config.

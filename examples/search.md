@@ -1,6 +1,6 @@
 # Searching from the console
 
-**Search** page (one per configured `search` service): every index with its document count, facet keys, last indexing time and searches served since the service started. Viewers search; admins manage.
+**Search** page (one per configured `atc-search` service): every index with its document count, facet keys, last indexing time and searches served since the service started. Viewers search; admins manage.
 
 **Create index** asks for a name (permanent), description, the three field weights (title / body / tags, used by BM25 ranking) and the facet keys the search page offers as filter groups.
 
