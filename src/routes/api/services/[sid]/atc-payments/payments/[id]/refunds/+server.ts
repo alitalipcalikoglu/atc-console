@@ -1,0 +1,4 @@
+import { PaymentsClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, record } from '#lib/server/m4.js';
+// The browser sends one idempotency key per refund dialog, so a retried submit never refunds twice.
+export const POST = jsonRoute({ auth: 'admin', params: Schemas.paymentParams, body: Schemas.paymentRefund, status: 201, handler: async (context) => { const { idempotencyKey, ...body } = context.body as { idempotencyKey: string, amount?: number, reason?: string }; const output = await context.runtime.clients.get(context.params.sid, PaymentsClient).refund(context.params.id, body, idempotencyKey) as any; record(context, 'atc-payments.refund.create', output.refund?.id ?? context.params.id, { service: context.params.sid, payment: context.params.id, amount: output.refund?.amount, status: output.refund?.status }); return output; } });

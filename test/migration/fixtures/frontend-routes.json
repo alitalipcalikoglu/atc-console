@@ -40,6 +40,8 @@
   "/atc-backup/:sid/backups/:id",
   "/atc-status/:sid",
   "/atc-status/:sid/monitors/:id",
+  "/atc-payments/:sid",
+  "/atc-payments/:sid/payments/:id",
   "/audit",
   "/admins",
   "/docs",

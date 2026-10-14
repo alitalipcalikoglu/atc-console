@@ -37,6 +37,17 @@ const fake = createServer((req, res) => {
         return res.writeHead(200, { 'content-type': 'application/pdf', 'content-length': '8', 'x-render-pages': '1', 'content-disposition': 'inline; filename="x.html"' }).end('%PDF-1.3');
       }
     }
+    if (String(req.headers.authorization).endsWith('y'.repeat(40))) {
+      const P = 'pay_mv8abcde0123456789abcdef';
+      const PAY = { id: P, status: 'succeeded', amount: 2500, currency: 'eur', amountRefunded: 0, metadata: {}, provider: { name: 'stripe', id: 'pi_1', status: 'succeeded' } };
+      if (p === '/v1/stats') return json(200, { provider: 'stripe', webhooks: 'enabled', webhookOut: 'enabled', byStatus: { succeeded: 4, refunded: 1, pending: 2 }, volume24h: [], balance: [], outbox: { pending: 0, dead: 1 }, currencies: ['eur'] });
+      if (p === '/v1/payments') return json(200, { items: [PAY], nextCursor: null });
+      if (p === `/v1/payments/${P}`) return json(200, { payment: PAY, refunds: [], ledger: [], refundable: 2500 });
+      if (p === `/v1/payments/${P}/sync`) return json(200, { payment: PAY, refunds: [], ledger: [], refundable: 2500, changed: false });
+      if (p === `/v1/payments/${P}/cancel`) return json(409, { error: { code: 'INVALID_STATE', message: 'a succeeded payment cannot be canceled' } });
+      if (p === `/v1/payments/${P}/refunds`) return json(201, { refund: { id: 'rf_1', amount: JSON.parse(body).amount ?? 2500, status: 'succeeded', key: req.headers['idempotency-key'] }, payment: { ...PAY, status: 'partially_refunded' } });
+      if (p === '/v1/provider-events') return json(200, { items: [{ id: 'evt_1', type: 'payment_intent.succeeded', outcome: 'applied' }] });
+    }
     if (String(req.headers.authorization).endsWith('t'.repeat(40))) {
       const MON = { id: 'shop', name: 'Shop', url: 'https://shop.example.com/health', state: 'up', origin: 'api', expectStatus: [200], lastCheck: { ok: true, latencyMs: 12 } };
       const I = 'inc_mv8abcde0123456789abcdef';
@@ -248,7 +259,7 @@ let origin = '';
 before(async () => {
   await new Promise((r) => fake.listen(0, '127.0.0.1', () => r(undefined)));
   origin = `http://127.0.0.1:${/** @type {any} */ (fake.address()).port}`;
-  t = await testConsole({ urls: { notify: origin, auth: origin, media: origin, gateway: origin, audit: origin, shortlink: origin, flags: origin, scheduler: origin, 'webhook-out': origin, search: origin, ratelimit: origin, geo: origin, content: origin, export: origin, render: origin, queue: origin, backup: origin, status: origin }, env: { RATE_LIMIT_MAX: '60' } });
+  t = await testConsole({ urls: { notify: origin, auth: origin, media: origin, gateway: origin, audit: origin, shortlink: origin, flags: origin, scheduler: origin, 'webhook-out': origin, search: origin, ratelimit: origin, geo: origin, content: origin, export: origin, render: origin, queue: origin, backup: origin, status: origin, payments: origin }, env: { RATE_LIMIT_MAX: '60' } });
 });
 after(async () => { await t.app.close(); fake.close(); });
 
@@ -277,7 +288,7 @@ test('documentation API is authenticated, allowlisted and serves local and upstr
   const headers = { cookie };
   const list = await t.app.inject({ url: '/api/docs/services', headers });
   assert.equal(list.statusCode, 200);
-  assert.equal(list.json().items.length, 19);
+  assert.equal(list.json().items.length, 20);
   assert.deepEqual(list.json().items[0], { id: 'atc-console', type: 'atc-console', label: 'Console' });
   assert.equal(list.body.includes('apiKey'), false, 'registry secrets are never serialized');
 
@@ -395,7 +406,9 @@ test('overview aggregates health and parsed metrics per service', async () => {
   const res = await t.app.inject({ url: '/api/services/overview', headers: { cookie } });
   assert.equal(res.statusCode, 200);
   const items = res.json().items;
-  assert.equal(items.length, 18);
+  assert.equal(items.length, 19);
+  const pms = items.find((/** @type {any} */ i) => i.id === 'atc-payments').summary;
+  assert.deepEqual([pms.provider, pms.succeeded, pms.pending, pms.outboxDead], ['stripe', 5, 2, 1]);
   const sts = items.find((/** @type {any} */ i) => i.id === 'atc-status').summary;
   assert.deepEqual([sts.monitors, sts.up, sts.down, sts.degraded, sts.openIncidents], [3, 2, 1, 0, 1]);
   const bks = items.find((/** @type {any} */ i) => i.id === 'atc-backup').summary;
@@ -440,7 +453,7 @@ test('about aggregates /v1/info per service; unreachable and malformed responses
   const res = await t.app.inject({ url: '/api/services/about', headers: { cookie } });
   assert.equal(res.statusCode, 200);
   const items = res.json().items;
-  assert.equal(items.length, 18);
+  assert.equal(items.length, 19);
   const notify = items.find((/** @type {any} */ i) => i.id === 'atc-notify');
   assert.equal(notify.ok, true);
   assert.deepEqual(notify.data, { service: 'fake', version: '1.2.3', apiVersion: 'v1', capabilities: ['x'], schemaVersion: 4, serviceCore: '1.10.0' });
@@ -1075,4 +1088,31 @@ test('status: monitors, check now, checks, incidents, edit, delete (audited, adm
   assert.equal((await t.app.inject({ method: 'DELETE', url: `${B}/monitors/shop`, headers: { cookie, ...CSRF } })).statusCode, 204);
   const log = await t.app.inject({ url: '/api/audit?action=atc-status.', headers: { cookie } });
   assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-status.monitor.delete', 'atc-status.monitor.check', 'atc-status.monitor.upsert']);
+});
+
+test('payments: list, detail, sync, cancel, refund with an idempotency key header, webhook events (audited, admin only)', async () => {
+  const { cookie } = await signIn(t);
+  const viewer = await signIn(t, { username: 'viewer16', role: 'viewer' });
+  seen.length = 0;
+  const B = '/api/services/atc-payments/atc-payments';
+  const P = 'pay_mv8abcde0123456789abcdef';
+  let res = await t.app.inject({ url: `${B}/payments?status=succeeded`, headers: { cookie: viewer.cookie } });
+  assert.deepEqual([res.statusCode, res.json().items[0].id, seen.at(-1)?.url], [200, P, '/v1/payments?status=succeeded']);
+  assert.equal(seen.at(-1)?.headers.authorization, `Bearer ${'y'.repeat(40)}`, 'payments key injected');
+  assert.equal((await t.app.inject({ url: `${B}/payments?status=lost`, headers: { cookie } })).statusCode, 400);
+  assert.equal((await t.app.inject({ url: `${B}/payments/${P}`, headers: { cookie: viewer.cookie } })).json().refundable, 2500);
+  assert.equal((await t.app.inject({ url: `${B}/stats`, headers: { cookie } })).json().outbox.dead, 1);
+  assert.equal((await t.app.inject({ url: `${B}/provider-events?limit=5`, headers: { cookie } })).json().items[0].outcome, 'applied');
+  assert.equal(seen.at(-1)?.url, '/v1/provider-events?limit=5');
+  const K = 'console-refund-11111111-2222-3333-4444-555555555555';
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/payments/${P}/refunds`, headers: { cookie: viewer.cookie, ...CSRF }, payload: { idempotencyKey: K } })).statusCode, 403);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/payments/${P}/refunds`, headers: { cookie, ...CSRF }, payload: { amount: 500 } })).statusCode, 400, 'idempotency key required');
+  res = await t.app.inject({ method: 'POST', url: `${B}/payments/${P}/refunds`, headers: { cookie, ...CSRF }, payload: { idempotencyKey: K, amount: 500, reason: 'requested_by_customer' } });
+  assert.deepEqual([res.statusCode, res.json().refund.amount, res.json().refund.key], [201, 500, K], 'the key travels as the Idempotency-Key header');
+  assert.deepEqual(JSON.parse(String(seen.at(-1)?.body)), { amount: 500, reason: 'requested_by_customer' }, 'and not in the body');
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/payments/${P}/sync`, headers: { cookie, ...CSRF } })).json().changed, false);
+  res = await t.app.inject({ method: 'POST', url: `${B}/payments/${P}/cancel`, headers: { cookie, ...CSRF } });
+  assert.deepEqual([res.statusCode, res.json().error.code], [409, 'INVALID_STATE']);
+  const log = await t.app.inject({ url: '/api/audit?action=atc-payments.', headers: { cookie } });
+  assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-payments.payment.sync', 'atc-payments.refund.create']);
 });

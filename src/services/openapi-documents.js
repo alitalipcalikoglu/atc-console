@@ -4,8 +4,8 @@ import { ServiceError } from './client.js';
 
 const SERVICE_TYPES = new Set([
   'atc-audit', 'atc-auth', 'atc-backup', 'atc-console', 'atc-content', 'atc-export', 'atc-flags',
-  'atc-gateway', 'atc-geo', 'atc-media', 'atc-notify', 'atc-queue', 'atc-ratelimit', 'atc-render',
-  'atc-scheduler', 'atc-search', 'atc-shortlink', 'atc-status', 'atc-webhook-out',
+  'atc-gateway', 'atc-geo', 'atc-media', 'atc-notify', 'atc-payments', 'atc-queue', 'atc-ratelimit',
+  'atc-render', 'atc-scheduler', 'atc-search', 'atc-shortlink', 'atc-status', 'atc-webhook-out',
 ]);
 
 /** Explicit, read-only OpenAPI aggregation. This is intentionally not a generic service proxy. */

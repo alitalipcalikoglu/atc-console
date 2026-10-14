@@ -17,6 +17,7 @@
     { "id": "atc-render", "type": "atc-render", "label": "Render", "url": "http://10.0.0.15:3015", "apiKeyEnv": "RENDER_API_KEY" },
     { "id": "atc-queue", "type": "atc-queue", "label": "Queues", "url": "http://10.0.0.16:3016", "apiKeyEnv": "QUEUE_API_KEY" },
     { "id": "atc-backup", "type": "atc-backup", "label": "Backups", "url": "http://127.0.0.1:3017", "apiKeyEnv": "BACKUP_API_KEY" },
-    { "id": "atc-status", "type": "atc-status", "label": "Status", "url": "http://127.0.0.1:3018", "apiKeyEnv": "STATUS_API_KEY" }
+    { "id": "atc-status", "type": "atc-status", "label": "Status", "url": "http://127.0.0.1:3018", "apiKeyEnv": "STATUS_API_KEY" },
+    { "id": "atc-payments", "type": "atc-payments", "label": "Payments", "url": "http://127.0.0.1:3019", "apiKeyEnv": "PAYMENTS_API_KEY" }
   ]
 }

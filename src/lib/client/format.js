@@ -22,6 +22,28 @@ export class Fmt {
     return `${new Intl.NumberFormat(this.locale, { maximumFractionDigits: v < 10 && i > 0 ? 1 : 0 }).format(v)} ${units[i]}`;
   }
 
+  /**
+   * Money from minor units (cents), with the currency's own number of decimals.
+   * @param {number|null|undefined} minor @param {string} currency
+   */
+  money(minor, currency) {
+    if (minor === null || minor === undefined) return '–';
+    try {
+      const f = new Intl.NumberFormat(this.locale, { style: 'currency', currency: currency.toUpperCase() });
+      return f.format(minor / 10 ** (f.resolvedOptions().maximumFractionDigits ?? 2));
+    } catch {
+      return `${this.int(minor)} ${currency.toUpperCase()}`;
+    }
+  }
+
+  /** Major units typed by a person to minor units, or null when it is not a valid amount. @param {string} text @param {string} currency */
+  minor(text, currency) {
+    const digits = new Intl.NumberFormat('en', { style: 'currency', currency: currency.toUpperCase() }).resolvedOptions().maximumFractionDigits ?? 2;
+    const t = text.trim().replace(',', '.');
+    if (!new RegExp(`^\\d{1,9}(\\.\\d{1,${digits}})?$`).test(t)) return null;
+    return Math.round(Number(t) * 10 ** digits);
+  }
+
   /** @param {number|null|undefined} ms */
   ms(ms) {
     if (ms === null || ms === undefined) return '–';

@@ -38,5 +38,6 @@
   "RENDER_API_KEY": { "class": ["downstream", "secret", "configuration-dependent"] },
   "QUEUE_API_KEY": { "class": ["downstream", "secret", "configuration-dependent"] },
   "BACKUP_API_KEY": { "class": ["downstream", "secret", "configuration-dependent"] },
-  "STATUS_API_KEY": { "class": ["downstream", "secret", "configuration-dependent"] }
+  "STATUS_API_KEY": { "class": ["downstream", "secret", "configuration-dependent"] },
+  "PAYMENTS_API_KEY": { "class": ["downstream", "secret", "configuration-dependent"] }
 }

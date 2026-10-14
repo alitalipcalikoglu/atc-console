@@ -6,6 +6,7 @@ import { RenderClient } from './render-client.js';
 import { QueueClient } from './queue-client.js';
 import { BackupClient } from './backup-client.js';
 import { StatusClient } from './status-client.js';
+import { PaymentsClient } from './payments-client.js';
 import { FlagsClient } from './flags-client.js';
 import { GatewayClient } from './gateway-client.js';
 import { GeoClient } from './geo-client.js';
@@ -23,7 +24,7 @@ const CLIENT_TYPES = new Map([
   ['GatewayClient', 'atc-gateway'], ['AuditClient', 'atc-audit'], ['ShortlinkClient', 'atc-shortlink'],
   ['FlagsClient', 'atc-flags'], ['SchedulerClient', 'atc-scheduler'], ['WebhookOutClient', 'atc-webhook-out'],
   ['SearchClient', 'atc-search'], ['RateLimitClient', 'atc-ratelimit'], ['GeoClient', 'atc-geo'],
-  ['ContentClient', 'atc-content'], ['ExportClient', 'atc-export'], ['RenderClient', 'atc-render'], ['QueueClient', 'atc-queue'], ['BackupClient', 'atc-backup'], ['StatusClient', 'atc-status'],
+  ['ContentClient', 'atc-content'], ['ExportClient', 'atc-export'], ['RenderClient', 'atc-render'], ['QueueClient', 'atc-queue'], ['BackupClient', 'atc-backup'], ['StatusClient', 'atc-status'], ['PaymentsClient', 'atc-payments'],
 ]);
 
 /** @typedef {import('./registry.js').ServiceRegistry} ServiceRegistry */
@@ -66,6 +67,7 @@ export class ServiceClients {
       case 'atc-queue': return new QueueClient(def, o);
       case 'atc-backup': return new BackupClient(def, o);
       case 'atc-status': return new StatusClient(def, o);
+      case 'atc-payments': return new PaymentsClient(def, o);
       default: throw new Error(`unknown service type ${def.type}`);
     }
   }

@@ -10,7 +10,7 @@ info:
 
     Two things shape the whole document. First, authentication is a **cookie session**
     (`console_session`) plus an `x-console-request: 1` CSRF header on mutations, not the
-    `Authorization: Bearer` API key the eighteen backend services use — and downstream calls are made
+    `Authorization: Bearer` API key the nineteen backend services use — and downstream calls are made
     with console's own per-service API key, never the administrator's identity. Second, console
     declares **no Fastify `response:` schema anywhere**: request shapes are real, enforced Ajv
     schemas and are documented here exactly, while the body of a pass-through route is the target
@@ -76,6 +76,8 @@ tags:
     description: "Backup service: sources, run now, history, verify, restore, download and delete of database backups."
   - name: atc-status
     description: "Status service: uptime monitors, check history, incidents and check now."
+  - name: atc-payments
+    description: "Payments service: payments, refunds, sync and cancel, ledger balance and webhook events."
 paths:
   /openapi.yaml:
     get:
@@ -137,7 +139,7 @@ paths:
         - operational
       summary: Service identity and capabilities.
       description: The one operational route console takes from the shared `registerInfo` helper, so its shape is
-        identical across all 19 services.
+        identical across all 20 services.
       security: []
       x-stack-visibility: public
       responses:
@@ -10482,6 +10484,301 @@ paths:
         "200":
           description: Pass-through of the status service's own `GET /v1/incidents` response body, relayed
             unchanged. See the status service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-payments/stats:
+    get:
+      operationId: atc-console.atc-payments.stats.get
+      tags:
+        - atc-payments
+      summary: "Payments by status, volume, balances and outbox."
+      description: >-
+        Typed pass-through to the **payments** service instance named by `sid` — console relays this to its `GET
+        /v1/stats`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the payments service's own `GET /v1/stats` response body, relayed
+            unchanged. See the payments service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-payments/payments:
+    get:
+      operationId: atc-console.atc-payments.payments.list
+      tags:
+        - atc-payments
+      summary: "Payments, newest first."
+      description: >-
+        Typed pass-through to the **payments** service instance named by `sid` — console relays this to its `GET
+        /v1/payments`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - name: status
+          in: query
+          required: false
+          schema: {"type":"string","enum":["pending","processing","succeeded","canceled","partially_refunded","refunded"]}
+        - name: limit
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^([1-9]|[1-9][0-9]|100)$"}
+        - name: cursor
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^[0-9]{1,15}~pay_[0-9a-z]{6,12}[0-9a-f]{16}$"}
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the payments service's own `GET /v1/payments` response body, relayed
+            unchanged. See the payments service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-payments/payments/{id}:
+    get:
+      operationId: atc-console.atc-payments.payments.get
+      tags:
+        - atc-payments
+      summary: "One payment with refunds and ledger entries."
+      description: >-
+        Typed pass-through to the **payments** service instance named by `sid` — console relays this to its `GET
+        /v1/payments/{id}`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the payments service's own `GET /v1/payments/{id}` response body, relayed
+            unchanged. See the payments service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-payments/payments/{id}/cancel:
+    post:
+      operationId: atc-console.atc-payments.payments.cancel
+      tags:
+        - atc-payments
+      summary: "Cancel a pending payment."
+      description: >-
+        Typed pass-through to the **payments** service instance named by `sid` — console relays this to its
+        `POST /v1/payments/{id}/cancel`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the payments service's own `POST /v1/payments/{id}/cancel` response body, relayed
+            unchanged. See the payments service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-payments/payments/{id}/sync:
+    post:
+      operationId: atc-console.atc-payments.payments.sync
+      tags:
+        - atc-payments
+      summary: "Apply the payment's current Stripe state."
+      description: >-
+        Typed pass-through to the **payments** service instance named by `sid` — console relays this to its
+        `POST /v1/payments/{id}/sync`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the payments service's own `POST /v1/payments/{id}/sync` response body, relayed
+            unchanged. See the payments service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-payments/payments/{id}/refunds:
+    post:
+      operationId: atc-console.atc-payments.payments.refund
+      tags:
+        - atc-payments
+      summary: "Refund a payment (idempotencyKey in the body becomes the Idempotency-Key header)."
+      description: >-
+        Typed pass-through to the **payments** service instance named by `sid` — console relays this to its
+        `POST /v1/payments/{id}/refunds`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["idempotencyKey"],"properties":{"amount":{"type":"integer","minimum":1,"maximum":99999999},"reason":{"type":"string","enum":["duplicate","fraudulent","requested_by_customer"]},"idempotencyKey":{"type":"string","pattern":"^[A-Za-z0-9._:-]{8,255}$"}}}
+      responses:
+        "201":
+          description: Pass-through of the payments service's own `POST /v1/payments/{id}/refunds` response body, relayed
+            unchanged. See the payments service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-payments/provider-events:
+    get:
+      operationId: atc-console.atc-payments.events.list
+      tags:
+        - atc-payments
+      summary: "Recent Stripe webhook events."
+      description: >-
+        Typed pass-through to the **payments** service instance named by `sid` — console relays this to its `GET
+        /v1/provider-events`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - name: limit
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^([1-9]|[1-9][0-9]|100)$"}
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the payments service's own `GET /v1/provider-events` response body, relayed
+            unchanged. See the payments service's own OpenAPI document for the authoritative body.
           content:
             application/json:
               schema:
