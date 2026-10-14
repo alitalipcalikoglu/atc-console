@@ -47,6 +47,7 @@
       case 'atc-geo': return [[t('ge.lookups'), fmt.int(m.lookupsTotal)], [t('ge.database'), m.databaseLoaded ? t('ge.loaded') : t('ge.none')], [t('ge.collections'), fmt.int(m.collections)], [t('ge.places'), fmt.int(m.places)]];
       case 'atc-content': return [[t('ct.namespaces'), fmt.int(m.namespaces)], [t('ct.keys'), fmt.int(m.keys)], [t('ct.missing'), fmt.int(m.missing)], [t('ct.lastPublish'), m.lastPublish ?? t('ct.never')]];
       case 'atc-export': return [[t('ex.queued'), fmt.int(m.queued)], [t('ex.running'), fmt.int(m.running)], [t('ex.succeeded24h'), fmt.int(m.succeeded24h)], [t('ex.failed24h'), fmt.int(m.failed24h)]];
+      case 'atc-render': return [[t('rd.templates'), fmt.int(m.templates)], [t('rd.renders24h'), fmt.int(m.renders24h)], [t('rd.failed24h'), fmt.int(m.failed24h)], [t('rd.avgMs'), fmt.ms(m.avgMs)]];
       default: return [];
     }
   }

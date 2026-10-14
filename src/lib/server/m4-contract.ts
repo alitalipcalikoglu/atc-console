@@ -4,6 +4,7 @@ export { AuditClient } from '../../services/audit-client.js';
 export { AuthClient } from '../../services/auth-client.js';
 export { ContentClient } from '../../services/content-client.js';
 export { ExportClient } from '../../services/export-client.js';
+export { RenderClient } from '../../services/render-client.js';
 export { FlagsClient } from '../../services/flags-client.js';
 export { GeoClient } from '../../services/geo-client.js';
 export { MediaClient } from '../../services/media-client.js';

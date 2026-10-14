@@ -10,7 +10,7 @@ info:
 
     Two things shape the whole document. First, authentication is a **cookie session**
     (`console_session`) plus an `x-console-request: 1` CSRF header on mutations, not the
-    `Authorization: Bearer` API key the fourteen backend services use — and downstream calls are made
+    `Authorization: Bearer` API key the fifteen backend services use — and downstream calls are made
     with console's own per-service API key, never the administrator's identity. Second, console
     declares **no Fastify `response:` schema anywhere**: request shapes are real, enforced Ajv
     schemas and are documented here exactly, while the body of a pass-through route is the target
@@ -68,6 +68,8 @@ tags:
     description: Pass-through to a content instance.
   - name: atc-export
     description: Pass-through to an export instance.
+  - name: atc-render
+    description: Pass-through to a render instance.
 paths:
   /openapi.yaml:
     get:
@@ -129,7 +131,7 @@ paths:
         - operational
       summary: Service identity and capabilities.
       description: The one operational route console takes from the shared `registerInfo` helper, so its shape is
-        identical across all 15 services.
+        identical across all 16 services.
       security: []
       x-stack-visibility: public
       responses:
@@ -8934,6 +8936,377 @@ paths:
           $ref: "#/components/responses/ValidationFailed"
         "401":
           $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-render/stats:
+    get:
+      operationId: atc-console.atc-render.stats.get
+      tags:
+        - atc-render
+      summary: "Render counters for the last 24 hours."
+      description: >-
+        Typed pass-through to the **render** service instance named by `sid` — console relays this to its `GET
+        /v1/stats`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the render service's own `GET /v1/stats` response body, relayed
+            unchanged. See the render service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-render/templates:
+    get:
+      operationId: atc-console.atc-render.templates.list
+      tags:
+        - atc-render
+      summary: "List templates."
+      description: >-
+        Typed pass-through to the **render** service instance named by `sid` — console relays this to its `GET
+        /v1/templates`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the render service's own `GET /v1/templates` response body, relayed
+            unchanged. See the render service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    post:
+      operationId: atc-console.atc-render.templates.create
+      tags:
+        - atc-render
+      summary: "Create a template with its first version."
+      description: >-
+        Typed pass-through to the **render** service instance named by `sid` — console relays this to its `POST
+        /v1/templates`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["name","layout"],"properties":{"name":{"type":"string","pattern":"^[a-z][a-z0-9-]{0,63}$"},"description":{"type":"string","maxLength":500},"layout":{"type":"object","required":["blocks"],"properties":{"blocks":{"type":"array","minItems":1,"maxItems":1000}}},"note":{"type":"string","maxLength":500}}}
+      responses:
+        "201":
+          description: Pass-through of the render service's own `POST /v1/templates` response body, relayed
+            unchanged. See the render service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-render/templates/{id}:
+    get:
+      operationId: atc-console.atc-render.templates.get
+      tags:
+        - atc-render
+      summary: "Get one template with its versions."
+      description: >-
+        Typed pass-through to the **render** service instance named by `sid` — console relays this to its `GET
+        /v1/templates/{name}`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the render service's own `GET /v1/templates/{name}` response body, relayed
+            unchanged. See the render service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    patch:
+      operationId: atc-console.atc-render.templates.update
+      tags:
+        - atc-render
+      summary: "Change a template's description."
+      description: >-
+        Typed pass-through to the **render** service instance named by `sid` — console relays this to its `PATCH
+        /v1/templates/{name}`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["description"],"properties":{"description":{"type":"string","maxLength":500}}}
+      responses:
+        "200":
+          description: Pass-through of the render service's own `PATCH /v1/templates/{name}` response body, relayed
+            unchanged. See the render service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    delete:
+      operationId: atc-console.atc-render.templates.delete
+      tags:
+        - atc-render
+      summary: "Delete a template and all versions."
+      description: >-
+        Typed pass-through to the **render** service instance named by `sid` — console relays this to its
+        `DELETE /v1/templates/{name}`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "204":
+          description: Done. console discards render's response body.
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-render/templates/{id}/versions:
+    post:
+      operationId: atc-console.atc-render.versions.create
+      tags:
+        - atc-render
+      summary: "Publish a new immutable version."
+      description: >-
+        Typed pass-through to the **render** service instance named by `sid` — console relays this to its `POST
+        /v1/templates/{name}/versions`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["layout"],"properties":{"layout":{"type":"object","required":["blocks"],"properties":{"blocks":{"type":"array","minItems":1,"maxItems":1000}}},"note":{"type":"string","maxLength":500}}}
+      responses:
+        "201":
+          description: Pass-through of the render service's own `POST /v1/templates/{name}/versions` response body, relayed
+            unchanged. See the render service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-render/templates/{id}/versions/{sub}:
+    get:
+      operationId: atc-console.atc-render.versions.get
+      tags:
+        - atc-render
+      summary: "Get one version with its layout."
+      description: >-
+        Typed pass-through to the **render** service instance named by `sid` — console relays this to its `GET
+        /v1/templates/{name}/versions/{version}`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/SubParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the render service's own `GET /v1/templates/{name}/versions/{version}` response body, relayed
+            unchanged. See the render service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-render/preview:
+    post:
+      operationId: atc-console.atc-render.preview
+      tags:
+        - atc-render
+      summary: "Render an unsaved layout and download the PDF through the console."
+      description: >-
+        Relays the body to the **render** service instance named by `sid` (`POST /v1/render/preview`) and
+        streams the PDF back as an attachment (`preview.pdf`) with `content-security-policy: default-src 'none';
+        sandbox` and `cache-control: no-store`. Validation errors (with the failing block path) and 422 render
+        errors are relayed as `ServiceError`s with the service's `details`. Console bodies are capped at 64 KiB.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["layout"],"properties":{"layout":{"type":"object","required":["blocks"],"properties":{"blocks":{"type":"array","minItems":1,"maxItems":1000}}},"data":{"type":"object"}}}
+      responses:
+        "200":
+          description: The PDF.
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/ProxyNotFound"
         "502":

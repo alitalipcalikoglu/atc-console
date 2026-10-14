@@ -71,7 +71,7 @@
  * @property {number} at
  */
 
-/** @typedef {'atc-notify'|'atc-auth'|'atc-media'|'atc-gateway'|'atc-audit'|'atc-shortlink'|'atc-flags'|'atc-scheduler'|'atc-webhook-out'|'atc-search'|'atc-ratelimit'|'atc-geo'|'atc-content'|'atc-export'} ServiceType */
+/** @typedef {'atc-notify'|'atc-auth'|'atc-media'|'atc-gateway'|'atc-audit'|'atc-shortlink'|'atc-flags'|'atc-scheduler'|'atc-webhook-out'|'atc-search'|'atc-ratelimit'|'atc-geo'|'atc-content'|'atc-export'|'atc-render'} ServiceType */
 
 /**
  * One entry of services.json after validation and secret resolution.

@@ -66,6 +66,33 @@ export class Api {
   delete(path) { return this.call('DELETE', path); }
 
   /**
+   * POST JSON and save the binary answer as a file (relayed PDFs). Errors are parsed like
+   * {@link call}, so callers see codes and details (validation paths) as usual.
+   * @param {string} path
+   * @param {unknown} body
+   * @param {string} filename
+   */
+  async download(path, body, filename) {
+    const res = await fetch(`/api${path}`, { method: 'POST', headers: { accept: 'application/pdf, application/json', 'content-type': 'application/json', 'x-console-request': '1' }, body: JSON.stringify(body), credentials: 'same-origin' });
+    if (!res.ok) {
+      let data = null;
+      try { data = await res.json(); } catch { data = null; }
+      const err = new ApiError(res.status, data?.error ?? {});
+      if (res.status === 401 && this.onUnauthenticated) this.onUnauthenticated(err.code);
+      throw err;
+    }
+    const url = URL.createObjectURL(await res.blob());
+    try {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+    } finally {
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    }
+  }
+
+  /**
    * Upload with progress (XHR, because fetch has no upload progress yet).
    * @param {string} path
    * @param {File} file

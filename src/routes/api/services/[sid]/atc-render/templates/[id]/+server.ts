@@ -1,0 +1,5 @@
+import { RenderClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, record } from '#lib/server/m4.js';
+export const GET = jsonRoute({ auth: 'session', params: Schemas.renderParams, handler: ({ runtime, params }) => runtime.clients.get(params.sid, RenderClient).template(params.id) });
+export const PATCH = jsonRoute({ auth: 'admin', params: Schemas.renderParams, body: Schemas.renderDescribe, handler: async (context) => { const output = await context.runtime.clients.get(context.params.sid, RenderClient).describe(context.params.id, context.body); record(context, 'atc-render.template.update', context.params.id, { service: context.params.sid }); return output; } });
+export const DELETE = jsonRoute({ auth: 'admin', params: Schemas.renderParams, status: 204, handler: async (context) => { await context.runtime.clients.get(context.params.sid, RenderClient).deleteTemplate(context.params.id); record(context, 'atc-render.template.delete', context.params.id, { service: context.params.sid }); } });

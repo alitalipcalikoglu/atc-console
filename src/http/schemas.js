@@ -129,6 +129,15 @@ export class Schemas {
   static exportParams = { type: 'object', properties: { sid: Schemas.sid, id: Schemas.exportId }, required: ['sid', 'id'] };
   static exportCreate = Schemas.body(['source', 'format'], { source: { type: 'string', pattern: '^atc-[a-z][a-z0-9-]{0,30}$' }, format: { type: 'string', enum: ['csv', 'ndjson'] }, filters: { type: 'object', maxProperties: 20, additionalProperties: { type: 'string', maxLength: 254 } }, notifyEmail: Schemas.email });
   static exportListQuery = { type: 'object', additionalProperties: false, properties: { status: { type: 'string', enum: ['queued', 'running', 'succeeded', 'failed', 'cancelled'] }, source: { type: 'string', pattern: '^atc-[a-z][a-z0-9-]{0,30}$' }, limit: { type: 'string', pattern: '^([1-9]|[1-9][0-9]|100)$' }, cursor: { type: 'string', pattern: '^exp_[0-9a-z]{9}[0-9a-f]{12}$' } } };
+  static renderName = { type: 'string', pattern: '^[a-z][a-z0-9-]{0,63}$' };
+  static renderParams = { type: 'object', properties: { sid: Schemas.sid, id: Schemas.renderName }, required: ['sid', 'id'] };
+  static renderVersionParams = { type: 'object', properties: { sid: Schemas.sid, id: Schemas.renderName, sub: { type: 'string', pattern: '^[1-9][0-9]{0,8}$' } }, required: ['sid', 'id', 'sub'] };
+  // Layouts are validated by the render service itself (its schema names the failing block); the console only bounds the shape.
+  static renderLayout = { type: 'object', required: ['blocks'], properties: { blocks: { type: 'array', minItems: 1, maxItems: 1000 } } };
+  static renderCreate = Schemas.body(['name', 'layout'], { name: Schemas.renderName, description: { type: 'string', maxLength: 500 }, layout: Schemas.renderLayout, note: { type: 'string', maxLength: 500 } });
+  static renderDescribe = Schemas.body(['description'], { description: { type: 'string', maxLength: 500 } });
+  static renderPublish = Schemas.body(['layout'], { layout: Schemas.renderLayout, note: { type: 'string', maxLength: 500 } });
+  static renderPreview = Schemas.body(['layout'], { layout: Schemas.renderLayout, data: { type: 'object' } });
   static flagsQuery = {
     type: 'object', additionalProperties: false,
     properties: {

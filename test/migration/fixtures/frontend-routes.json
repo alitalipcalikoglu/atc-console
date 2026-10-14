@@ -32,6 +32,8 @@
   "/atc-content/:sid/namespaces/:id",
   "/atc-export/:sid",
   "/atc-export/:sid/exports/:id",
+  "/atc-render/:sid",
+  "/atc-render/:sid/templates/:id",
   "/audit",
   "/admins",
   "/docs",

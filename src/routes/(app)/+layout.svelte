@@ -6,13 +6,15 @@
   import { services } from '#lib/client/services.svelte.js';
   import { t } from '#lib/client/i18n.svelte.js';
   import { toasts } from '#lib/client/toast.svelte.js';
+  import { SAMPLES } from '#lib/pages/render/starter.js';
 
   let { children }: { children: Snippet } = $props();
   let updateToast = 0;
 
   onMount(() => {
     services.load().catch((error) => toasts.error(error));
-    return () => services.reset();
+    // Leaving the signed-in area (sign-out, expired session) drops per-session client data.
+    return () => { services.reset(); SAMPLES.clear(); };
   });
   $effect(() => {
     const ready = pwa.updateReady;
