@@ -14,9 +14,9 @@
   <ol class="ranked">
     {#each items as it (it.id)}
       <li>
-        {#if it.href}<a class="truncate" href={it.href} aria-current={it.active ? 'true' : undefined}><span class="{it.mono ? 'mono' : ''} {it.tone ? `${it.tone}-text` : ''}">{it.label}</span>{#if it.sub}<span class="muted small"> · {it.sub}</span>{/if}</a>
-        {:else if it.onclick}<button class="linkish truncate" onclick={it.onclick} aria-pressed={it.active}><span class="{it.mono ? 'mono' : ''} {it.tone ? `${it.tone}-text` : ''}">{it.label}</span>{#if it.sub}<span class="muted small"> · {it.sub}</span>{/if}</button>
-        {:else}<span class="truncate"><span class="{it.mono ? 'mono' : ''} {it.tone ? `${it.tone}-text` : ''}">{it.label}</span>{#if it.sub}<span class="muted small"> · {it.sub}</span>{/if}</span>{/if}
+        {#if it.href}<a class="truncate" href={it.href} aria-current={it.active ? 'true' : undefined}><span class="truncate {it.mono ? 'mono' : ''} {it.tone ? `${it.tone}-text` : ''}">{it.label}</span>{#if it.sub}<span class="truncate muted small"> · {it.sub}</span>{/if}</a>
+        {:else if it.onclick}<button class="linkish truncate" onclick={it.onclick} aria-pressed={it.active}><span class="truncate {it.mono ? 'mono' : ''} {it.tone ? `${it.tone}-text` : ''}">{it.label}</span>{#if it.sub}<span class="truncate muted small"> · {it.sub}</span>{/if}</button>
+        {:else}<span class="truncate"><span class="truncate {it.mono ? 'mono' : ''} {it.tone ? `${it.tone}-text` : ''}">{it.label}</span>{#if it.sub}<span class="truncate muted small"> · {it.sub}</span>{/if}</span>{/if}
         <span class="num">{it.value}</span>
       </li>
     {/each}
@@ -26,6 +26,8 @@
 <style>
   .ranked { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: .9rem; }
   .ranked li { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .ranked li > .truncate { display: flex; align-items: baseline; gap: 4px; }
+  .ranked li > .truncate > span { min-width: 0; flex: 0 1 auto; }
   .ranked a { color: inherit; min-width: 0; }
   .ranked a[aria-current="true"], .linkish[aria-pressed="true"] { color: var(--accent); font-weight: 600; }
   .num { margin-left: auto; font-variant-numeric: tabular-nums; font-weight: 600; flex: none; }

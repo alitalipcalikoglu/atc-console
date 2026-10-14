@@ -170,7 +170,7 @@
             {#each items as e (e.id)}
               <tr class="clickable" onclick={() => goto(`/atc-audit/${sid}/events/${e.id}`)}>
                 <td style="white-space:nowrap"><Time value={e.at} /></td>
-                <td><code class="{e.outcome !== 'success' ? 'danger-text' : ''}">{e.action}</code></td>
+                <td><code class="nowrap {e.outcome !== 'success' ? 'danger-text' : ''}">{e.action}</code></td>
                 <td><StatusBadge status={e.outcome} label={t(`ev.${e.outcome}`)} /></td>
                 <td class="mono small truncate" style="max-width:180px" title={e.actor?.name ?? ''}>{party(e.actor)}</td>
                 <td class="mono small truncate hide-m" style="max-width:180px">{party(e.target)}</td>
