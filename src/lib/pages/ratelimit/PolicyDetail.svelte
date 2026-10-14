@@ -31,7 +31,7 @@
   let { sid, id } = $props();
   const PAGE = 20;
   const fmt = $derived(new Fmt(i18n.lang));
-  const base = $derived(`/services/${sid}/ratelimit/policies/${encodeURIComponent(id)}`);
+  const base = $derived(`/services/${sid}/atc-ratelimit/policies/${encodeURIComponent(id)}`);
   const res = new Resource(() => api.get(base));
   const x = $derived(/** @type {any} */ (res.data)?.policy);
   /** @param {{ window: number, limit: number }} l */
@@ -104,7 +104,7 @@
   const resetSubject = () => run(async () => { const r = /** @type {any} */ (await api.delete(`${base}/subjects/${encodeURIComponent(subject)}/usage`)); toasts.ok(t('rl.resetDone', { n: r.removed })); await Promise.all([usage.load(), top.load(), res.load()]); }, null);
 </script>
 
-<Page title={x ? x.name : t('rl.policy')} back="/ratelimit/{sid}">
+<Page title={x ? x.name : t('rl.policy')} back="/atc-ratelimit/{sid}">
   {#snippet actions()}
     {#if x && session.isAdmin}
       <button class="btn" onclick={() => { editOpen = true; }} disabled={busy}><Icon name="settings" size={16} /><span class="hide-m"> {t('rl.edit')}</span></button>
@@ -212,7 +212,7 @@
 <OverrideForm open={ovOpen} subject={ovSubject} initial={ovInitial} policyLimits={x?.limits ?? []} busy={busy} onsubmit={saveOverride} onclose={() => { ovOpen = false; }} />
 <Confirm open={confirm === 'reset'} title={t('rl.reset')} message={t('rl.resetDesc', { s: subject })} danger irreversible={false} confirmLabel={t('rl.reset')} busy={busy} onconfirm={resetSubject} oncancel={() => { confirm = null; }} />
 <Confirm open={confirm === 'deleteOverride'} title={t('rl.deleteOverride')} message={t('rl.deleteOverrideDesc', { s: target?.subject ?? '' })} danger confirmLabel={t('common.delete')} busy={busy} onconfirm={deleteOverride} oncancel={() => { confirm = null; target = null; }} />
-<Confirm open={confirm === 'delete'} title={t('rl.delete')} message={t('rl.deleteDesc')} danger typeWord={x?.name} confirmLabel={t('common.delete')} busy={busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/ratelimit/${sid}`); }, t('rl.deleted'))} oncancel={() => { confirm = null; }} />
+<Confirm open={confirm === 'delete'} title={t('rl.delete')} message={t('rl.deleteDesc')} danger typeWord={x?.name} confirmLabel={t('common.delete')} busy={busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/atc-ratelimit/${sid}`); }, t('rl.deleted'))} oncancel={() => { confirm = null; }} />
 
 <style>
   .layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }

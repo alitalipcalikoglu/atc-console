@@ -4,7 +4,7 @@ import { ConfigError } from '../config.js';
 /** @typedef {import('../types.js').ServiceDef} ServiceDef */
 /** @typedef {import('../types.js').ServiceType} ServiceType */
 
-const TYPES = new Set(['notify', 'auth', 'media', 'gateway', 'audit', 'shortlink', 'flags', 'scheduler', 'webhook-out', 'search', 'ratelimit', 'geo']);
+const TYPES = new Set(['atc-notify', 'atc-auth', 'atc-media', 'atc-gateway', 'atc-audit', 'atc-shortlink', 'atc-flags', 'atc-scheduler', 'atc-webhook-out', 'atc-search', 'atc-ratelimit', 'atc-geo']);
 
 /**
  * Loads and validates services.json; resolves secrets from the environment. Keeps the raw
@@ -78,7 +78,7 @@ export class ServiceRegistry {
     const label = o.label === undefined ? id : ServiceRegistry.#string(o.label, `${where}.label`, 1, 60);
     let apiKey = null;
     let metricsToken = null;
-    if (type === 'gateway') {
+    if (type === 'atc-gateway') {
       if (o.metricsTokenEnv !== undefined && o.metricsTokenEnv !== null) metricsToken = ServiceRegistry.#secret(o.metricsTokenEnv, `${where}.metricsTokenEnv`, env);
     } else {
       if (o.apiKeyEnv === undefined) throw new ConfigError(`${where}.apiKeyEnv is required for type "${type}"`);
@@ -189,6 +189,6 @@ export class ServiceRegistry {
 
   /** Public description without secrets. */
   describe() {
-    return this.services.map((s) => ({ id: s.id, type: s.type, label: s.label, url: s.url, publicUrl: s.publicUrl, hasMetrics: s.type !== 'gateway' || s.metricsToken !== null, polling: s.polling }));
+    return this.services.map((s) => ({ id: s.id, type: s.type, label: s.label, url: s.url, publicUrl: s.publicUrl, hasMetrics: s.type !== 'atc-gateway' || s.metricsToken !== null, polling: s.polling }));
   }
 }

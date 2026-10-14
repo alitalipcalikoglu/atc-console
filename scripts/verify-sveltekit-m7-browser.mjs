@@ -115,13 +115,13 @@ try {
 
   const dbPath = join(scratch, 'console.db');
   const servicesFile = join(scratch, 'services.json');
-  const types = ['notify', 'auth', 'media', 'gateway', 'audit', 'shortlink', 'flags', 'scheduler', 'webhook-out', 'search', 'ratelimit', 'geo'];
+  const types = ['atc-notify', 'atc-auth', 'atc-media', 'atc-gateway', 'atc-audit', 'atc-shortlink', 'atc-flags', 'atc-scheduler', 'atc-webhook-out', 'atc-search', 'atc-ratelimit', 'atc-geo'];
   writeFileSync(servicesFile, JSON.stringify({ services: types.map((type) => ({
     id: type,
     type,
     label: `${type[0].toUpperCase()}${type.slice(1)}`,
     url: `http://127.0.0.1:${downstreamPort}`,
-    ...(type === 'gateway' ? { metricsTokenEnv: 'M7_SERVICE_KEY' } : { apiKeyEnv: 'M7_SERVICE_KEY' }),
+    ...(type === 'atc-gateway' ? { metricsTokenEnv: 'M7_SERVICE_KEY' } : { apiKeyEnv: 'M7_SERVICE_KEY' }),
   })) }));
   const seed = new ConsoleRuntime(Config.fromEnv({ DB_PATH: dbPath, SERVICES_FILE: servicesFile, LOG_LEVEL: 'silent', COOKIE_SECURE: 'false', SCRYPT_LOG_N: '14', SECRETS_KEY, M7_SERVICE_KEY: SERVICE_KEY }));
   await seed.adminService.create({ email: 'admin@m7.test', name: 'M7 Admin', password: PASSWORD, role: 'admin' }, null, { ip: null, userAgent: null });
@@ -195,7 +195,7 @@ try {
     await cdp.send('Network.setCookie', { name, value, url: origin, httpOnly: true, sameSite: 'Strict' });
   };
 
-  await navigate('/docs?service=notify');
+  await navigate('/docs?service=atc-notify');
   await waitJs(`location.pathname === '/login'`, 'anonymous docs redirect');
   assert.equal(await evaluate(`document.querySelector('.shell') === null`), true);
   await screenshot('01-login-light-en');
@@ -212,7 +212,7 @@ try {
   console.log('M7 browser: overview/lazy Swagger boundary OK');
 
   const docsRequestStart = requests.length;
-  await navigate('/docs?service=notify');
+  await navigate('/docs?service=atc-notify');
   await waitJs(`document.querySelectorAll('#docs-service option').length === 13`, 'fixed docs catalog');
   await waitJs(`document.querySelectorAll('.swagger-ui .opblock').length > 0`, 'Swagger operations', 30_000);
   assert.equal(await evaluate(`document.querySelector('.swagger-ui .info .title')?.textContent.includes('M7 Fixture API')`), true);
@@ -220,17 +220,17 @@ try {
   assert.equal(await evaluate(`[...document.querySelectorAll('.try-out,.authorize,.authorization__btn,.execute-wrapper')].every((node) => getComputedStyle(node).display === 'none')`), true);
   assert.equal(await evaluate(`document.querySelector('.download-url-wrapper') === null`), true);
   assert.equal(await evaluate(`document.querySelector('#docs-service').tagName === 'SELECT'`), true);
-  await evaluate(`(() => { const select = document.querySelector('#docs-service'); select.value = 'auth'; select.dispatchEvent(new Event('change', { bubbles: true })); })()`);
-  await waitJs(`location.search === '?service=auth' && document.querySelectorAll('.swagger-ui .opblock').length > 0`, 'second docs service', 30_000);
-  assert.ok(requests.some(({ url }) => url === `${origin}/api/docs/services/notify/openapi`));
-  assert.ok(requests.some(({ url }) => url === `${origin}/api/docs/services/auth/openapi`));
+  await evaluate(`(() => { const select = document.querySelector('#docs-service'); select.value = 'atc-auth'; select.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+  await waitJs(`location.search === '?service=atc-auth' && document.querySelectorAll('.swagger-ui .opblock').length > 0`, 'second docs service', 30_000);
+  assert.ok(requests.some(({ url }) => url === `${origin}/api/docs/services/atc-notify/openapi`));
+  assert.ok(requests.some(({ url }) => url === `${origin}/api/docs/services/atc-auth/openapi`));
   assert.equal(downstreamSawKey, true, 'server did not authenticate downstream docs request');
   const browserRequestDump = JSON.stringify(requests);
   assert.equal(browserRequestDump.includes(SERVICE_KEY), false, 'downstream service key reached browser requests');
   assert.equal(requests.some(({ url }) => !url.startsWith(origin) && !url.startsWith('data:')), false, 'page contacted an external origin');
   await screenshot('03-docs-light-en');
   await cdp.send('Page.reload', { ignoreCache: false });
-  await waitJs(`location.search === '?service=auth' && document.querySelectorAll('.swagger-ui .opblock').length > 0`, 'docs deep-link refresh', 30_000);
+  await waitJs(`location.search === '?service=atc-auth' && document.querySelectorAll('.swagger-ui .opblock').length > 0`, 'docs deep-link refresh', 30_000);
   console.log('M7 browser: docs catalog/render/switch/deep-link/network OK');
 
   await waitJs(`navigator.serviceWorker.ready.then(() => true)`, 'service worker ready', 30_000);
@@ -244,10 +244,10 @@ try {
   await evaluate(`Promise.allSettled([
     fetch('/api/session'),
     fetch('/api/docs/services'),
-    fetch('/api/services/media/media/files/id/bytes/original'),
-    fetch('/api/services/audit/audit/events/export'),
-    fetch('/api/services/shortlink/shortlink/links/id/qr.png'),
-    fetch('/api/services/media/media/files', { method: 'PUT', headers: { 'x-console-request': '1', 'content-type': 'application/octet-stream' }, body: new Uint8Array([1,2,3]) })
+    fetch('/api/services/atc-media/atc-media/files/id/bytes/original'),
+    fetch('/api/services/atc-audit/atc-audit/events/export'),
+    fetch('/api/services/atc-shortlink/atc-shortlink/links/id/qr.png'),
+    fetch('/api/services/atc-media/atc-media/files', { method: 'PUT', headers: { 'x-console-request': '1', 'content-type': 'application/octet-stream' }, body: new Uint8Array([1,2,3]) })
   ])`);
   cacheAudit = await evaluate(`(async () => Promise.all((await caches.keys()).map(async (name) => ({ name, urls: (await (await caches.open(name)).keys()).map((request) => request.url) }))))()`);
   assert.equal(cacheAudit.flatMap(({ urls }) => urls).some((url) => new URL(url).pathname.startsWith('/api')), false);
@@ -287,7 +287,7 @@ try {
   await chooseAccount(1, 0, `localStorage.getItem('console.lang') === 'tr'`, 'Turkish selection');
   assert.equal(await evaluate(`document.documentElement.lang`), 'tr');
   assert.equal(await evaluate(`localStorage.getItem('console.lang')`), 'tr');
-  await navigate('/notify/notify?status=sent');
+  await navigate('/atc-notify/atc-notify?status=sent');
   await waitJs(`document.documentElement.lang === 'tr' && location.search === '?status=sent'`, 'Turkish dynamic deep link');
   await screenshot('05-dynamic-dark-tr');
   console.log('M7 browser: theme/system/i18n persistence and dynamic query OK');
@@ -309,7 +309,7 @@ try {
     await changed;
   })()`);
 
-  await navigate('/docs?service=notify');
+  await navigate('/docs?service=atc-notify');
   await cdp.send('Emulation.setDeviceMetricsOverride', { width: 375, height: 812, deviceScaleFactor: 1, mobile: true });
   await waitJs(`document.querySelector('.swagger-ui .opblock') !== null`, 'narrow docs', 30_000);
   const overflow = await evaluate(`({ body: document.body.scrollWidth, viewport: document.documentElement.clientWidth })`);
@@ -346,7 +346,7 @@ try {
 
   await cdp.send('Network.clearBrowserCookies');
   await loginCookie('viewer@m7.test', PASSWORD);
-  await navigate('/docs?service=notify');
+  await navigate('/docs?service=atc-notify');
   await waitJs(`document.querySelector('.swagger-ui .opblock') !== null`, 'viewer docs access', 30_000);
   await cdp.send('Network.clearBrowserCookies');
   await navigate('/docs');

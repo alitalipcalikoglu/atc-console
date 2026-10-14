@@ -16,4 +16,4 @@ Actions in the app bar: **Edit** (description, weights, facet keys; only changed
 
 ## Recorded in the console log
 
-`search.index.create`, `search.index.update` (the patch), `search.index.clear` (removed count), `search.index.delete`, `search.documents.upsert` (count), `search.document.delete` (index in meta).
+`atc-search.index.create`, `atc-search.index.update` (the patch), `atc-search.index.clear` (removed count), `atc-search.index.delete`, `atc-search.documents.upsert` (count), `atc-search.document.delete` (index in meta).

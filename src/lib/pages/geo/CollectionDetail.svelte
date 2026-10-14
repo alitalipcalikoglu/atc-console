@@ -25,7 +25,7 @@
   let { sid, id } = $props();
   const PAGE = 50;
   const fmt = $derived(new Fmt(i18n.lang));
-  const base = $derived(`/services/${sid}/geo/collections/${encodeURIComponent(id)}`);
+  const base = $derived(`/services/${sid}/atc-geo/collections/${encodeURIComponent(id)}`);
   const res = new Resource(() => api.get(base));
   const x = $derived(/** @type {any} */ (res.data)?.collection);
   /** @type {any[]} */ let places = $state([]);
@@ -82,7 +82,7 @@
   const attrText = (attrs) => Object.entries(attrs).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : String(v)}`);
 </script>
 
-<Page title={x ? x.name : t('ge.collection')} back="/geo/{sid}">
+<Page title={x ? x.name : t('ge.collection')} back="/atc-geo/{sid}">
   {#snippet actions()}
     {#if x && session.isAdmin}
       <button class="btn primary" onclick={() => { uploadOpen = true; }} disabled={busy}><Icon name="upload" size={16} /><span class="hide-m"> {t('ge.upload')}</span></button>
@@ -159,7 +159,7 @@
 </Dialog>
 <Confirm open={confirm === 'deletePlace'} title={t('ge.deletePlace')} message={t('ge.deletePlaceDesc', { s: target?.name ?? '' })} danger confirmLabel={t('common.delete')} busy={busy} onconfirm={deletePlace} oncancel={() => { confirm = null; target = null; }} />
 <Confirm open={confirm === 'clear'} title={t('ge.clear')} message={t('ge.clearDesc')} danger typeWord={x?.name} confirmLabel={t('ge.clear')} busy={busy} onconfirm={clear} oncancel={() => { confirm = null; }} />
-<Confirm open={confirm === 'delete'} title={t('ge.delete')} message={t('ge.deleteDesc')} danger typeWord={x?.name} confirmLabel={t('common.delete')} busy={busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/geo/${sid}`); }, t('ge.deleted'))} oncancel={() => { confirm = null; }} />
+<Confirm open={confirm === 'delete'} title={t('ge.delete')} message={t('ge.deleteDesc')} danger typeWord={x?.name} confirmLabel={t('common.delete')} busy={busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/atc-geo/${sid}`); }, t('ge.deleted'))} oncancel={() => { confirm = null; }} />
 
 <style>
   .layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }

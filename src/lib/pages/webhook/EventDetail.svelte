@@ -13,14 +13,14 @@
   import { t } from '$lib/client/i18n.svelte.js';
   /** @type {{ sid: string, id: string }} */
   let { sid, id } = $props();
-  const res = new Resource(() => api.get(`/services/${sid}/webhook-out/events/${encodeURIComponent(id)}`));
+  const res = new Resource(() => api.get(`/services/${sid}/atc-webhook-out/events/${encodeURIComponent(id)}`));
   $effect(() => { res.load(); });
   const d = $derived(/** @type {any} */ (res.data));
   const e = $derived(d?.event);
   const json = $derived(e ? JSON.stringify(e.data, null, 2) : '');
 </script>
 
-<Page title={e ? e.type : t('wh.event')} back="/webhook-out/{sid}">
+<Page title={e ? e.type : t('wh.event')} back="/atc-webhook-out/{sid}">
   {#snippet actions()}
     <button class="btn icon" onclick={() => res.load()} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}

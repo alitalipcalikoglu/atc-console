@@ -1,8 +1,8 @@
-/** @typedef {import('@atc-web/service-core/audit').AuditEvent} AuditEvent */
+/** @typedef {import('@atc-web/atc-service-core/audit').AuditEvent} AuditEvent */
 
 /**
  * Maps console log entries onto audit-service events: `console.<action>` with the admin as actor.
- * The target type is taken from the action (`ratelimit.policy.create` → `policy`), the target id is
+ * The target type is taken from the action (`atc-ratelimit.policy.create` → `policy`), the target id is
  * the entry's target. Sign-in failures and lockouts are failures.
  */
 export class AuditEvents {
@@ -17,7 +17,7 @@ export class AuditEvents {
     const parts = e.action.split('.');
     const targetType = parts.length >= 3 ? parts[parts.length - 2] : parts[0];
     return {
-      action: `console.${e.action}`,
+      action: `atc-console.${e.action}`,
       outcome: AuditEvents.FAILURES.has(e.action) ? 'failure' : 'success',
       actor: e.adminId ? { type: 'admin', id: e.adminId, ...(e.adminEmail ? { name: e.adminEmail } : {}) } : undefined,
       target: e.target ? { type: targetType.replace(/[^a-z0-9_-]/g, '-').slice(0, 32) || 'target', id: String(e.target).slice(0, 128) } : undefined,

@@ -1,4 +1,4 @@
-import { ConfigError, EnvReader } from '@atc-web/service-core/config';
+import { ConfigError, EnvReader } from '@atc-web/atc-service-core/config';
 
 export { ConfigError };
 

@@ -54,9 +54,9 @@
   /** @type {string|null} */ let cursor = $state(null);
   let more = $state(false);
   const summary = new Resource(() => api.get(`/services/${sid}/status`));
-  const stats = new Resource(() => api.get(`/services/${sid}/audit/stats?hours=${HOURS}`));
+  const stats = new Resource(() => api.get(`/services/${sid}/atc-audit/stats?hours=${HOURS}`));
   const list = new Resource(async () => {
-    const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/audit/events?${qs()}`));
+    const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-audit/events?${qs()}`));
     items = r.items; cursor = r.nextCursor; return r;
   });
   /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
@@ -70,7 +70,7 @@
   $effect(() => { stats.load(); summary.load(); });
   async function loadMore() {
     more = true;
-    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/audit/events?${qs(cursor ?? undefined)}`)); items = [...items, ...r.items]; cursor = r.nextCursor; }
+    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-audit/events?${qs(cursor ?? undefined)}`)); items = [...items, ...r.items]; cursor = r.nextCursor; }
     catch (e) { toasts.error(e); } finally { more = false; }
   }
   function clearFilters() { f = Object.fromEntries(KEYS.map((k) => [k, ''])); }
@@ -81,7 +81,7 @@
   async function verify() {
     verifying = true;
     try {
-      verdict = await api.get(`/services/${sid}/audit/chain/verify`);
+      verdict = await api.get(`/services/${sid}/atc-audit/chain/verify`);
       if (verdict.ok) toasts.ok(t('ev.verifyOk', { n: fmt.int(verdict.checked) })); else toasts.error(new Error(t('ev.verifyBroken', { seq: verdict.firstBroken, reason: verdict.reason ?? '' })));
     } catch (e) { toasts.error(e); } finally { verifying = false; }
   }
@@ -89,7 +89,7 @@
   // Export: plain download link through the console (cookie auth), format chosen in a dialog.
   let exportOpen = $state(false);
   let format = $state('ndjson');
-  const exportHref = $derived(`/api/services/${sid}/audit/events/export?${qs().replace(/&?limit=50/, '')}${qs() === 'limit=50' ? '' : '&'}format=${format}`);
+  const exportHref = $derived(`/api/services/${sid}/atc-audit/events/export?${qs().replace(/&?limit=50/, '')}${qs() === 'limit=50' ? '' : '&'}format=${format}`);
 
   const svc = $derived(services.get(sid));
   const m = $derived(summary.data?.summary);
@@ -105,7 +105,7 @@
     <button class="btn" onclick={() => { exportOpen = true; }} aria-label={t('ev.export')} title={t('ev.export')}><Icon name="download" size={16} /><span class="hide-m"> {t('ev.export')}</span></button>
     <button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}
-  <ServiceTabs type="audit" {sid} />
+  <ServiceTabs type="atc-audit" {sid} />
   <PollStats {sid} />
 
   <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:20px">
@@ -148,7 +148,7 @@
     {/snippet}
     {#if showFilters}
       <div class="filters">
-        <div class="field"><label for="f-source">{t('ev.source')}</label><input id="f-source" class="input" bind:value={f.source} placeholder="auth" /></div>
+        <div class="field"><label for="f-source">{t('ev.source')}</label><input id="f-source" class="input" bind:value={f.source} placeholder="atc-auth" /></div>
         <div class="field"><label for="f-actorType">{t('ev.actor')} · {t('ev.type')}</label><input id="f-actorType" class="input" bind:value={f.actorType} placeholder="user" /></div>
         <div class="field"><label for="f-actorId">{t('ev.actor')} · {t('common.id')}</label><input id="f-actorId" class="input" bind:value={f.actorId} /></div>
         <div class="field"><label for="f-targetType">{t('ev.target')} · {t('ev.type')}</label><input id="f-targetType" class="input" bind:value={f.targetType} placeholder="order" /></div>
@@ -168,7 +168,7 @@
           <thead><tr><th>{t('common.at')}</th><th>{t('ev.action')}</th><th>{t('ev.outcome')}</th><th>{t('ev.actor')}</th><th class="hide-m">{t('ev.target')}</th><th class="hide-m">{t('ev.source')}</th><th class="hide-m">{t('common.ip')}</th></tr></thead>
           <tbody>
             {#each items as e (e.id)}
-              <tr class="clickable" onclick={() => goto(`/audit/${sid}/events/${e.id}`)}>
+              <tr class="clickable" onclick={() => goto(`/atc-audit/${sid}/events/${e.id}`)}>
                 <td style="white-space:nowrap"><Time value={e.at} /></td>
                 <td><code class="{e.outcome !== 'success' ? 'danger-text' : ''}">{e.action}</code></td>
                 <td><StatusBadge status={e.outcome} label={t(`ev.${e.outcome}`)} /></td>

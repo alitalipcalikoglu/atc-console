@@ -15,7 +15,7 @@ import { closeServer, cookiePair, REQUEST_ID, startConsole, TRACEPARENT } from '
 const require = createRequire(import.meta.url);
 const canonical = readFileSync(new URL('../../openapi.yaml', import.meta.url), 'utf8');
 const PACKAGE_VERSION = JSON.parse(readFileSync(new URL('../../package.json', import.meta.url), 'utf8')).version;
-const SERVICE_CORE_VERSION = JSON.parse(readFileSync(new URL('../../node_modules/@atc-web/service-core/package.json', import.meta.url), 'utf8')).version;
+const SERVICE_CORE_VERSION = JSON.parse(readFileSync(new URL('../../node_modules/@atc-web/atc-service-core/package.json', import.meta.url), 'utf8')).version;
 const docsYaml = 'openapi: 3.1.0\ninfo:\n  title: Fixture service\n  version: 1.0.0\npaths: {}\n';
 /** @type {{ url?: string, headers: import('node:http').IncomingHttpHeaders }[]} */
 const docsRequests = [];
@@ -54,7 +54,7 @@ test('operational oracle: health, readiness and service identity remain exact', 
   response = await fetch(`${consoleApp.origin}/v1/info`);
   assert.equal(response.status, 200);
   assert.deepEqual(await response.json(), {
-    service: 'console', version: PACKAGE_VERSION, apiVersion: 'v1',
+    service: 'atc-console', version: PACKAGE_VERSION, apiVersion: 'v1',
     capabilities: ['totp', 'admin-roles', 'audit-trail', 'service-proxy'],
     schemaVersion: 2, serviceCore: SERVICE_CORE_VERSION,
   });
@@ -81,14 +81,14 @@ test('Docs oracle: authentication, fixed registry, local spec, credential-free u
   assert.equal(response.status, 200);
   const list = await response.json();
   assert.equal(list.items.length, 13);
-  assert.deepEqual(list.items[0], { id: 'console', type: 'console', label: 'Console' });
+  assert.deepEqual(list.items[0], { id: 'atc-console', type: 'atc-console', label: 'Console' });
   assert.equal(JSON.stringify(list).includes('apiKey'), false);
 
-  response = await fetch(`${consoleApp.origin}/api/docs/services/console/openapi`, { headers: { cookie } });
+  response = await fetch(`${consoleApp.origin}/api/docs/services/atc-console/openapi`, { headers: { cookie } });
   assert.equal(response.status, 200);
   assert.deepEqual((await response.json()).document, parse(canonical));
 
-  response = await fetch(`${consoleApp.origin}/api/docs/services/notify/openapi`, { headers: { cookie } });
+  response = await fetch(`${consoleApp.origin}/api/docs/services/atc-notify/openapi`, { headers: { cookie } });
   assert.equal(response.status, 200);
   assert.equal((await response.json()).document.info.title, 'Fixture service');
   const downstream = docsRequests.at(-1);
@@ -129,7 +129,7 @@ test('process oracle: configured port, ready IPC, identity and graceful SIGTERM'
   const scratch = mkdtempSync(join(tmpdir(), 'console-m0-process-'));
   const servicesFile = join(scratch, 'services.json');
   const dbPath = join(scratch, 'console.db');
-  writeFileSync(servicesFile, JSON.stringify({ services: [{ id: 'gateway', type: 'gateway', url: 'http://127.0.0.1:1' }] }));
+  writeFileSync(servicesFile, JSON.stringify({ services: [{ id: 'atc-gateway', type: 'atc-gateway', url: 'http://127.0.0.1:1' }] }));
   const port = await getFreePort();
   const child = fork(resolve('server.mjs'), [], {
     cwd: resolve('.'),
@@ -149,7 +149,7 @@ test('process oracle: configured port, ready IPC, identity and graceful SIGTERM'
     const response = await fetch(`http://127.0.0.1:${port}/v1/info`);
     assert.equal(response.status, 200);
     const info = await response.json();
-    assert.equal(info.service, 'console');
+    assert.equal(info.service, 'atc-console');
     assert.equal(info.version, PACKAGE_VERSION);
     assert.equal(info.schemaVersion, 2);
     child.kill('SIGTERM');

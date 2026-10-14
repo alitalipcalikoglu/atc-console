@@ -1,4 +1,4 @@
-import { SecretBox } from '@atc-web/service-core/secrets';
+import { SecretBox } from '@atc-web/atc-service-core/secrets';
 import { Totp } from '../crypto/totp.js';
 import { AdminStore } from '../store/admin-store.js';
 import { ConsoleError } from './errors.js';

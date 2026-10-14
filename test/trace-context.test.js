@@ -42,7 +42,7 @@ after(async () => { await t.app.close(); fake.close(); });
 
 test('the console forwards a well-formed traceparent to a service it calls, and echoes it on its own response', async () => {
   seen.length = 0;
-  const res = await t.app.inject({ url: '/api/services/search/search/indexes', headers: { cookie, ...CSRF } });
+  const res = await t.app.inject({ url: '/api/services/atc-search/atc-search/indexes', headers: { cookie, ...CSRF } });
   assert.equal(res.statusCode, 200, res.body);
   assert.equal(seen.length, 1);
   const outbound = String(seen[0].headers.traceparent);
@@ -58,8 +58,8 @@ test('the console forwards a well-formed traceparent to a service it calls, and 
 
 test('two separate admin actions carry two different trace ids, each internally consistent', async () => {
   seen.length = 0;
-  await t.app.inject({ url: '/api/services/search/search/indexes', headers: { cookie, ...CSRF } });
-  await t.app.inject({ url: '/api/services/search/search/indexes', headers: { cookie, ...CSRF } });
+  await t.app.inject({ url: '/api/services/atc-search/atc-search/indexes', headers: { cookie, ...CSRF } });
+  await t.app.inject({ url: '/api/services/atc-search/atc-search/indexes', headers: { cookie, ...CSRF } });
   assert.equal(seen.length, 2);
   const trace1 = String(seen[0].headers.traceparent).match(TRACEPARENT)?.[1];
   const trace2 = String(seen[1].headers.traceparent).match(TRACEPARENT)?.[1];
@@ -69,8 +69,8 @@ test('two separate admin actions carry two different trace ids, each internally 
 test('one admin request fanning out to two services: same trace-id on both outbound calls, but a DIFFERENT span-id per hop', async () => {
   seen.length = 0;
   const [searchRes, ratelimitRes] = await Promise.all([
-    t.app.inject({ url: '/api/services/search/search/indexes?slow=1', headers: { cookie, ...CSRF } }),
-    t.app.inject({ url: '/api/services/ratelimit/ratelimit/policies', headers: { cookie, ...CSRF } }),
+    t.app.inject({ url: '/api/services/atc-search/atc-search/indexes?slow=1', headers: { cookie, ...CSRF } }),
+    t.app.inject({ url: '/api/services/atc-ratelimit/atc-ratelimit/policies', headers: { cookie, ...CSRF } }),
   ]);
   // These are two SEPARATE inbound console requests (inject() calls), not one fanning out — so
   // this specifically proves concurrent requests never cross-contaminate spans, the traceparent
@@ -88,7 +88,7 @@ test('one admin request fanning out to two services: same trace-id on both outbo
 
 test('a malformed inbound traceparent from the browser never crashes the request, is never trusted, and never leaks downstream', async () => {
   seen.length = 0;
-  const res = await t.app.inject({ url: '/api/services/search/search/indexes', headers: { cookie, ...CSRF, traceparent: 'not-a-real-traceparent; DROP TABLE x;' } });
+  const res = await t.app.inject({ url: '/api/services/atc-search/atc-search/indexes', headers: { cookie, ...CSRF, traceparent: 'not-a-real-traceparent; DROP TABLE x;' } });
   assert.equal(res.statusCode, 200, res.body);
   assert.equal(seen.length, 1);
   const outbound = String(seen[0].headers.traceparent);
@@ -99,7 +99,7 @@ test('a malformed inbound traceparent from the browser never crashes the request
 test('an inbound traceparent claiming a trace-id, even a well-formed one, is never adopted — console always starts its own (it is a trust boundary, like gateway with TRUST_PROXY=false)', async () => {
   seen.length = 0;
   const claimedTraceId = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
-  const res = await t.app.inject({ url: '/api/services/search/search/indexes', headers: { cookie, ...CSRF, traceparent: `00-${claimedTraceId}-bbbbbbbbbbbbbbbb-01` } });
+  const res = await t.app.inject({ url: '/api/services/atc-search/atc-search/indexes', headers: { cookie, ...CSRF, traceparent: `00-${claimedTraceId}-bbbbbbbbbbbbbbbb-01` } });
   assert.equal(res.statusCode, 200, res.body);
   const outbound = String(seen[0].headers.traceparent);
   assert.notEqual(outbound.match(TRACEPARENT)?.[1], claimedTraceId, 'the browser-claimed trace-id is never trusted or propagated');
@@ -119,7 +119,7 @@ test('with TRUST_PROXY=true, a well-formed inbound traceparent IS adopted: same 
     seen.length = 0;
     const claimedTraceId = 'c'.repeat(32);
     const claimedSpanId = 'd'.repeat(16);
-    const res = await trusting.app.inject({ url: '/api/services/search/search/indexes', headers: { cookie: trustingCookie, ...CSRF, traceparent: `00-${claimedTraceId}-${claimedSpanId}-01` } });
+    const res = await trusting.app.inject({ url: '/api/services/atc-search/atc-search/indexes', headers: { cookie: trustingCookie, ...CSRF, traceparent: `00-${claimedTraceId}-${claimedSpanId}-01` } });
     assert.equal(res.statusCode, 200, res.body);
     assert.equal(seen.length, 1);
     const outbound = String(seen[0].headers.traceparent);
@@ -129,7 +129,7 @@ test('with TRUST_PROXY=true, a well-formed inbound traceparent IS adopted: same 
     assert.equal(res.headers.traceparent?.toString().match(TRACEPARENT)?.[1], claimedTraceId, 'echoed response also carries the continued trace-id');
 
     seen.length = 0;
-    const malformedRes = await trusting.app.inject({ url: '/api/services/search/search/indexes', headers: { cookie: trustingCookie, ...CSRF, traceparent: 'garbage' } });
+    const malformedRes = await trusting.app.inject({ url: '/api/services/atc-search/atc-search/indexes', headers: { cookie: trustingCookie, ...CSRF, traceparent: 'garbage' } });
     assert.equal(malformedRes.statusCode, 200, malformedRes.body);
     assert.match(String(seen[0].headers.traceparent), TRACEPARENT, 'trusted but malformed: still falls back to a fresh, well-formed trace, never crashes');
   } finally {

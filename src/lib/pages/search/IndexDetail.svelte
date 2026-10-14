@@ -27,7 +27,7 @@
   let { sid, id } = $props();
   const PAGE = 20;
   const fmt = $derived(new Fmt(i18n.lang));
-  const base = $derived(`/services/${sid}/search/indexes/${encodeURIComponent(id)}`);
+  const base = $derived(`/services/${sid}/atc-search/indexes/${encodeURIComponent(id)}`);
   const res = new Resource(() => api.get(base));
   $effect(() => { res.load(); });
   const x = $derived(/** @type {any} */ (res.data)?.index);
@@ -95,7 +95,7 @@
   const attrText = (v) => (Array.isArray(v) ? v.join(', ') : String(v));
 </script>
 
-<Page title={x ? x.name : t('se.index')} back="/search/{sid}">
+<Page title={x ? x.name : t('se.index')} back="/atc-search/{sid}">
   {#snippet actions()}
     {#if x && session.isAdmin}
       <button class="btn" onclick={() => { editOpen = true; }} disabled={busy}><Icon name="settings" size={16} /><span class="hide-m"> {t('se.edit')}</span></button>
@@ -178,7 +178,7 @@
 </Dialog>
 <Confirm open={confirm === 'deleteDoc'} title={t('se.deleteDoc')} message={t('se.deleteDocDesc')} danger irreversible={false} confirmLabel={t('common.delete')} busy={docBusy} onconfirm={deleteDoc} oncancel={() => { confirm = null; }} />
 <Confirm open={confirm === 'clear'} title={t('se.clear')} message={t('se.clearDesc')} danger typeWord={x?.name} confirmLabel={t('se.clear')} busy={busy} onconfirm={clear} oncancel={() => { confirm = null; }} />
-<Confirm open={confirm === 'delete'} title={t('se.delete')} message={t('se.deleteDesc')} danger typeWord={x?.name} confirmLabel={t('common.delete')} busy={busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/search/${sid}`); }, t('se.deleted'))} oncancel={() => { confirm = null; }} />
+<Confirm open={confirm === 'delete'} title={t('se.delete')} message={t('se.deleteDesc')} danger typeWord={x?.name} confirmLabel={t('common.delete')} busy={busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/atc-search/${sid}`); }, t('se.deleted'))} oncancel={() => { confirm = null; }} />
 
 <style>
   .layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }

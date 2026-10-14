@@ -12,16 +12,16 @@
   import { t } from '$lib/client/i18n.svelte.js';
   /** @type {{ sid: string, id: string }} */
   let { sid, id } = $props();
-  const res = new Resource(() => api.get(`/services/${sid}/audit/events/${id}`));
+  const res = new Resource(() => api.get(`/services/${sid}/atc-audit/events/${id}`));
   $effect(() => { res.load(); });
   const e = $derived(/** @type {any} */ (res.data)?.event);
   /** @param {Record<string, string>} q */
-  const link = (q) => `/audit/${sid}?${new URLSearchParams(q)}`;
+  const link = (q) => `/atc-audit/${sid}?${new URLSearchParams(q)}`;
   const metaText = $derived(e?.meta ? JSON.stringify(e.meta, null, 2) : '');
   const redacted = $derived(metaText.includes('"[REDACTED]"'));
 </script>
 
-<Page title={t('ev.event')} back="/audit/{sid}">
+<Page title={t('ev.event')} back="/atc-audit/{sid}">
   {#snippet actions()}<button class="btn icon" onclick={() => res.load()} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>{/snippet}
   {#if res.error}<ErrorBox error={res.error} onretry={() => res.load()} boxed />
   {:else if !e}<Skeleton rows={10} />

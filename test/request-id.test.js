@@ -42,7 +42,7 @@ after(async () => { await t.app.close(); fake.close(); });
 
 test('the console forwards its own per-request id to a service it calls', async () => {
   seen.length = 0;
-  const res = await t.app.inject({ url: '/api/services/search/search/indexes', headers: { cookie, ...CSRF } });
+  const res = await t.app.inject({ url: '/api/services/atc-search/atc-search/indexes', headers: { cookie, ...CSRF } });
   assert.equal(res.statusCode, 200, res.body);
   assert.equal(seen.length, 1);
   assert.match(String(seen[0].headers['x-request-id']), UUID, 'a well-formed id was attached, not left blank');
@@ -50,8 +50,8 @@ test('the console forwards its own per-request id to a service it calls', async 
 
 test('two separate admin actions carry two different request ids', async () => {
   seen.length = 0;
-  await t.app.inject({ url: '/api/services/search/search/indexes', headers: { cookie, ...CSRF } });
-  await t.app.inject({ url: '/api/services/search/search/indexes', headers: { cookie, ...CSRF } });
+  await t.app.inject({ url: '/api/services/atc-search/atc-search/indexes', headers: { cookie, ...CSRF } });
+  await t.app.inject({ url: '/api/services/atc-search/atc-search/indexes', headers: { cookie, ...CSRF } });
   assert.equal(seen.length, 2);
   assert.notEqual(seen[0].headers['x-request-id'], seen[1].headers['x-request-id'], 'each inbound admin request gets its own id, not a fixed or process-wide one');
 });
@@ -62,8 +62,8 @@ test('two concurrent admin actions to different services do not cross-contaminat
   // immediately, so the two outbound calls genuinely overlap: this is the scenario a shared
   // mutable "current request id" variable (instead of true per-request context) would get wrong.
   const [searchRes, ratelimitRes] = await Promise.all([
-    t.app.inject({ url: '/api/services/search/search/indexes?slow=1', headers: { cookie, ...CSRF } }),
-    t.app.inject({ url: '/api/services/ratelimit/ratelimit/policies', headers: { cookie, ...CSRF } }),
+    t.app.inject({ url: '/api/services/atc-search/atc-search/indexes?slow=1', headers: { cookie, ...CSRF } }),
+    t.app.inject({ url: '/api/services/atc-ratelimit/atc-ratelimit/policies', headers: { cookie, ...CSRF } }),
   ]);
   assert.equal(searchRes.statusCode, 200, searchRes.body);
   assert.equal(ratelimitRes.statusCode, 200, ratelimitRes.body);

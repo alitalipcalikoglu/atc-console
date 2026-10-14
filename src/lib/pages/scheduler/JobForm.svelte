@@ -72,7 +72,7 @@
     if (!expr) { preview = { next: [], error: '' }; return; }
     const timer = setTimeout(async () => {
       try {
-        const r = /** @type {{ next: string[] }} */ (await api.get(`/services/${sid}/scheduler/preview?${new URLSearchParams({ cron: expr, timezone: tz, count: '3' })}`));
+        const r = /** @type {{ next: string[] }} */ (await api.get(`/services/${sid}/atc-scheduler/preview?${new URLSearchParams({ cron: expr, timezone: tz, count: '3' })}`));
         if (seq === previewSeq) preview = { next: r.next, error: '' };
       } catch (e) {
         if (seq === previewSeq) preview = { next: [], error: e instanceof Error ? e.message : String(e) };

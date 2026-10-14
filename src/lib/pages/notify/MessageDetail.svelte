@@ -14,13 +14,13 @@
   import { toasts } from '$lib/client/toast.svelte.js';
   /** @type {{ sid: string, id: string }} */
   let { sid, id } = $props();
-  const res = new Resource(() => api.get(`/services/${sid}/notify/messages/${id}`));
+  const res = new Resource(() => api.get(`/services/${sid}/atc-notify/messages/${id}`));
   $effect(() => { res.load(); });
   const m = $derived(/** @type {any} */ (res.data));
-  async function retry() { try { res.data = await api.post(`/services/${sid}/notify/messages/${id}/retry`); toasts.ok(t('notify.retryDone')); } catch (e) { toasts.error(e); } }
+  async function retry() { try { res.data = await api.post(`/services/${sid}/atc-notify/messages/${id}/retry`); toasts.ok(t('notify.retryDone')); } catch (e) { toasts.error(e); } }
 </script>
 
-<Page title={t('notify.message')} back="/notify/{sid}">
+<Page title={t('notify.message')} back="/atc-notify/{sid}">
   {#snippet actions()}
     {#if m?.status === 'failed' && session.isAdmin}<button class="btn primary" onclick={retry}><Icon name="refresh" size={16} /> {t('notify.retry')}</button>{/if}
     <button class="btn icon" onclick={() => res.load()} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>

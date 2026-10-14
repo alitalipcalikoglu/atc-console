@@ -18,7 +18,7 @@
   import { toasts } from '$lib/client/toast.svelte.js';
   /** @type {{ sid: string, id: string }} */
   let { sid, id } = $props();
-  const res = new Resource(() => api.get(`/services/${sid}/auth/users/${id}`));
+  const res = new Resource(() => api.get(`/services/${sid}/atc-auth/users/${id}`));
   $effect(() => { res.load(); });
   const d = $derived(/** @type {any} */ (res.data));
   const u = $derived(d?.user);
@@ -32,10 +32,10 @@
     busy = true;
     try { await fn(); toasts.ok(ok); if (reload) await res.load(); } catch (e) { toasts.error(e); } finally { busy = false; confirm = null; revoking = null; }
   }
-  const base = $derived(`/services/${sid}/auth/users/${id}`);
+  const base = $derived(`/services/${sid}/atc-auth/users/${id}`);
 </script>
 
-<Page title={u?.email ?? t('auth.users')} back="/auth/{sid}">
+<Page title={u?.email ?? t('auth.users')} back="/atc-auth/{sid}">
   {#snippet actions()}
     {#if u && session.isAdmin}
       <button class="btn" onclick={() => run(() => api.post(`${base}/resend-verification`, { email: u.email }), t('auth.sent'), false)} disabled={busy || u.emailVerified}><Icon name="mail" size={16} /> {t('auth.resend')}</button>
@@ -97,4 +97,4 @@
 <Confirm open={revoking !== null} title={t('auth.revoke')} message={t('auth.revokeDesc')} danger confirmLabel={t('auth.revoke')} {busy} onconfirm={() => run(() => api.delete(`${base}/sessions/${revoking}`), t('auth.revoked'))} oncancel={() => { revoking = null; }} />
 <Confirm open={confirm === 'disable'} title={t('auth.disable')} message={t('auth.disableDesc')} danger irreversible={false} confirmLabel={t('auth.disable')} {busy} onconfirm={() => run(() => api.patch(base, { status: 'disabled' }), t('auth.updated'))} oncancel={() => { confirm = null; }} />
 <Confirm open={confirm === 'revokeAll'} title={t('auth.revokeAll')} message={t('auth.revokeAllDesc')} danger confirmLabel={t('auth.revokeAll')} {busy} onconfirm={() => run(async () => { const r = /** @type {any} */ (await api.delete(`${base}/sessions`)); toasts.info(t('auth.revokedAll', { n: r.revoked })); }, t('auth.updated'))} oncancel={() => { confirm = null; }} />
-<Confirm open={confirm === 'delete'} title={t('auth.deleteUser')} message={t('auth.deleteDesc')} danger typeWord={u?.email ?? ''} confirmLabel={t('common.delete')} {busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/auth/${sid}`); }, t('auth.userDeleted'), false)} oncancel={() => { confirm = null; }} />
+<Confirm open={confirm === 'delete'} title={t('auth.deleteUser')} message={t('auth.deleteDesc')} danger typeWord={u?.email ?? ''} confirmLabel={t('common.delete')} {busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/atc-auth/${sid}`); }, t('auth.userDeleted'), false)} oncancel={() => { confirm = null; }} />

@@ -14,7 +14,7 @@
   /** @typedef {{ id: string, type: string, label: string }} DocService */
   /** @type {DocService[]} */
   let items = $state([]);
-  let selected = $state(route.url.searchParams.get('service') ?? 'console');
+  let selected = $state(route.url.searchParams.get('service') ?? 'atc-console');
   /** @type {Record<string, unknown>|null} */
   let document = $state(null);
   let listLoading = $state(true);
@@ -54,7 +54,7 @@
 
   function choose(/** @type {Event} */ event) {
     selected = /** @type {HTMLSelectElement} */ (event.currentTarget).value;
-    Navigation.replaceQuery(route.url, { service: selected === 'console' ? null : selected });
+    Navigation.replaceQuery(route.url, { service: selected === 'atc-console' ? null : selected });
     loadDocument();
   }
 

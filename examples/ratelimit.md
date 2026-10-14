@@ -22,4 +22,4 @@ Actions in the app bar: **Edit** (description and windows; only changed fields a
 
 ## Recorded in the console log
 
-`ratelimit.policy.create`, `ratelimit.policy.update` (the patch), `ratelimit.policy.delete`, `ratelimit.override.set` (policy and body), `ratelimit.override.delete`, `ratelimit.subject.reset`, `ratelimit.check` (a consuming check run through the console API).
+`atc-ratelimit.policy.create`, `atc-ratelimit.policy.update` (the patch), `atc-ratelimit.policy.delete`, `atc-ratelimit.override.set` (policy and body), `atc-ratelimit.override.delete`, `atc-ratelimit.subject.reset`, `atc-ratelimit.check` (a consuming check run through the console API).

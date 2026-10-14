@@ -38,7 +38,7 @@
   const summary = new Resource(() => api.get(`/services/${sid}/status`));
   const list = new Resource(async () => {
     const email = q.trim();
-    const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/auth/users?limit=50${email ? `&email=${encodeURIComponent(email)}` : ''}`));
+    const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-auth/users?limit=50${email ? `&email=${encodeURIComponent(email)}` : ''}`));
     items = r.items; cursor = r.nextCursor; return r;
   });
   /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
@@ -46,7 +46,7 @@
   $effect(() => { q; clearTimeout(timer); timer = setTimeout(() => { Navigation.replaceQuery(route.url, { q }); list.load(); }, q ? 300 : 0); return () => clearTimeout(timer); });
   async function loadMore() {
     more = true;
-    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/auth/users?limit=50&cursor=${encodeURIComponent(cursor ?? '')}`)); items = [...items, ...r.items]; cursor = r.nextCursor; }
+    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-auth/users?limit=50&cursor=${encodeURIComponent(cursor ?? '')}`)); items = [...items, ...r.items]; cursor = r.nextCursor; }
     catch (e) { toasts.error(e); } finally { more = false; }
   }
   let createOpen = $state(false);
@@ -55,8 +55,8 @@
   async function create() {
     busy = true;
     try {
-      const r = /** @type {any} */ (await api.post(`/services/${sid}/auth/users`, { email: nEmail.trim(), password: nPassword, ...(nName.trim() ? { name: nName.trim() } : {}) }));
-      toasts.ok(t('auth.userCreated')); createOpen = false; nEmail = nName = nPassword = ''; goto(`/auth/${sid}/users/${r.user.id}`);
+      const r = /** @type {any} */ (await api.post(`/services/${sid}/atc-auth/users`, { email: nEmail.trim(), password: nPassword, ...(nName.trim() ? { name: nName.trim() } : {}) }));
+      toasts.ok(t('auth.userCreated')); createOpen = false; nEmail = nName = nPassword = ''; goto(`/atc-auth/${sid}/users/${r.user.id}`);
     } catch (e) { toasts.error(e); } finally { busy = false; }
   }
   const svc = $derived(services.get(sid));
@@ -73,7 +73,7 @@
     {#if session.isAdmin}<button class="btn primary" onclick={() => { createOpen = true; }}><Icon name="plus" size={16} /> {t('auth.createUser')}</button>{/if}
     <button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}
-  <ServiceTabs type="auth" {sid} />
+  <ServiceTabs type="atc-auth" {sid} />
   <PollStats {sid} />
   <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:20px">
     <Stat label={t('auth.activeUsers')} value={fmt.int(m?.activeUsers)} />
@@ -90,7 +90,7 @@
           <thead><tr><th>{t('common.email')}</th><th class="hide-m">{t('common.name')}</th><th>{t('common.status')}</th><th>{t('auth.verified')}</th><th class="hide-m">{t('common.created')}</th></tr></thead>
           <tbody>
             {#each items as u (u.id)}
-              <tr class="clickable" onclick={() => goto(`/auth/${sid}/users/${u.id}`)}>
+              <tr class="clickable" onclick={() => goto(`/atc-auth/${sid}/users/${u.id}`)}>
                 <td class="mono small">{u.email}</td><td class="hide-m">{u.name ?? ''}</td>
                 <td><StatusBadge status={u.lockedUntil ? 'locked' : u.status} label={u.lockedUntil ? t('auth.locked') : u.status} /></td>
                 <td>{#if u.emailVerified}<span class="badge ok">{t('auth.verified')}</span>{:else}<span class="badge warn">{t('auth.unverified')}</span>{/if}</td>

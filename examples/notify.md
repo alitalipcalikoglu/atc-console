@@ -10,7 +10,7 @@ The message table filters by status, loads more with a button, and shows attempt
 
 ## Retry a failed message
 
-**Retry** appears on failed rows and on the detail page. It calls `POST /api/services/:id/notify/messages/:mid/retry`, the message goes back to `queued` with attempts reset, and the audit log records `notify.message.retry`. Only `failed` messages can be retried; the service answers `409` for other states and the toast shows that message.
+**Retry** appears on failed rows and on the detail page. It calls `POST /api/services/:id/notify/messages/:mid/retry`, the message goes back to `queued` with attempts reset, and the audit log records `atc-notify.message.retry`. Only `failed` messages can be retried; the service answers `409` for other states and the toast shows that message.
 
 ## Send a test message
 
@@ -20,7 +20,7 @@ The message table filters by status, loads more with a button, and shows attempt
 2. Enter one or more recipients (comma separated).
 3. Edit the JSON and press **Send**.
 
-The message is really queued and delivered. Validation failures from notify (`VALIDATION_FAILED` with the failing path) surface in the toast. Audited as `notify.message.send` with template and recipients.
+The message is really queued and delivered. Validation failures from notify (`VALIDATION_FAILED` with the failing path) surface in the toast. Audited as `atc-notify.message.send` with template and recipients.
 
 ## Behind the scenes
 

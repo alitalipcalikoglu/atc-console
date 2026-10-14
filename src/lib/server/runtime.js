@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { ConsoleLogger } from '@atc-web/service-core/log';
+import { ConsoleLogger } from '@atc-web/atc-service-core/log';
 import { Config } from '../../config.js';
 import { PasswordHasher } from '../../crypto/password.js';
 import { TotpKeyring } from '../../crypto/totp-keyring.js';
@@ -16,7 +16,7 @@ import { ServiceRegistry } from '../../services/registry.js';
 import { AdminStore } from '../../store/admin-store.js';
 import { AuditStore } from '../../store/audit-store.js';
 import { SessionStore } from '../../store/session-store.js';
-import { AuditClient } from '@atc-web/service-core/audit';
+import { AuditClient } from '@atc-web/atc-service-core/audit';
 
 const RUNTIME_STATE = Symbol.for('atc.console.sveltekit.runtime');
 
@@ -37,9 +37,9 @@ export class ConsoleRuntime {
     this.config = config;
     this.log = /** @type {any} */ (config.logLevel === 'silent'
       ? new SilentLogger()
-      : new ConsoleLogger({ level: /** @type {any} */ (config.logLevel), bindings: { service: 'console', runtime: 'sveltekit' } }));
+      : new ConsoleLogger({ level: /** @type {any} */ (config.logLevel), bindings: { service: 'atc-console', runtime: 'sveltekit' } }));
     this.version = JSON.parse(readFileSync(resolve(process.cwd(), 'package.json'), 'utf8')).version;
-    const serviceCoreSource = import.meta.resolve('@atc-web/service-core/config');
+    const serviceCoreSource = import.meta.resolve('@atc-web/atc-service-core/config');
     this.serviceCoreVersion = JSON.parse(readFileSync(new URL('../package.json', serviceCoreSource), 'utf8')).version;
     this.openapi = readFileSync(resolve(process.cwd(), 'openapi.yaml'));
     this.state = 'initialized';
@@ -110,7 +110,7 @@ export class ConsoleRuntime {
     const registry = ServiceRegistry.load(this.config.servicesFile);
     const clients = new ServiceClients(registry, { timeoutMs: this.config.serviceTimeoutMs });
     const docs = new OpenApiDocuments(clients);
-    const auditService = registry.ofType('audit')[0];
+    const auditService = registry.ofType('atc-audit')[0];
     const forwarder = new AuditClient({
       target: auditService?.apiKey ? { url: auditService.url, apiKey: auditService.apiKey } : null,
       logger: this.log,

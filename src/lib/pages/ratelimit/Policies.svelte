@@ -27,7 +27,7 @@
   $effect(() => service.subscribe(() => Promise.all([list.load(), stats.load()])));
   const refreshNow = () => service.trigger();
   const fmt = $derived(new Fmt(i18n.lang));
-  const base = $derived(`/services/${sid}/ratelimit`);
+  const base = $derived(`/services/${sid}/atc-ratelimit`);
   const stats = new Resource(() => api.get(`${base}/stats`));
   const list = new Resource(() => api.get(`${base}/policies`));
   $effect(() => { list.load(); stats.load(); });
@@ -41,7 +41,7 @@
   /** @param {any} body */
   async function create(body) {
     creating = true;
-    try { const r = /** @type {any} */ (await api.post(`${base}/policies`, body)); toasts.ok(t('rl.created', { name: r.policy.name })); createOpen = false; goto(`/ratelimit/${sid}/policies/${r.policy.name}`); }
+    try { const r = /** @type {any} */ (await api.post(`${base}/policies`, body)); toasts.ok(t('rl.created', { name: r.policy.name })); createOpen = false; goto(`/atc-ratelimit/${sid}/policies/${r.policy.name}`); }
     catch (e) { toasts.error(e); } finally { creating = false; }
   }
   const svc = $derived(services.get(sid));
@@ -53,7 +53,7 @@
     {#if session.isAdmin}<button class="btn primary" onclick={() => { createOpen = true; }} aria-label={t('rl.create')} title={t('rl.create')}><Icon name="plus" size={16} /><span class="hide-m"> {t('rl.create')}</span></button>{/if}
     <button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}
-  <ServiceTabs type="ratelimit" {sid} />
+  <ServiceTabs type="atc-ratelimit" {sid} />
   <PollStats {sid} />
   <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:20px">
     <Stat label={t('rl.policies')} value={fmt.int(st?.policies)} />
@@ -71,7 +71,7 @@
         <thead><tr><th>{t('rl.name')}</th><th>{t('rl.limits')}</th><th class="hide-m">{t('rl.overrides')}</th><th class="hide-m">{t('rl.activeSubjects')}</th><th>{t('rl.allowed24h')}</th><th>{t('rl.denied24h')}</th></tr></thead>
         <tbody>
           {#each items as x (x.name)}
-            <tr class="clickable" onclick={() => goto(`/ratelimit/${sid}/policies/${x.name}`)}>
+            <tr class="clickable" onclick={() => goto(`/atc-ratelimit/${sid}/policies/${x.name}`)}>
               <td><code>{x.name}</code>{#if x.description}<div class="xs faint truncate" style="max-width:280px">{x.description}</div>{/if}</td>
               <td><span class="row wrap" style="gap:4px">{#each x.limits as l (l.window)}<span class="badge plain mono">{label(l)}</span>{/each}</span></td>
               <td class="hide-m">{fmt.int(x.overrides)}</td>

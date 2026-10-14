@@ -40,19 +40,19 @@
   let more = $state(false);
   const summary = new Resource(() => api.get(`/services/${sid}/status`));
   const list = new Resource(async () => {
-    const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/notify/messages?limit=50${status ? `&status=${status}` : ''}`));
+    const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-notify/messages?limit=50${status ? `&status=${status}` : ''}`));
     items = r.items; cursor = r.nextCursor; return r;
   });
   $effect(() => { status; Navigation.replaceQuery(route.url, { status }); list.load(); });
   $effect(() => { summary.load(); });
   async function loadMore() {
     more = true;
-    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/notify/messages?limit=50${status ? `&status=${status}` : ''}&cursor=${encodeURIComponent(cursor ?? '')}`)); items = [...items, ...r.items]; cursor = r.nextCursor; }
+    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-notify/messages?limit=50${status ? `&status=${status}` : ''}&cursor=${encodeURIComponent(cursor ?? '')}`)); items = [...items, ...r.items]; cursor = r.nextCursor; }
     catch (e) { toasts.error(e); } finally { more = false; }
   }
   /** @param {any} m */
   async function retry(m) {
-    try { const r = /** @type {any} */ (await api.post(`/services/${sid}/notify/messages/${m.id}/retry`)); items = items.map((x) => (x.id === m.id ? r : x)); toasts.ok(t('notify.retryDone')); summary.load(); }
+    try { const r = /** @type {any} */ (await api.post(`/services/${sid}/atc-notify/messages/${m.id}/retry`)); items = items.map((x) => (x.id === m.id ? r : x)); toasts.ok(t('notify.retryDone')); summary.load(); }
     catch (e) { toasts.error(e); }
   }
 
@@ -69,7 +69,7 @@
   async function openSend() {
     sendOpen = true;
     if (!templates.length) {
-      try { templates = /** @type {{ items: any[] }} */ (await api.get(`/services/${sid}/notify/templates`)).items; } catch (e) { toasts.error(e); }
+      try { templates = /** @type {{ items: any[] }} */ (await api.get(`/services/${sid}/atc-notify/templates`)).items; } catch (e) { toasts.error(e); }
     }
     fillSample();
   }
@@ -93,7 +93,7 @@
     try { data = JSON.parse(dataText); dataError = ''; } catch { dataError = t('notify.invalidJson'); return; }
     sendBusy = true;
     try {
-      const r = /** @type {any} */ (await api.post(`/services/${sid}/notify/messages`, { channel: 'email', template: tplName, to: to.split(',').map((s) => s.trim()).filter(Boolean), data }));
+      const r = /** @type {any} */ (await api.post(`/services/${sid}/atc-notify/messages`, { channel: 'email', template: tplName, to: to.split(',').map((s) => s.trim()).filter(Boolean), data }));
       toasts.ok(t('notify.sendDone', { id: Fmt.short(r.id) })); sendOpen = false; list.load(); summary.load();
     } catch (e) { toasts.error(e); } finally { sendBusy = false; }
   }
@@ -107,7 +107,7 @@
     {#if session.isAdmin}<button class="btn primary" onclick={openSend}><Icon name="mail" size={16} /> {t('notify.send')}</button>{/if}
     <button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}
-  <ServiceTabs type="notify" {sid} />
+  <ServiceTabs type="atc-notify" {sid} />
   <PollStats {sid} />
   <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:20px">
     <Stat label={t('notify.queued')} value={fmt.int(m?.queued)} />
@@ -127,7 +127,7 @@
           <thead><tr><th>{t('common.status')}</th><th>{t('notify.channel')}</th><th>{t('notify.to')}</th><th class="num">{t('notify.attempts')}</th><th class="hide-m">{t('common.created')}</th><th class="hide-m">{t('notify.lastError')}</th><th></th></tr></thead>
           <tbody>
             {#each items as msg (msg.id)}
-              <tr class="clickable" onclick={() => goto(`/notify/${sid}/messages/${msg.id}`)}>
+              <tr class="clickable" onclick={() => goto(`/atc-notify/${sid}/messages/${msg.id}`)}>
                 <td><StatusBadge status={msg.status} label={t(`notify.${msg.status}`)} /></td>
                 <td><span class="row"><Icon name={msg.channel === 'email' ? 'mail' : 'webhook'} size={14} /> {msg.template ?? msg.event}</span></td>
                 <td class="truncate" style="max-width:220px">{msg.to?.join(', ') ?? msg.url}</td>

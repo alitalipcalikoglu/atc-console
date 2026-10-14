@@ -22,7 +22,7 @@
   /** @type {{ sid: string, id: string }} */
   let { sid, id } = $props();
   const fmt = $derived(new Fmt(i18n.lang));
-  const base = $derived(`/services/${sid}/scheduler/jobs/${encodeURIComponent(id)}`);
+  const base = $derived(`/services/${sid}/atc-scheduler/jobs/${encodeURIComponent(id)}`);
   const res = new Resource(() => api.get(base));
   $effect(() => { res.load(); });
   const d = $derived(/** @type {any} */ (res.data));
@@ -51,7 +51,7 @@
   async function openEdit() {
     if (!timezones.length) {
       try {
-        const [k, z] = await Promise.all([api.get(`/services/${sid}/scheduler/target-keys`), api.get(`/services/${sid}/scheduler/timezones`)]);
+        const [k, z] = await Promise.all([api.get(`/services/${sid}/atc-scheduler/target-keys`), api.get(`/services/${sid}/atc-scheduler/timezones`)]);
         targetKeys = /** @type {any} */ (k).items; timezones = /** @type {any} */ (z).items;
       } catch (e) { toasts.error(e); return; }
     }
@@ -72,7 +72,7 @@
   const headerCount = $derived(j ? Object.keys(j.target.headers ?? {}).length : 0);
 </script>
 
-<Page title={j ? j.name : t('sc.job')} back="/scheduler/{sid}">
+<Page title={j ? j.name : t('sc.job')} back="/atc-scheduler/{sid}">
   {#snippet actions()}
     {#if j && session.isAdmin}
       <button class="btn primary" onclick={runNow} disabled={busy}><Icon name="play" size={16} /><span class="hide-m"> {t('sc.runNow')}</span></button>
@@ -114,7 +114,7 @@
             <thead><tr><th>#</th><th>{t('common.status')}</th><th>{t('sc.scheduledFor')}</th><th class="hide-m">{t('sc.started')}</th><th class="hide-m">{t('sc.trigger')}</th><th>{t('sc.duration')}</th><th class="hide-m">HTTP</th><th class="hide-m">{t('sc.error')}</th></tr></thead>
             <tbody>
               {#each allRuns as r (r.id)}
-                <tr class="clickable" onclick={() => goto(`/scheduler/${sid}/runs/${r.id}`)}>
+                <tr class="clickable" onclick={() => goto(`/atc-scheduler/${sid}/runs/${r.id}`)}>
                   <td class="mono small">{r.id}</td>
                   <td><StatusBadge status={r.status} label={t(`sc.status.${r.status}`)} />{#if r.attempt > 1 || r.status === 'retrying'} <span class="xs faint">{r.attempt}/{r.maxAttempts}</span>{/if}</td>
                   <td style="white-space:nowrap"><Time value={r.scheduledFor} /></td>
@@ -136,4 +136,4 @@
 
 <JobForm open={editOpen} {sid} initial={j} busy={busy} {targetKeys} {timezones} onsubmit={save} onclose={() => { editOpen = false; }} />
 <Confirm open={confirm === 'pause'} title={t('sc.pause')} message={t('sc.pauseDesc')} confirmLabel={t('sc.pause')} busy={busy} onconfirm={pause} oncancel={() => { confirm = null; }} />
-<Confirm open={confirm === 'delete'} title={t('sc.delete')} message={t('sc.deleteDesc')} danger typeWord={j?.name} confirmLabel={t('common.delete')} busy={busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/scheduler/${sid}`); }, t('sc.deleted'))} oncancel={() => { confirm = null; }} />
+<Confirm open={confirm === 'delete'} title={t('sc.delete')} message={t('sc.deleteDesc')} danger typeWord={j?.name} confirmLabel={t('common.delete')} busy={busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/atc-scheduler/${sid}`); }, t('sc.deleted'))} oncancel={() => { confirm = null; }} />

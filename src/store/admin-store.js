@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { ConfigError } from '@atc-web/service-core/config';
-import { SecretBox } from '@atc-web/service-core/secrets';
+import { ConfigError } from '@atc-web/atc-service-core/config';
+import { SecretBox } from '@atc-web/atc-service-core/secrets';
 
 /** @typedef {import('../db.js').Database} Database */
 /** @typedef {import('../types.js').AdminRow} AdminRow */

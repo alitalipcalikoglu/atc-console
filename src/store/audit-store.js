@@ -28,7 +28,7 @@ export class AuditStore {
   }
 
   /**
-   * @param {{ limit: number, beforeId?: number, action?: string }} q  `action` is a prefix, e.g. "auth." or "login".
+   * @param {{ limit: number, beforeId?: number, action?: string }} q  `action` is a prefix, e.g. "atc-auth." or "login".
    * @returns {AuditRow[]}
    */
   list({ limit, beforeId = Number.MAX_SAFE_INTEGER, action }) {

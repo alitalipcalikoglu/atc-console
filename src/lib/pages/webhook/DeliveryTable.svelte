@@ -14,7 +14,7 @@
   <thead><tr><th>#</th>{#if showSubscription}<th>{t('wh.subscription')}</th>{/if}{#if showEvent}<th>{t('wh.event')}</th>{/if}<th>{t('common.status')}</th><th>{t('common.created')}</th><th class="hide-m">{t('wh.duration')}</th><th class="hide-m">HTTP</th><th class="hide-m">{t('wh.error')}</th></tr></thead>
   <tbody>
     {#each items as d (d.id)}
-      <tr class="clickable" onclick={() => goto(`/webhook-out/${sid}/deliveries/${d.id}`)}>
+      <tr class="clickable" onclick={() => goto(`/atc-webhook-out/${sid}/deliveries/${d.id}`)}>
         <td class="mono small">{d.id}</td>
         {#if showSubscription}<td><code>{subscriptions[d.subscriptionId] ?? d.subscriptionId}</code></td>{/if}
         {#if showEvent}<td class="mono small">{d.eventId}</td>{/if}

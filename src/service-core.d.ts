@@ -1,4 +1,4 @@
-declare module '@atc-web/service-core/trace' {
+declare module '@atc-web/atc-service-core/trace' {
   export class TraceContext {
     readonly traceId: string;
     readonly spanId: string;
@@ -10,8 +10,8 @@ declare module '@atc-web/service-core/trace' {
   }
 }
 
-declare module '@atc-web/service-core/request-context' {
-  import type { TraceContext } from '@atc-web/service-core/trace';
+declare module '@atc-web/atc-service-core/request-context' {
+  import type { TraceContext } from '@atc-web/atc-service-core/trace';
 
   export class RequestContext {
     readonly requestId: string;

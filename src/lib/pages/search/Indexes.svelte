@@ -27,7 +27,7 @@
   $effect(() => service.subscribe(() => Promise.all([list.load(), stats.load()])));
   const refreshNow = () => service.trigger();
   const fmt = $derived(new Fmt(i18n.lang));
-  const base = $derived(`/services/${sid}/search`);
+  const base = $derived(`/services/${sid}/atc-search`);
   const stats = new Resource(() => api.get(`${base}/stats`));
   const list = new Resource(() => api.get(`${base}/indexes`));
   $effect(() => { list.load(); stats.load(); });
@@ -38,7 +38,7 @@
   /** @param {any} body */
   async function create(body) {
     creating = true;
-    try { const r = /** @type {any} */ (await api.post(`${base}/indexes`, body)); toasts.ok(t('se.created', { name: r.index.name })); createOpen = false; goto(`/search/${sid}/indexes/${r.index.name}`); }
+    try { const r = /** @type {any} */ (await api.post(`${base}/indexes`, body)); toasts.ok(t('se.created', { name: r.index.name })); createOpen = false; goto(`/atc-search/${sid}/indexes/${r.index.name}`); }
     catch (e) { toasts.error(e); } finally { creating = false; }
   }
   const svc = $derived(services.get(sid));
@@ -50,7 +50,7 @@
     {#if session.isAdmin}<button class="btn primary" onclick={() => { createOpen = true; }} aria-label={t('se.create')} title={t('se.create')}><Icon name="plus" size={16} /><span class="hide-m"> {t('se.create')}</span></button>{/if}
     <button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}
-  <ServiceTabs type="search" {sid} />
+  <ServiceTabs type="atc-search" {sid} />
   <PollStats {sid} />
   <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:20px">
     <Stat label={t('se.indexes')} value={fmt.int(st?.indexes)} />
@@ -68,7 +68,7 @@
         <thead><tr><th>{t('se.name')}</th><th>{t('se.documents')}</th><th class="hide-m">{t('se.facetKeys')}</th><th>{t('se.lastIndexed')}</th><th class="hide-m">{t('se.searches')}</th></tr></thead>
         <tbody>
           {#each items as x (x.name)}
-            <tr class="clickable" onclick={() => goto(`/search/${sid}/indexes/${x.name}`)}>
+            <tr class="clickable" onclick={() => goto(`/atc-search/${sid}/indexes/${x.name}`)}>
               <td><code>{x.name}</code>{#if x.description}<div class="xs faint truncate" style="max-width:280px">{x.description}</div>{/if}</td>
               <td>{fmt.int(x.documents)}</td>
               <td class="hide-m"><span class="row wrap" style="gap:4px">{#each x.facets as f (f)}<span class="badge plain mono">{f}</span>{/each}</span></td>

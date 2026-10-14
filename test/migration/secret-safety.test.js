@@ -41,7 +41,7 @@ test('M5 hook keeps body parsing out of the global lifecycle and protects API mu
 });
 
 test('M5 upload path forwards a bounded stream without a read-all operation', () => {
-  const route = readFileSync(new URL('../../src/routes/api/services/[sid]/media/files/+server.ts', import.meta.url), 'utf8');
+  const route = readFileSync(new URL('../../src/routes/api/services/[sid]/atc-media/files/+server.ts', import.meta.url), 'utf8');
   const stream = readFileSync(new URL('../../src/services/upload-stream.js', import.meta.url), 'utf8');
   assert.match(route, /UploadStream\.limit\(context\.event\.request\.body\)/);
   assert.match(stream, /source\.getReader\(\)/);

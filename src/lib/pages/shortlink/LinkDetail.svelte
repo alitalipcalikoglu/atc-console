@@ -24,7 +24,7 @@
   let { sid, id } = $props();
   const fmt = $derived(new Fmt(i18n.lang));
   const DAYS = 30;
-  const base = $derived(`/services/${sid}/shortlink/links/${encodeURIComponent(id)}`);
+  const base = $derived(`/services/${sid}/atc-shortlink/links/${encodeURIComponent(id)}`);
   const res = new Resource(() => api.get(`${base}?days=${DAYS}`));
   $effect(() => { res.load(); });
   const d = $derived(/** @type {any} */ (res.data));
@@ -41,7 +41,7 @@
   const qrSrc = $derived(`/api${base}/qr.png?scale=6&margin=2`);
 </script>
 
-<Page title={l ? l.code : t('sl.link')} back="/shortlink/{sid}">
+<Page title={l ? l.code : t('sl.link')} back="/atc-shortlink/{sid}">
   {#snippet actions()}
     {#if l && session.isAdmin}
       <button class="btn" onclick={() => { editOpen = true; }} disabled={busy}><Icon name="settings" size={16} /><span class="hide-m"> {t('sl.edit')}</span></button>
@@ -113,7 +113,7 @@
 
 <LinkForm open={editOpen} title={t('sl.edit')} submitLabel={t('common.save')} initial={l} {busy} onsubmit={(body) => run(() => api.patch(base, body), t('sl.updated'))} onclose={() => { editOpen = false; }} />
 <Confirm open={confirm === 'disable'} title={t('sl.disable')} message={t('sl.disableDesc')} confirmLabel={t('sl.disable')} {busy} onconfirm={() => run(() => api.patch(base, { enabled: false }), t('sl.updated'))} oncancel={() => { confirm = null; }} />
-<Confirm open={confirm === 'delete'} title={t('sl.delete')} message={t('sl.deleteDesc')} danger typeWord={l?.code} confirmLabel={t('common.delete')} {busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/shortlink/${sid}`); }, t('sl.deleted'), false)} oncancel={() => { confirm = null; }} />
+<Confirm open={confirm === 'delete'} title={t('sl.delete')} message={t('sl.deleteDesc')} danger typeWord={l?.code} confirmLabel={t('common.delete')} {busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/atc-shortlink/${sid}`); }, t('sl.deleted'), false)} oncancel={() => { confirm = null; }} />
 
 <style>
   .detail { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px; align-items: start; }

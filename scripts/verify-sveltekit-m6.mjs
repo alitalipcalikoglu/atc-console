@@ -47,12 +47,12 @@ try {
   assert.equal(routes.length, 34);
   const dbPath = join(scratch, 'console.db');
   const servicesFile = join(scratch, 'services.json');
-  const serviceTypes = ['notify', 'auth', 'media', 'gateway', 'audit', 'shortlink', 'flags', 'scheduler', 'webhook-out', 'search', 'ratelimit', 'geo'];
+  const serviceTypes = ['atc-notify', 'atc-auth', 'atc-media', 'atc-gateway', 'atc-audit', 'atc-shortlink', 'atc-flags', 'atc-scheduler', 'atc-webhook-out', 'atc-search', 'atc-ratelimit', 'atc-geo'];
   writeFileSync(servicesFile, JSON.stringify({ services: serviceTypes.map((type) => ({
-    id: type === 'webhook-out' ? 'webhooks' : type,
+    id: type === 'atc-webhook-out' ? 'webhooks' : type,
     type,
     url: 'http://127.0.0.1:9',
-    ...(type === 'gateway' ? { metricsTokenEnv: 'M6_SERVICE_KEY' } : { apiKeyEnv: 'M6_SERVICE_KEY' }),
+    ...(type === 'atc-gateway' ? { metricsTokenEnv: 'M6_SERVICE_KEY' } : { apiKeyEnv: 'M6_SERVICE_KEY' }),
   })) }));
 
   const seedRuntime = new ConsoleRuntime(Config.fromEnv({
@@ -124,7 +124,7 @@ try {
   assert.equal(response.headers.get('location'), '/');
 
   for (const pattern of routes.filter((pattern) => !['/login', '/admins'].includes(pattern))) {
-    const suffix = pattern === '/notify/:sid' ? '?status=sent#queue' : '';
+    const suffix = pattern === '/atc-notify/:sid' ? '?status=sent#queue' : '';
     response = await fetch(`${origin}${materialize(pattern)}${suffix}`, { headers: { cookie: viewer }, redirect: 'manual' });
     assert.equal(response.status, 200, `viewer ${pattern}`);
     assert.match(response.headers.get('content-type') ?? '', /^text\/html/);

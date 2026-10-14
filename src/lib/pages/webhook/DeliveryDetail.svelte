@@ -18,7 +18,7 @@
   /** @type {{ sid: string, id: string }} */
   let { sid, id } = $props();
   const fmt = $derived(new Fmt(i18n.lang));
-  const base = $derived(`/services/${sid}/webhook-out/deliveries/${encodeURIComponent(id)}`);
+  const base = $derived(`/services/${sid}/atc-webhook-out/deliveries/${encodeURIComponent(id)}`);
   const res = new Resource(() => api.get(base));
   $effect(() => { res.load(); });
   const r = $derived(/** @type {any} */ (res.data)?.delivery);
@@ -32,11 +32,11 @@
   }
   async function redeliver() {
     busy = true;
-    try { const out = /** @type {any} */ (await api.post(`${base}/redeliver`, {})); toasts.ok(t('wh.redelivered', { id: out.delivery.id })); confirm = null; goto(`/webhook-out/${sid}/deliveries/${out.delivery.id}`); } catch (e) { toasts.error(e); } finally { busy = false; }
+    try { const out = /** @type {any} */ (await api.post(`${base}/redeliver`, {})); toasts.ok(t('wh.redelivered', { id: out.delivery.id })); confirm = null; goto(`/atc-webhook-out/${sid}/deliveries/${out.delivery.id}`); } catch (e) { toasts.error(e); } finally { busy = false; }
   }
 </script>
 
-<Page title="{t('wh.delivery')} #{id}" back="/webhook-out/{sid}/subscriptions/{r?.subscriptionId ?? ''}">
+<Page title="{t('wh.delivery')} #{id}" back="/atc-webhook-out/{sid}/subscriptions/{r?.subscriptionId ?? ''}">
   {#snippet actions()}
     {#if session.isAdmin && redeliverable}<button class="btn primary" onclick={() => { confirm = 'redeliver'; }} disabled={busy}><Icon name="refresh" size={16} /><span class="hide-m"> {t('wh.redeliver')}</span></button>{/if}
     {#if session.isAdmin && cancellable}<button class="btn danger" onclick={() => { confirm = 'cancel'; }} disabled={busy}><Icon name="x" size={16} /><span class="hide-m"> {t('wh.cancel')}</span></button>{/if}
@@ -52,8 +52,8 @@
           <span class="badge plain">{t('wh.attempt')} {r.attempt}/{r.maxAttempts}</span>
         </div>
         <dl class="kv">
-          <dt>{t('wh.subscription')}</dt><dd><a href="/webhook-out/{sid}/subscriptions/{r.subscriptionId}" class="mono">{r.subscriptionId}</a></dd>
-          <dt>{t('wh.event')}</dt><dd><a href="/webhook-out/{sid}/events/{r.eventId}" class="mono">{r.eventId}</a></dd>
+          <dt>{t('wh.subscription')}</dt><dd><a href="/atc-webhook-out/{sid}/subscriptions/{r.subscriptionId}" class="mono">{r.subscriptionId}</a></dd>
+          <dt>{t('wh.event')}</dt><dd><a href="/atc-webhook-out/{sid}/events/{r.eventId}" class="mono">{r.eventId}</a></dd>
           <dt>{t('common.created')}</dt><dd><Time value={r.createdAt} mode="absolute" /> <span class="faint small">(<Time value={r.createdAt} />)</span></dd>
           <dt>{t('wh.started')}</dt><dd>{#if r.startedAt}<Time value={r.startedAt} mode="absolute" />{:else}<span class="faint">–</span>{/if}</dd>
           <dt>{t('wh.finished')}</dt><dd>{#if r.finishedAt}<Time value={r.finishedAt} mode="absolute" /> · {fmt.ms(r.durationMs)}{:else}<span class="faint">–</span>{/if}</dd>

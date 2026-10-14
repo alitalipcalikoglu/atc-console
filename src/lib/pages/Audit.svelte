@@ -22,7 +22,7 @@
   /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
   $effect(() => { action; clearTimeout(timer); timer = setTimeout(() => { Navigation.replaceQuery(route.url, { action }); list.load(); }, 250); return () => clearTimeout(timer); });
   async function loadMore() { more = true; try { const r = /** @type {{ items: any[], nextBefore: string|null }} */ (await api.get(url(before))); items = [...items, ...r.items]; before = r.nextBefore; } catch (e) { toasts.error(e); } finally { more = false; } }
-  const QUICK = ['', 'login', 'admin.', 'notify.', 'auth.', 'media.'];
+  const QUICK = ['', 'login', 'admin.', 'atc-notify.', 'atc-auth.', 'atc-media.'];
 </script>
 
 <Page title={t('audit.title')} desc={t('audit.desc')}>

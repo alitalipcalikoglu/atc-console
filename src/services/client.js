@@ -1,4 +1,4 @@
-import { RequestContext } from '@atc-web/service-core/request-context';
+import { RequestContext } from '@atc-web/atc-service-core/request-context';
 
 /** @typedef {import('../types.js').ServiceDef} ServiceDef */
 
@@ -180,7 +180,7 @@ export class ServiceClient {
 
   /** Raw Prometheus samples, or null when the service exposes no metrics to us. */
   async metricsSamples() {
-    const auth = this.def.type === 'gateway' ? 'metrics' : 'apiKey';
+    const auth = this.def.type === 'atc-gateway' ? 'metrics' : 'apiKey';
     if (auth === 'metrics' && !this.def.metricsToken) return null;
     const res = await this.request('GET', '/metrics', { auth });
     if (!res.ok) throw new ServiceError(`${this.def.id} metrics responded ${res.status}`, { statusCode: res.status, service: this.def.id });

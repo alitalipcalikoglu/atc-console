@@ -44,4 +44,4 @@ Status, trigger, attempt counter; job link, scheduled slot, start, finish and du
 
 ## Recorded in the console log
 
-`scheduler.job.create` (schedule and URL), `scheduler.job.update` (the patch), `scheduler.job.delete`, `scheduler.job.run` (run id), `scheduler.run.cancel`.
+`atc-scheduler.job.create` (schedule and URL), `atc-scheduler.job.update` (the patch), `atc-scheduler.job.delete`, `atc-scheduler.job.run` (run id), `atc-scheduler.run.cancel`.

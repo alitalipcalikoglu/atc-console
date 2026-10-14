@@ -20,7 +20,7 @@ Actions: **Rename** (extension stays consistent with the real type), **Public/Pr
 
 ## Upload tickets
 
-`POST /api/services/:id/media/tickets` creates a single-use direct-upload address for a browser (see the media service's own examples). The console exposes this for scripting and testing; the audit log records `media.ticket.create`.
+`POST /api/services/:id/media/tickets` creates a single-use direct-upload address for a browser (see the media service's own examples). The console exposes this for scripting and testing; the audit log records `atc-media.ticket.create`.
 
 ## Behind the scenes
 

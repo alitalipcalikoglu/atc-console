@@ -190,12 +190,12 @@ try {
   downstreamOrigin = `http://127.0.0.1:${downstreamAddress.port}`;
   const dbPath = join(scratch, 'console.db');
   const servicesFile = join(scratch, 'services.json');
-  const serviceTypes = ['notify', 'auth', 'media', 'gateway', 'audit', 'shortlink', 'flags', 'scheduler', 'webhook-out', 'search', 'ratelimit', 'geo'];
+  const serviceTypes = ['atc-notify', 'atc-auth', 'atc-media', 'atc-gateway', 'atc-audit', 'atc-shortlink', 'atc-flags', 'atc-scheduler', 'atc-webhook-out', 'atc-search', 'atc-ratelimit', 'atc-geo'];
   writeFileSync(servicesFile, JSON.stringify({ services: serviceTypes.map((type) => ({
-    id: type === 'webhook-out' ? 'webhooks' : type,
+    id: type === 'atc-webhook-out' ? 'webhooks' : type,
     type,
     url: downstreamOrigin,
-    ...(type === 'gateway' ? { metricsTokenEnv: 'M5_API_KEY' } : { apiKeyEnv: 'M5_API_KEY' }),
+    ...(type === 'atc-gateway' ? { metricsTokenEnv: 'M5_API_KEY' } : { apiKeyEnv: 'M5_API_KEY' }),
   })) }));
 
   const seedRuntime = new ConsoleRuntime(Config.fromEnv({
@@ -236,24 +236,24 @@ try {
   const admin = await login('admin@m5.test');
   const viewer = await login('viewer@m5.test');
 
-  let response = await fetch(`${origin}/api/services/media/media/files`, { method: 'PUT', headers: { 'content-type': 'application/octet-stream', ...CSRF }, body: 'anonymous' });
+  let response = await fetch(`${origin}/api/services/atc-media/atc-media/files`, { method: 'PUT', headers: { 'content-type': 'application/octet-stream', ...CSRF }, body: 'anonymous' });
   assert.equal(response.status, 401);
   for (const path of [
-    '/api/services/media/media/files/file-1/bytes/thumb',
-    '/api/services/audit/audit/events/export',
-    '/api/services/shortlink/shortlink/links/abc/qr.png',
+    '/api/services/atc-media/atc-media/files/file-1/bytes/thumb',
+    '/api/services/atc-audit/atc-audit/events/export',
+    '/api/services/atc-shortlink/atc-shortlink/links/abc/qr.png',
   ]) {
     response = await fetch(`${origin}${path}`);
     assert.equal(response.status, 401, path);
   }
-  response = await fetch(`${origin}/api/services/media/media/files`, { method: 'PUT', headers: { cookie: viewer, 'content-type': 'application/octet-stream', ...CSRF }, body: 'viewer' });
+  response = await fetch(`${origin}/api/services/atc-media/atc-media/files`, { method: 'PUT', headers: { cookie: viewer, 'content-type': 'application/octet-stream', ...CSRF }, body: 'viewer' });
   assert.equal(response.status, 403);
-  response = await fetch(`${origin}/api/services/media/media/files`, { method: 'PUT', headers: { cookie: admin, 'content-type': 'application/octet-stream' }, body: 'no-csrf' });
+  response = await fetch(`${origin}/api/services/atc-media/atc-media/files`, { method: 'PUT', headers: { cookie: admin, 'content-type': 'application/octet-stream' }, body: 'no-csrf' });
   assert.equal(response.status, 403);
-  response = await fetch(`${origin}/api/services/media/media/files?visibility=secret`, { method: 'PUT', headers: { cookie: admin, 'content-type': 'application/octet-stream', ...CSRF }, body: 'invalid-query' });
+  response = await fetch(`${origin}/api/services/atc-media/atc-media/files?visibility=secret`, { method: 'PUT', headers: { cookie: admin, 'content-type': 'application/octet-stream', ...CSRF }, body: 'invalid-query' });
   assert.equal(response.status, 400);
 
-  const streamed = await chunkedUpload(`${origin}/api/services/media/media/files?visibility=private&name=two%20chunks.bin`, {
+  const streamed = await chunkedUpload(`${origin}/api/services/atc-media/atc-media/files?visibility=private&name=two%20chunks.bin`, {
     cookie: admin, ...CSRF, 'content-type': 'application/octet-stream',
   }, [Buffer.from('first-'), Buffer.from('second')], uploadFirst.promise);
   assert.equal(streamed.status, 201, streamed.body);
@@ -269,7 +269,7 @@ try {
   assert.equal(request.headers.cookie, undefined);
 
   const fixed = Buffer.from('fixed-length');
-  response = await fetch(`${origin}/api/services/media/media/files?name=fixed.bin`, {
+  response = await fetch(`${origin}/api/services/atc-media/atc-media/files?name=fixed.bin`, {
     method: 'PUT', headers: { cookie: admin, ...CSRF, 'content-type': 'application/x-fixture', 'content-length': String(fixed.length) }, body: fixed,
   });
   assert.equal(response.status, 201);
@@ -277,7 +277,7 @@ try {
   assert.equal(request.headers['content-length'], String(fixed.length));
   assert.equal(request.headers['content-type'], 'application/x-fixture');
 
-  const oversized = await within(declaredOversize(`${origin}/api/services/media/media/files`, {
+  const oversized = await within(declaredOversize(`${origin}/api/services/atc-media/atc-media/files`, {
     cookie: admin, ...CSRF, 'content-type': 'application/octet-stream', 'content-length': String(CONSOLE_UPLOAD_LIMIT_BYTES + 1),
   }), 5_000, 'declared oversized upload');
   assert.equal(oversized.status, 413);
@@ -285,22 +285,22 @@ try {
   assert.match(readFileSync(new URL('../src/services/media-client.js', import.meta.url), 'utf8'), /timeoutMs:\s*300_000/);
   assert.equal(AuditClient.EXPORT_TIMEOUT_MS, 600_000);
 
-  response = await fetch(`${origin}/api/services/media/media/files?name=downstream-error.bin`, {
+  response = await fetch(`${origin}/api/services/atc-media/atc-media/files?name=downstream-error.bin`, {
     method: 'PUT', headers: { cookie: admin, ...CSRF, 'content-type': 'application/octet-stream' }, body: 'bad-upload',
   });
   assert.equal(response.status, 422);
-  assert.deepEqual(await response.json(), { error: { code: 'INVALID_UPLOAD', message: 'fixture rejected', service: 'media', details: { safe: true } } });
-  response = await fetch(`${origin}/api/services/media/media/files?name=downstream-abort.bin`, {
+  assert.deepEqual(await response.json(), { error: { code: 'INVALID_UPLOAD', message: 'fixture rejected', service: 'atc-media', details: { safe: true } } });
+  response = await fetch(`${origin}/api/services/atc-media/atc-media/files?name=downstream-abort.bin`, {
     method: 'PUT', headers: { cookie: admin, ...CSRF, 'content-type': 'application/octet-stream' }, body: 'abort-me',
   });
   assert.equal(response.status, 502);
   assert.equal((await response.json()).error.code, 'UPSTREAM_UNREACHABLE');
-  await within(abortUpload(`${origin}/api/services/media/media/files?name=abort-client.bin`, {
+  await within(abortUpload(`${origin}/api/services/atc-media/atc-media/files?name=abort-client.bin`, {
     cookie: admin, ...CSRF, 'content-type': 'application/octet-stream',
   }), 5_000, 'client upload abort');
   await within(uploadAborted.promise, 5_000, 'downstream upload cancellation');
 
-  response = await fetch(`${origin}/api/services/media/media/files/file-1/bytes/thumb`, { headers: { cookie: viewer, range: 'bytes=0-3' } });
+  response = await fetch(`${origin}/api/services/atc-media/atc-media/files/file-1/bytes/thumb`, { headers: { cookie: viewer, range: 'bytes=0-3' } });
   if (response.status !== 200) throw new Error(`media bytes returned ${response.status}: ${await response.text()}`);
   const mediaReader = response.body.getReader();
   const firstMedia = await mediaReader.read();
@@ -324,20 +324,20 @@ try {
   assert.equal(mediaUrls.headers.authorization, `Bearer ${API_KEY}`);
   assert.match(String(mediaUrls.headers.traceparent), /^00-/);
 
-  response = await fetch(`${origin}/api/services/media/media/files/hostile/bytes/original`, { headers: { cookie: viewer } });
+  response = await fetch(`${origin}/api/services/atc-media/atc-media/files/hostile/bytes/original`, { headers: { cookie: viewer } });
   assert.deepEqual(Buffer.from(await response.arrayBuffer()), SVG);
   assert.equal(response.headers.get('content-type'), 'application/octet-stream');
   assert.equal(response.headers.get('content-disposition'), 'attachment; filename="hostile.bin"');
-  response = await fetch(`${origin}/api/services/media/media/files/missing/bytes/thumb`, { headers: { cookie: viewer } });
+  response = await fetch(`${origin}/api/services/atc-media/atc-media/files/missing/bytes/thumb`, { headers: { cookie: viewer } });
   assert.equal(response.status, 404);
   assert.equal((await response.json()).error.code, 'UPSTREAM_REJECTED');
-  response = await fetch(`${origin}/api/services/media/media/files/fail/bytes/thumb`, { headers: { cookie: viewer } });
+  response = await fetch(`${origin}/api/services/atc-media/atc-media/files/fail/bytes/thumb`, { headers: { cookie: viewer } });
   assert.equal(response.status, 503);
   assert.equal((await response.json()).error.code, 'UPSTREAM_ERROR');
 
-  response = await fetch(`${origin}/api/services/audit/audit/events/export?unknown=1`, { headers: { cookie: viewer } });
+  response = await fetch(`${origin}/api/services/atc-audit/atc-audit/events/export?unknown=1`, { headers: { cookie: viewer } });
   assert.equal(response.status, 400);
-  response = await fetch(`${origin}/api/services/audit/audit/events/export?format=ndjson&source=auth`, { headers: { cookie: viewer } });
+  response = await fetch(`${origin}/api/services/atc-audit/atc-audit/events/export?format=ndjson&source=auth`, { headers: { cookie: viewer } });
   if (response.status !== 200) throw new Error(`audit export returned ${response.status}: ${await response.text()}`);
   const exportReader = response.body.getReader();
   const firstExport = await exportReader.read();
@@ -352,11 +352,11 @@ try {
   assert.equal(request.url, '/v1/events/export?source=auth&format=ndjson');
   assert.equal(request.headers.authorization, `Bearer ${API_KEY}`);
   assert.match(String(request.headers.traceparent), /^00-/);
-  response = await fetch(`${origin}/api/services/audit/audit/events/export?source=broken`, { headers: { cookie: viewer } });
+  response = await fetch(`${origin}/api/services/atc-audit/atc-audit/events/export?source=broken`, { headers: { cookie: viewer } });
   assert.equal(response.status, 503);
-  assert.deepEqual(await response.json(), { error: { code: 'UPSTREAM_ERROR', message: 'audit export responded 503', service: 'audit' } });
+  assert.deepEqual(await response.json(), { error: { code: 'UPSTREAM_ERROR', message: 'atc-audit export responded 503', service: 'atc-audit' } });
 
-  response = await fetch(`${origin}/api/services/shortlink/shortlink/links/a:b/qr.png?scale=4&margin=2`, { headers: { cookie: viewer } });
+  response = await fetch(`${origin}/api/services/atc-shortlink/atc-shortlink/links/a:b/qr.png?scale=4&margin=2`, { headers: { cookie: viewer } });
   assert.equal(response.status, 200);
   assert.deepEqual(Buffer.from(await response.arrayBuffer()), PNG);
   assert.equal(response.headers.get('content-type'), 'image/png');
@@ -368,19 +368,19 @@ try {
   assert.equal(request.url, '/v1/links/a%3Ab/qr?format=png&scale=4&margin=2');
   assert.equal(request.headers.authorization, `Bearer ${API_KEY}`);
   assert.match(String(request.headers.traceparent), /^00-/);
-  response = await fetch(`${origin}/api/services/shortlink/shortlink/links/missing/qr.png`, { headers: { cookie: viewer } });
+  response = await fetch(`${origin}/api/services/atc-shortlink/atc-shortlink/links/missing/qr.png`, { headers: { cookie: viewer } });
   assert.equal(response.status, 404);
-  assert.deepEqual(await response.json(), { error: { code: 'UPSTREAM_REJECTED', message: 'shortlink qr responded 404', service: 'shortlink' } });
-  response = await fetch(`${origin}/api/services/shortlink/shortlink/links/fail/qr.png`, { headers: { cookie: viewer } });
+  assert.deepEqual(await response.json(), { error: { code: 'UPSTREAM_REJECTED', message: 'atc-shortlink qr responded 404', service: 'atc-shortlink' } });
+  response = await fetch(`${origin}/api/services/atc-shortlink/atc-shortlink/links/fail/qr.png`, { headers: { cookie: viewer } });
   assert.equal(response.status, 503);
   assert.equal((await response.json()).error.code, 'UPSTREAM_ERROR');
 
   response = await fetch(`${origin}/api/audit`, { headers: { cookie: admin } });
   const audit = await response.json();
-  assert.ok(audit.items.some((entry) => entry.action === 'media.file.upload'));
-  assert.ok(audit.items.some((entry) => entry.action === 'audit.events.export'));
+  assert.ok(audit.items.some((entry) => entry.action === 'atc-media.file.upload'));
+  assert.ok(audit.items.some((entry) => entry.action === 'atc-audit.events.export'));
 
-  const active = await fetch(`${origin}/api/services/audit/audit/events/export?source=shutdown`, { headers: { cookie: viewer } });
+  const active = await fetch(`${origin}/api/services/atc-audit/atc-audit/events/export?source=shutdown`, { headers: { cookie: viewer } });
   const activeReader = active.body.getReader();
   const activeFirst = await activeReader.read();
   assert.equal(Buffer.from(activeFirst.value).toString(), '{"seq":1}\n');

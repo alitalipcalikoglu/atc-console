@@ -7,7 +7,7 @@ const VALID = 'openapi: 3.1.0\ninfo:\n  title: Notify\n  version: 1.0.0\npaths: 
 
 /** @param {(...args: any[]) => Promise<Response>} request */
 function subject(request) {
-  const def = { id: 'notify-prod', type: 'notify', label: 'Notify prod' };
+  const def = { id: 'notify-prod', type: 'atc-notify', label: 'Notify prod' };
   return new OpenApiDocuments(/** @type {any} */ ({
     registry: {
       get: (/** @type {string} */ id) => id === def.id ? def : undefined,
@@ -24,8 +24,8 @@ test('OpenApiDocuments: console is local, list is public metadata only, remote f
   /** @type {any} */
   let options = null;
   const docs = subject(async (/** @type {string} */ _method, /** @type {string} */ _path, /** @type {any} */ o) => { options = o; return new Response(VALID, { status: 200, headers: { 'content-type': 'text/yaml' } }); });
-  assert.deepEqual(docs.list().map((x) => x.id), ['console', 'notify-prod']);
-  assert.equal((await docs.get('console')).document.info.title, 'console');
+  assert.deepEqual(docs.list().map((x) => x.id), ['atc-console', 'notify-prod']);
+  assert.equal((await docs.get('atc-console')).document.info.title, 'atc-console');
   assert.equal((await docs.get('notify-prod')).document.info.title, 'Notify');
   assert.equal(options.auth, 'none');
   assert.equal(options.timeoutMs, 3000);
@@ -35,7 +35,7 @@ test('OpenApiDocuments: console is local, list is public metadata only, remote f
 test('OpenApiDocuments: unknown and known-but-unconfigured ids are differentiated', async () => {
   const docs = subject(async () => new Response(VALID));
   await assert.rejects(() => docs.get('mystery'), (e) => e instanceof ServiceError && e.statusCode === 404 && e.code === 'DOCS_UNKNOWN_SERVICE');
-  await assert.rejects(() => docs.get('notify'), (e) => e instanceof ServiceError && e.statusCode === 404 && e.code === 'DOCS_SERVICE_UNCONFIGURED');
+  await assert.rejects(() => docs.get('atc-notify'), (e) => e instanceof ServiceError && e.statusCode === 404 && e.code === 'DOCS_SERVICE_UNCONFIGURED');
 });
 
 test('OpenApiDocuments: timeout, reachability, non-2xx, empty, malformed and oversized documents are safe errors', async () => {
@@ -61,7 +61,7 @@ test('OpenApiDocuments: timeout, reachability, non-2xx, empty, malformed and ove
 
 test('ServiceClient only exposes the timeout distinction when the caller explicitly requests it', async () => {
   const timeoutFetch = async () => { throw Object.assign(new Error('timed out with a secret'), { name: 'TimeoutError' }); };
-  const client = new ServiceClient(/** @type {any} */ ({ id: 'notify', url: 'http://notify.invalid' }), {
+  const client = new ServiceClient(/** @type {any} */ ({ id: 'atc-notify', url: 'http://notify.invalid' }), {
     timeoutMs: 10, fetch: /** @type {any} */ (timeoutFetch),
   });
   await assert.rejects(() => client.request('GET', '/health'), (e) => e instanceof ServiceError && e.code === 'UPSTREAM_UNREACHABLE' && e.statusCode === 502);

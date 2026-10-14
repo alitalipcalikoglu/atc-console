@@ -37,4 +37,4 @@ Type, id with copy button, source key, idempotency key, the JSON data, and the d
 
 ## Recorded in the console log
 
-`webhook.subscription.create` (URL and patterns), `webhook.subscription.update` (the patch), `webhook.subscription.delete`, `webhook.subscription.rotate`, `webhook.subscription.test` (delivery id), `webhook.subscription.replay` (window and queued count), `webhook.delivery.redeliver` (new delivery id), `webhook.delivery.cancel`. Secrets are never written to the log.
+`atc-webhook-out.subscription.create` (URL and patterns), `atc-webhook-out.subscription.update` (the patch), `atc-webhook-out.subscription.delete`, `atc-webhook-out.subscription.rotate`, `atc-webhook-out.subscription.test` (delivery id), `atc-webhook-out.subscription.replay` (window and queued count), `atc-webhook-out.delivery.redeliver` (new delivery id), `atc-webhook-out.delivery.cancel`. Secrets are never written to the log.

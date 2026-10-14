@@ -1,6 +1,6 @@
 # Operating the audit service
 
-**Audit** page (one per configured `audit` service): the events every service pushed to the [audit](https://github.com/alitalipcalikoglu/audit) log, with filters, statistics, chain verification and export. The console holds a read-only key; nothing here writes to the log.
+**Audit** page (one per configured `audit` service): the events every service pushed to the [atc-audit](https://github.com/alitalipcalikoglu/atc-audit) log, with filters, statistics, chain verification and export. The console holds a read-only key; nothing here writes to the log.
 
 ## Numbers at the top
 
@@ -16,7 +16,7 @@ Below them, for the same 24-hour window: top actions, top failures (failed or de
 ## Filtering
 
 - Segmented control: **All / Success / Failure / Denied**.
-- Action prefix box: `auth.` shows everything under `auth`, `auth.login` exactly that action.
+- Action prefix box: `atc-auth.` shows everything under `atc-auth`, `atc-auth.login` exactly that action.
 - **Filters** opens the rest: source, actor type/id, target type/id, request id, IP, from/to. The badge on the button counts active filters; **Clear filters** resets them.
 - Filters live in the URL, so a filtered view can be bookmarked or sent to a colleague: `/audit/audit?actionPrefix=auth.&outcome=failure&actorId=u_1001`.
 
@@ -30,13 +30,13 @@ Three links pivot from one event to the related list: **Events of this actor**, 
 
 ## Verifying the chain
 
-**Verify chain** in the app bar asks the service to recompute every hash from its oldest kept event to the head (`GET /v1/chain/verify`). A green toast reports how many events were checked; a red one names the first broken position and the reason (`hash mismatch at seq N` or `seq N is missing`). The result also colours the *Chain head* card. The check is recorded in the [console log](audit.md) as `audit.chain.verify` with the outcome.
+**Verify chain** in the app bar asks the service to recompute every hash from its oldest kept event to the head (`GET /v1/chain/verify`). A green toast reports how many events were checked; a red one names the first broken position and the reason (`hash mismatch at seq N` or `seq N is missing`). The result also colours the *Chain head* card. The check is recorded in the [console log](audit.md) as `atc-audit.chain.verify` with the outcome.
 
 On very large logs the service caps one call at `VERIFY_MAX_ROWS` (default 100 000) and answers `RANGE_TOO_LARGE`; verify in ranges from the command line in that case, see the service's own examples.
 
 ## Exporting
 
-**Export** opens a dialog: it names how many filters are active, lets you choose **NDJSON** or **CSV**, and **Download** streams the result through the console (`GET /api/services/:id/audit/events/export?…`). The current filters apply; events come oldest first; the service stops at `EXPORT_MAX_ROWS`, so split long ranges with from/to. Every export is written to the console log as `audit.events.export` with the format and the filter used.
+**Export** opens a dialog: it names how many filters are active, lets you choose **NDJSON** or **CSV**, and **Download** streams the result through the console (`GET /api/services/:id/audit/events/export?…`). The current filters apply; events come oldest first; the service stops at `EXPORT_MAX_ROWS`, so split long ranges with from/to. Every export is written to the console log as `atc-audit.events.export` with the format and the filter used.
 
 ## Auto-refresh
 

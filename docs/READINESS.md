@@ -98,13 +98,13 @@ Tracing below). See [OBSERVABILITY.md](../../stack/docs/OBSERVABILITY.md) for th
 ## Tracing
 
 Forwards its own request id (`X-Request-Id`) on every outbound call to a service, via
-`RequestContext#propagationHeaders()` (`@atc-web/service-core/request-context`, wired in
+`RequestContext#propagationHeaders()` (`@atc-web/atc-service-core/request-context`, wired in
 `src/services/client.js`) — no route handler or client method has to thread it through explicitly.
 The console's own inbound id is always self-generated (`requestIdHeader: false`) — unlike the
 gateway, there is no upstream proxy whose header would make sense to trust here, so there is no
 `TRUST_PROXY`-style gate on it.
 
-`traceparent` handling uses the shared `@atc-web/service-core/trace` and `/request-context`
+`traceparent` handling uses the shared `@atc-web/atc-service-core/trace` and `/request-context`
 primitives every backend service uses, wired by `src/hooks.server.ts` — the same behavior and trust
 policy without a framework-specific route plugin. Console's `trustProxy` (default
 `false`, since a browser reaches console directly with no proxy in front of it) gates whether an

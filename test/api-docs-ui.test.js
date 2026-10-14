@@ -4,11 +4,11 @@ import { fetchDocServices, fetchOpenApi } from '../src/lib/client/api-docs.js';
 
 test('API Docs UI boundary preserves a valid selection and falls back to the first allowlisted service', async () => {
   const get = async () => ({ items: [
-    { id: 'console', type: 'console', label: 'Console' },
-    { id: 'notify-prod', type: 'notify', label: 'Notify' },
+    { id: 'atc-console', type: 'atc-console', label: 'Console' },
+    { id: 'notify-prod', type: 'atc-notify', label: 'Notify' },
   ] });
   assert.equal((await fetchDocServices(get, 'notify-prod')).selected, 'notify-prod');
-  assert.equal((await fetchDocServices(get, 'missing')).selected, 'console');
+  assert.equal((await fetchDocServices(get, 'missing')).selected, 'atc-console');
 });
 
 test('API Docs UI boundary renders a healthy service after a different service fails', async () => {

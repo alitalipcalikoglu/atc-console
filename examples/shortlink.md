@@ -32,7 +32,7 @@ Errors from the service arrive as toasts with the service's message: `"promo" is
 - **QR code**: PNG rendered by the service and relayed through the console (`GET /api/services/:id/shortlink/links/:code/qr.png`), with a **Download PNG** button. For print, use the service's SVG output directly (`https://s.example.com/<code>/qr`).
 - **Last 30 days**: clicks, unique visitors, bots, mobile/desktop split; clicks per day as bars; referring sites (`direct / QR` for none); the 20 most recent clicks with device, referrer and the anonymised visitor hash.
 
-Actions in the app bar (admins): **Edit** (destination, expiry, limit, tags, note, 301/302), **Disable** / **Enable**, **Delete** (asks you to type the code; the click history goes with it). Every write is recorded in the [console log](audit.md) as `shortlink.link.create|update|delete`.
+Actions in the app bar (admins): **Edit** (destination, expiry, limit, tags, note, 301/302), **Disable** / **Enable**, **Delete** (asks you to type the code; the click history goes with it). Every write is recorded in the [console log](audit.md) as `atc-shortlink.link.create|update|delete`.
 
 ## Reading the statistics
 

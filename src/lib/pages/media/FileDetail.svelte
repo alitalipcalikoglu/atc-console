@@ -21,11 +21,11 @@
   /** @type {{ sid: string, id: string }} */
   let { sid, id } = $props();
   const fmt = $derived(new Fmt(i18n.lang));
-  const res = new Resource(() => api.get(`/services/${sid}/media/files/${id}`));
+  const res = new Resource(() => api.get(`/services/${sid}/atc-media/files/${id}`));
   $effect(() => { res.load(); });
   const f = $derived(/** @type {any} */ (res.data)?.file);
   const isImage = $derived(f && /^image\//.test(f.mime) && f.mime !== 'image/svg+xml');
-  const base = $derived(`/services/${sid}/media/files/${id}`);
+  const base = $derived(`/services/${sid}/atc-media/files/${id}`);
   const notFound = $derived(/** @type {any} */ (res.error)?.status === 404);
   let busy = $state(false);
   let confirmDelete = $state(false);
@@ -39,7 +39,7 @@
   async function sign() { try { signed = /** @type {any} */ (await api.post(`${base}/urls?ttl=${Number(ttl) || 900}`)).urls; } catch (e) { toasts.error(e); } }
 </script>
 
-<Page title={f?.name ?? t('media.files')} back="/media/{sid}">
+<Page title={f?.name ?? t('media.files')} back="/atc-media/{sid}">
   {#snippet actions()}
     {#if f && session.isAdmin}
       <button class="btn" onclick={() => { newName = f.name.replace(/\.[^.]+$/, ''); renameOpen = true; }} disabled={busy}>{t('media.rename')}</button>
@@ -56,7 +56,7 @@
   {:else}
     <div class="detail">
       <div class="card"><div class="card-body" style="display:grid;place-items:center;min-height:240px;background:var(--surface-2);border-radius:var(--radius)">
-        {#if isImage}<img src="/api/services/{sid}/media/files/{id}/bytes/{f.width > 1600 ? 'large' : 'original'}" alt={f.name} style="max-width:100%;max-height:60vh;border-radius:6px" />
+        {#if isImage}<img src="/api/services/{sid}/atc-media/files/{id}/bytes/{f.width > 1600 ? 'large' : 'original'}" alt={f.name} style="max-width:100%;max-height:60vh;border-radius:6px" />
         {:else}<Empty icon="file" title={t('media.noPreview')} desc={f.mime} />{/if}
       </div></div>
       <div class="stack">
@@ -83,7 +83,7 @@
   {/if}
 </Page>
 
-<Confirm open={confirmDelete} title={t('media.delete')} message={t('media.deleteDesc', { days: 7 })} danger confirmLabel={t('common.delete')} {busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/media/${sid}`); }, t('media.deleted'))} oncancel={() => { confirmDelete = false; }} />
+<Confirm open={confirmDelete} title={t('media.delete')} message={t('media.deleteDesc', { days: 7 })} danger confirmLabel={t('common.delete')} {busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/atc-media/${sid}`); }, t('media.deleted'))} oncancel={() => { confirmDelete = false; }} />
 <Dialog open={renameOpen} title={t('media.rename')} onclose={() => { renameOpen = false; }}>
   <div class="field"><label for="nn">{t('media.newName')}</label><input id="nn" class="input" bind:value={newName} /></div>
   {#snippet footer()}<button class="btn" onclick={() => { renameOpen = false; }}>{t('common.cancel')}</button><button class="btn primary" onclick={() => run(() => api.patch(base, { name: newName.trim() }), t('common.updated'))} disabled={busy || !newName.trim()}>{t('common.save')}</button>{/snippet}

@@ -33,18 +33,18 @@
     const m = o?.summary;
     if (!m || m.error) return [];
     switch (s.type) {
-      case 'notify': return [[t('notify.queued'), fmt.int(m.queued)], [t('notify.failed'), fmt.int(m.failed)], [t('notify.sent'), fmt.int(m.sent)], [t('notify.oldest'), fmt.duration(m.oldestQueuedAgeSec)]];
-      case 'auth': return [[t('auth.activeUsers'), fmt.int(m.activeUsers)], [t('auth.activeSessions'), fmt.int(m.activeSessions)], [t('auth.disabledUsers'), fmt.int(m.disabledUsers)]];
-      case 'media': return [[t('media.files'), fmt.int(m.files)], [t('media.stored'), fmt.bytes(m.storedBytes)], [t('media.downloads'), fmt.int(m.downloads)]];
-      case 'gateway': { const routes = Object.values(m.routes ?? {}); const req = routes.reduce((a, /** @type {any} */ r) => a + Object.values(r.requests).reduce((x, y) => x + Number(y), 0), 0); return [[t('gateway.requests'), fmt.int(req)], [t('gateway.routes'), fmt.int(routes.length)], [t('gateway.rateLimited'), fmt.int(m.rejected?.rate_limited ?? 0)]]; }
-      case 'audit': return [[t('ev.totalEvents'), fmt.int(m.total)], [t('ev.lastHour'), fmt.int(m.lastHour)], [t('ev.headSeq'), fmt.int(m.headSeq)], [t('ev.dbSize'), fmt.bytes(m.dbBytes)]];
-      case 'shortlink': return [[t('sl.activeLinks'), fmt.int(m.activeLinks)], [t('sl.clicks'), fmt.int(m.clicks)], [t('sl.clicksLastHour'), fmt.int(m.clicksLastHour)], [t('sl.inactiveLinks'), fmt.int(m.inactiveLinks)]];
-      case 'flags': return [[t('fl.flags'), fmt.int(m.activeFlags)], ...Object.entries(m.enabledByEnv ?? {}).map(([env, n]) => [`${env} ${t('fl.enabledShort')}`, fmt.int(/** @type {number} */ (n))]), [t('fl.archived'), fmt.int(m.archivedFlags)]];
-      case 'scheduler': return [[t('sc.enabledJobs'), fmt.int(m.enabledJobs)], [t('sc.nextDue'), m.nextDueSec == null || m.nextDueSec < 0 ? '–' : fmt.duration(m.nextDueSec)], [t('sc.status.succeeded'), fmt.int(m.runsByStatus?.succeeded ?? 0)], [t('sc.status.failed'), fmt.int(m.runsByStatus?.failed ?? 0)]];
-      case 'webhook-out': return [[t('wh.activeSubs'), fmt.int(m.activeSubscriptions)], [t('wh.status.disabled'), fmt.int(m.disabledSubscriptions)], [t('wh.backlog'), fmt.int(m.backlog)], [t('wh.dstatus.failed'), fmt.int(m.deliveriesByStatus?.failed ?? 0)]];
-      case 'search': return [[t('se.indexes'), fmt.int(m.indexes)], [t('se.documents'), fmt.int(m.documents)], [t('se.searches'), fmt.int(Object.values(m.queriesByIndex ?? {}).reduce((a, n) => a + Number(n), 0))], [t('se.dbSize'), fmt.bytes(m.dbBytes)]];
-      case 'ratelimit': return [[t('rl.policies'), fmt.int(m.policies)], [t('rl.allowedShort'), fmt.int(m.allowed)], [t('rl.deniedShort'), fmt.int(m.denied)], [t('rl.counters'), fmt.int(m.counters)]];
-      case 'geo': return [[t('ge.lookups'), fmt.int(m.lookupsTotal)], [t('ge.database'), m.databaseLoaded ? t('ge.loaded') : t('ge.none')], [t('ge.collections'), fmt.int(m.collections)], [t('ge.places'), fmt.int(m.places)]];
+      case 'atc-notify': return [[t('notify.queued'), fmt.int(m.queued)], [t('notify.failed'), fmt.int(m.failed)], [t('notify.sent'), fmt.int(m.sent)], [t('notify.oldest'), fmt.duration(m.oldestQueuedAgeSec)]];
+      case 'atc-auth': return [[t('auth.activeUsers'), fmt.int(m.activeUsers)], [t('auth.activeSessions'), fmt.int(m.activeSessions)], [t('auth.disabledUsers'), fmt.int(m.disabledUsers)]];
+      case 'atc-media': return [[t('media.files'), fmt.int(m.files)], [t('media.stored'), fmt.bytes(m.storedBytes)], [t('media.downloads'), fmt.int(m.downloads)]];
+      case 'atc-gateway': { const routes = Object.values(m.routes ?? {}); const req = routes.reduce((a, /** @type {any} */ r) => a + Object.values(r.requests).reduce((x, y) => x + Number(y), 0), 0); return [[t('gateway.requests'), fmt.int(req)], [t('gateway.routes'), fmt.int(routes.length)], [t('gateway.rateLimited'), fmt.int(m.rejected?.rate_limited ?? 0)]]; }
+      case 'atc-audit': return [[t('ev.totalEvents'), fmt.int(m.total)], [t('ev.lastHour'), fmt.int(m.lastHour)], [t('ev.headSeq'), fmt.int(m.headSeq)], [t('ev.dbSize'), fmt.bytes(m.dbBytes)]];
+      case 'atc-shortlink': return [[t('sl.activeLinks'), fmt.int(m.activeLinks)], [t('sl.clicks'), fmt.int(m.clicks)], [t('sl.clicksLastHour'), fmt.int(m.clicksLastHour)], [t('sl.inactiveLinks'), fmt.int(m.inactiveLinks)]];
+      case 'atc-flags': return [[t('fl.flags'), fmt.int(m.activeFlags)], ...Object.entries(m.enabledByEnv ?? {}).map(([env, n]) => [`${env} ${t('fl.enabledShort')}`, fmt.int(/** @type {number} */ (n))]), [t('fl.archived'), fmt.int(m.archivedFlags)]];
+      case 'atc-scheduler': return [[t('sc.enabledJobs'), fmt.int(m.enabledJobs)], [t('sc.nextDue'), m.nextDueSec == null || m.nextDueSec < 0 ? '–' : fmt.duration(m.nextDueSec)], [t('sc.status.succeeded'), fmt.int(m.runsByStatus?.succeeded ?? 0)], [t('sc.status.failed'), fmt.int(m.runsByStatus?.failed ?? 0)]];
+      case 'atc-webhook-out': return [[t('wh.activeSubs'), fmt.int(m.activeSubscriptions)], [t('wh.status.disabled'), fmt.int(m.disabledSubscriptions)], [t('wh.backlog'), fmt.int(m.backlog)], [t('wh.dstatus.failed'), fmt.int(m.deliveriesByStatus?.failed ?? 0)]];
+      case 'atc-search': return [[t('se.indexes'), fmt.int(m.indexes)], [t('se.documents'), fmt.int(m.documents)], [t('se.searches'), fmt.int(Object.values(m.queriesByIndex ?? {}).reduce((a, n) => a + Number(n), 0))], [t('se.dbSize'), fmt.bytes(m.dbBytes)]];
+      case 'atc-ratelimit': return [[t('rl.policies'), fmt.int(m.policies)], [t('rl.allowedShort'), fmt.int(m.allowed)], [t('rl.deniedShort'), fmt.int(m.denied)], [t('rl.counters'), fmt.int(m.counters)]];
+      case 'atc-geo': return [[t('ge.lookups'), fmt.int(m.lookupsTotal)], [t('ge.database'), m.databaseLoaded ? t('ge.loaded') : t('ge.none')], [t('ge.collections'), fmt.int(m.collections)], [t('ge.places'), fmt.int(m.places)]];
       default: return [];
     }
   }

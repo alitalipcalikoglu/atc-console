@@ -41,9 +41,9 @@
   /** @type {string|null} */ let cursor = $state(null);
   let more = $state(false);
   const qs = (/** @type {string|null} */ c) => { const p = new URLSearchParams({ limit: '50' }); if (enabled) p.set('enabled', enabled); if (q.trim()) p.set('q', q.trim()); if (tag.trim()) p.set('tag', tag.trim().toLowerCase()); if (c) p.set('cursor', c); return p.toString(); };
-  const stats = new Resource(() => api.get(`/services/${sid}/scheduler/stats`));
+  const stats = new Resource(() => api.get(`/services/${sid}/atc-scheduler/stats`));
   const list = new Resource(async () => {
-    const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/scheduler/jobs?${qs(null)}`));
+    const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-scheduler/jobs?${qs(null)}`));
     items = r.items; cursor = r.nextCursor; return r;
   });
   /** @type {any[]} */ let runItems = $state([]);
@@ -51,7 +51,7 @@
   let runMore = $state(false);
   const rqs = (/** @type {string|null} */ b) => { const p = new URLSearchParams({ limit: '20' }); if (runStatus) p.set('status', runStatus); if (b) p.set('before', b); return p.toString(); };
   const runs = new Resource(async () => {
-    const r = /** @type {{ items: any[], nextBefore: string|null }} */ (await api.get(`/services/${sid}/scheduler/runs?${rqs(null)}`));
+    const r = /** @type {{ items: any[], nextBefore: string|null }} */ (await api.get(`/services/${sid}/atc-scheduler/runs?${rqs(null)}`));
     runItems = r.items; runBefore = r.nextBefore; return r;
   });
   /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
@@ -60,12 +60,12 @@
   $effect(() => { stats.load(); });
   async function loadMore() {
     more = true;
-    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/scheduler/jobs?${qs(cursor)}`)); items = [...items, ...r.items]; cursor = r.nextCursor; }
+    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-scheduler/jobs?${qs(cursor)}`)); items = [...items, ...r.items]; cursor = r.nextCursor; }
     catch (e) { toasts.error(e); } finally { more = false; }
   }
   async function loadMoreRuns() {
     runMore = true;
-    try { const r = /** @type {{ items: any[], nextBefore: string|null }} */ (await api.get(`/services/${sid}/scheduler/runs?${rqs(runBefore)}`)); runItems = [...runItems, ...r.items]; runBefore = r.nextBefore; }
+    try { const r = /** @type {{ items: any[], nextBefore: string|null }} */ (await api.get(`/services/${sid}/atc-scheduler/runs?${rqs(runBefore)}`)); runItems = [...runItems, ...r.items]; runBefore = r.nextBefore; }
     catch (e) { toasts.error(e); } finally { runMore = false; }
   }
   const st = $derived(/** @type {any} */ (stats.data));
@@ -74,7 +74,7 @@
   async function toggle(j, next) {
     busy = { ...busy, [j.name]: true };
     try {
-      const r = /** @type {any} */ (await api.patch(`/services/${sid}/scheduler/jobs/${encodeURIComponent(j.name)}`, { enabled: next }));
+      const r = /** @type {any} */ (await api.patch(`/services/${sid}/atc-scheduler/jobs/${encodeURIComponent(j.name)}`, { enabled: next }));
       items = items.map((x) => (x.name === j.name ? r.job : x));
       toasts.ok(t(next ? 'sc.resumed' : 'sc.pausedOk'));
       stats.load();
@@ -88,7 +88,7 @@
   async function openCreate() {
     if (!timezones.length) {
       try {
-        const [k, z] = await Promise.all([api.get(`/services/${sid}/scheduler/target-keys`), api.get(`/services/${sid}/scheduler/timezones`)]);
+        const [k, z] = await Promise.all([api.get(`/services/${sid}/atc-scheduler/target-keys`), api.get(`/services/${sid}/atc-scheduler/timezones`)]);
         targetKeys = /** @type {any} */ (k).items; timezones = /** @type {any} */ (z).items;
       } catch (e) { toasts.error(e); return; }
     }
@@ -97,7 +97,7 @@
   /** @param {any} body */
   async function create(body) {
     creating = true;
-    try { const r = /** @type {any} */ (await api.post(`/services/${sid}/scheduler/jobs`, body)); toasts.ok(t('sc.created', { name: r.job.name })); createOpen = false; goto(`/scheduler/${sid}/jobs/${r.job.name}`); }
+    try { const r = /** @type {any} */ (await api.post(`/services/${sid}/atc-scheduler/jobs`, body)); toasts.ok(t('sc.created', { name: r.job.name })); createOpen = false; goto(`/atc-scheduler/${sid}/jobs/${r.job.name}`); }
     catch (e) { toasts.error(e); } finally { creating = false; }
   }
   const svc = $derived(services.get(sid));
@@ -109,7 +109,7 @@
     {#if session.isAdmin}<button class="btn primary" onclick={openCreate} aria-label={t('sc.create')} title={t('sc.create')}><Icon name="plus" size={16} /><span class="hide-m"> {t('sc.create')}</span></button>{/if}
     <button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}
-  <ServiceTabs type="scheduler" {sid} />
+  <ServiceTabs type="atc-scheduler" {sid} />
   <PollStats {sid} />
   <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:20px">
     <Stat label={t('sc.jobs')} value={fmt.int(st?.jobs?.total)} sub={st ? `${fmt.int(st.jobs.enabled)} ${t('sc.enabled').toLowerCase()} · ${fmt.int(st.jobs.total - st.jobs.enabled)} ${t('sc.pausedJobs')}` : undefined} />
@@ -133,7 +133,7 @@
           <thead><tr><th>{t('sc.name')}</th><th>{t('sc.schedule')}</th><th>{t('sc.nextRun')}</th><th>{t('sc.lastRun')}</th><th class="hide-m">{t('sl.tags')}</th><th>{t('sc.enabled')}</th></tr></thead>
           <tbody>
             {#each items as j (j.name)}
-              <tr class="clickable" onclick={() => goto(`/scheduler/${sid}/jobs/${j.name}`)}>
+              <tr class="clickable" onclick={() => goto(`/atc-scheduler/${sid}/jobs/${j.name}`)}>
                 <td><code>{j.name}</code>{#if j.description}<div class="xs faint truncate" style="max-width:280px">{j.description}</div>{/if}</td>
                 <td style="white-space:nowrap">{#if j.schedule.cron}<span class="mono small">{j.schedule.cron}</span><div class="xs faint">{j.schedule.timezone}</div>{:else}<span class="badge plain">{t('sc.oneShot')}</span><div class="xs faint">{fmt.dateTime(j.schedule.at)}</div>{/if}</td>
                 <td style="white-space:nowrap">{#if j.nextRunAt}<Time value={j.nextRunAt} />{:else}<span class="faint">–</span>{/if}</td>
@@ -160,7 +160,7 @@
           <thead><tr><th>#</th><th>{t('sc.job')}</th><th>{t('common.status')}</th><th>{t('sc.scheduledFor')}</th><th class="hide-m">{t('sc.trigger')}</th><th class="hide-m">{t('sc.duration')}</th><th class="hide-m">HTTP</th></tr></thead>
           <tbody>
             {#each runItems as r (r.id)}
-              <tr class="clickable" onclick={() => goto(`/scheduler/${sid}/runs/${r.id}`)}>
+              <tr class="clickable" onclick={() => goto(`/atc-scheduler/${sid}/runs/${r.id}`)}>
                 <td class="mono small">{r.id}</td>
                 <td><code>{r.job}</code></td>
                 <td><StatusBadge status={r.status} label={t(`sc.status.${r.status}`)} />{#if r.attempt > 1 || r.status === 'retrying'} <span class="xs faint">{r.attempt}/{r.maxAttempts}</span>{/if}</td>

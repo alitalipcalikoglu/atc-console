@@ -26,7 +26,7 @@
   /** @type {{ sid: string, id: string }} */
   let { sid, id } = $props();
   const fmt = $derived(new Fmt(i18n.lang));
-  const base = $derived(`/services/${sid}/webhook-out/subscriptions/${encodeURIComponent(id)}`);
+  const base = $derived(`/services/${sid}/atc-webhook-out/subscriptions/${encodeURIComponent(id)}`);
   const res = new Resource(() => api.get(base));
   $effect(() => { res.load(); });
   const d = $derived(/** @type {any} */ (res.data));
@@ -38,7 +38,7 @@
   const all = $derived([...(d?.deliveries ?? []), ...extra]);
   async function loadMore() {
     moreBusy = true;
-    try { const r = /** @type {{ items: any[], nextBefore: string|null }} */ (await api.get(`/services/${sid}/webhook-out/deliveries?subscription=${encodeURIComponent(id)}&limit=20&before=${before}`)); extra = [...extra, ...r.items]; before = r.nextBefore; }
+    try { const r = /** @type {{ items: any[], nextBefore: string|null }} */ (await api.get(`/services/${sid}/atc-webhook-out/deliveries?subscription=${encodeURIComponent(id)}&limit=20&before=${before}`)); extra = [...extra, ...r.items]; before = r.nextBefore; }
     catch (e) { toasts.error(e); } finally { moreBusy = false; }
   }
   let busy = $state(false);
@@ -71,7 +71,7 @@
   const headerCount = $derived(s ? Object.keys(s.headers ?? {}).length : 0);
 </script>
 
-<Page title={s ? s.name : t('wh.subscription')} back="/webhook-out/{sid}">
+<Page title={s ? s.name : t('wh.subscription')} back="/atc-webhook-out/{sid}">
   {#snippet actions()}
     {#if s && session.isAdmin}
       <button class="btn primary" onclick={sendTest} disabled={busy}><Icon name="webhook" size={16} /><span class="hide-m"> {t('wh.test')}</span></button>
@@ -134,4 +134,4 @@
 </Dialog>
 <Confirm open={confirm === 'pause'} title={t('wh.pause')} message={t('wh.pauseDesc')} confirmLabel={t('wh.pause')} busy={busy} onconfirm={pause} oncancel={() => { confirm = null; }} />
 <Confirm open={confirm === 'rotate'} title={t('wh.rotate')} message={t('wh.rotateDesc')} danger confirmLabel={t('wh.rotate')} busy={busy} onconfirm={rotate} oncancel={() => { confirm = null; }} />
-<Confirm open={confirm === 'delete'} title={t('wh.delete')} message={t('wh.deleteDesc')} danger typeWord={s?.name} confirmLabel={t('common.delete')} busy={busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/webhook-out/${sid}`); }, t('wh.deleted'))} oncancel={() => { confirm = null; }} />
+<Confirm open={confirm === 'delete'} title={t('wh.delete')} message={t('wh.deleteDesc')} danger typeWord={s?.name} confirmLabel={t('common.delete')} busy={busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/atc-webhook-out/${sid}`); }, t('wh.deleted'))} oncancel={() => { confirm = null; }} />

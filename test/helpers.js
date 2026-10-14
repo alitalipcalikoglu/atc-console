@@ -19,21 +19,21 @@ export function testConfig(overrides = {}) {
 
 export function testDb() { return new Database(':memory:'); }
 
-/** @param {Partial<Record<'notify'|'auth'|'media'|'gateway'|'audit'|'shortlink'|'flags'|'scheduler'|'webhook-out'|'search'|'ratelimit'|'geo', string>>} [urls] */
+/** @param {Partial<Record<'notify'|'auth'|'media'|'gateway'|'audit'|'shortlink'|'flags'|'scheduler'|'webhook-out'|'search'|'ratelimit'|'geo', string>>} [urls] Keys are short test-only names. */
 export function servicesDoc(urls = {}) {
   return { services: [
-    { id: 'notify', type: 'notify', url: urls.notify ?? 'http://127.0.0.1:1', apiKeyEnv: 'NOTIFY_API_KEY' },
-    { id: 'auth', type: 'auth', url: urls.auth ?? 'http://127.0.0.1:1', apiKeyEnv: 'AUTH_API_KEY', publicUrl: 'https://api.test.local', label: 'Auth (prod)' },
-    { id: 'media', type: 'media', url: urls.media ?? 'http://127.0.0.1:1', apiKeyEnv: 'MEDIA_API_KEY' },
-    { id: 'gateway', type: 'gateway', url: urls.gateway ?? 'http://127.0.0.1:1', metricsTokenEnv: 'GATEWAY_METRICS_TOKEN' },
-    { id: 'audit', type: 'audit', url: urls.audit ?? 'http://127.0.0.1:1', apiKeyEnv: 'AUDIT_API_KEY' },
-    { id: 'shortlink', type: 'shortlink', url: urls.shortlink ?? 'http://127.0.0.1:1', apiKeyEnv: 'SHORTLINK_API_KEY' },
-    { id: 'flags', type: 'flags', url: urls.flags ?? 'http://127.0.0.1:1', apiKeyEnv: 'FLAGS_API_KEY' },
-    { id: 'scheduler', type: 'scheduler', url: urls.scheduler ?? 'http://127.0.0.1:1', apiKeyEnv: 'SCHEDULER_API_KEY' },
-    { id: 'webhooks', type: 'webhook-out', url: urls['webhook-out'] ?? 'http://127.0.0.1:1', apiKeyEnv: 'WEBHOOK_OUT_API_KEY' },
-    { id: 'search', type: 'search', url: urls.search ?? 'http://127.0.0.1:1', apiKeyEnv: 'SEARCH_API_KEY' },
-    { id: 'ratelimit', type: 'ratelimit', url: urls.ratelimit ?? 'http://127.0.0.1:1', apiKeyEnv: 'RATELIMIT_API_KEY' },
-    { id: 'geo', type: 'geo', url: urls.geo ?? 'http://127.0.0.1:1', apiKeyEnv: 'GEO_API_KEY' },
+    { id: 'atc-notify', type: 'atc-notify', url: urls.notify ?? 'http://127.0.0.1:1', apiKeyEnv: 'NOTIFY_API_KEY' },
+    { id: 'atc-auth', type: 'atc-auth', url: urls.auth ?? 'http://127.0.0.1:1', apiKeyEnv: 'AUTH_API_KEY', publicUrl: 'https://api.test.local', label: 'Auth (prod)' },
+    { id: 'atc-media', type: 'atc-media', url: urls.media ?? 'http://127.0.0.1:1', apiKeyEnv: 'MEDIA_API_KEY' },
+    { id: 'atc-gateway', type: 'atc-gateway', url: urls.gateway ?? 'http://127.0.0.1:1', metricsTokenEnv: 'GATEWAY_METRICS_TOKEN' },
+    { id: 'atc-audit', type: 'atc-audit', url: urls.audit ?? 'http://127.0.0.1:1', apiKeyEnv: 'AUDIT_API_KEY' },
+    { id: 'atc-shortlink', type: 'atc-shortlink', url: urls.shortlink ?? 'http://127.0.0.1:1', apiKeyEnv: 'SHORTLINK_API_KEY' },
+    { id: 'atc-flags', type: 'atc-flags', url: urls.flags ?? 'http://127.0.0.1:1', apiKeyEnv: 'FLAGS_API_KEY' },
+    { id: 'atc-scheduler', type: 'atc-scheduler', url: urls.scheduler ?? 'http://127.0.0.1:1', apiKeyEnv: 'SCHEDULER_API_KEY' },
+    { id: 'webhooks', type: 'atc-webhook-out', url: urls['webhook-out'] ?? 'http://127.0.0.1:1', apiKeyEnv: 'WEBHOOK_OUT_API_KEY' },
+    { id: 'atc-search', type: 'atc-search', url: urls.search ?? 'http://127.0.0.1:1', apiKeyEnv: 'SEARCH_API_KEY' },
+    { id: 'atc-ratelimit', type: 'atc-ratelimit', url: urls.ratelimit ?? 'http://127.0.0.1:1', apiKeyEnv: 'RATELIMIT_API_KEY' },
+    { id: 'atc-geo', type: 'atc-geo', url: urls.geo ?? 'http://127.0.0.1:1', apiKeyEnv: 'GEO_API_KEY' },
   ] };
 }
 

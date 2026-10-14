@@ -13,7 +13,7 @@
   import { t, i18n } from '$lib/client/i18n.svelte.js';
   /** @type {{ sid: string }} */
   let { sid } = $props();
-  const base = $derived(`/services/${sid}/geo`);
+  const base = $derived(`/services/${sid}/atc-geo`);
   const TABS = ['countries', 'currencies', 'timezones'];
   let tab = $state(TABS.includes(route.url.searchParams.get('tab') ?? '') ? /** @type {string} */ (route.url.searchParams.get('tab')) : 'countries');
   let q = $state(route.url.searchParams.get('q') ?? '');
@@ -27,7 +27,7 @@
   const items = $derived(tab === 'currencies' && q.trim() ? all.filter((c) => fold(`${c.code} ${c.name} ${c.countries.join(' ')}`).includes(fold(q.trim()))) : all);
 </script>
 
-<Page title={t('ge.reference')} desc={t('ge.referenceDesc')} back="/geo/{sid}">
+<Page title={t('ge.reference')} desc={t('ge.referenceDesc')} back="/atc-geo/{sid}">
   {#snippet actions()}
     <button class="btn icon" onclick={() => data.load()} disabled={data.loading} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}

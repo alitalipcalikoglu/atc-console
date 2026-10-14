@@ -5,17 +5,17 @@
 ```json
 {
   "services": [
-    { "id": "notify",  "type": "notify",  "label": "Notify",     "url": "http://10.0.0.1:3001", "apiKeyEnv": "NOTIFY_API_KEY" },
-    { "id": "auth",    "type": "auth",    "label": "Auth",       "url": "http://10.0.0.2:3002", "apiKeyEnv": "AUTH_API_KEY", "publicUrl": "https://api.example.com" },
-    { "id": "media",   "type": "media",   "label": "Media (EU)", "url": "http://10.0.0.3:3003", "apiKeyEnv": "MEDIA_API_KEY" },
-    { "id": "media-us","type": "media",   "label": "Media (US)", "url": "http://10.0.1.3:3003", "apiKeyEnv": "MEDIA_US_API_KEY" },
-    { "id": "gateway", "type": "gateway", "label": "Gateway",    "url": "http://10.0.0.4:3000", "metricsTokenEnv": "GATEWAY_METRICS_TOKEN" },
-    { "id": "audit",   "type": "audit",   "label": "Audit",      "url": "http://10.0.0.5:3005", "apiKeyEnv": "AUDIT_API_KEY" },
-    { "id": "shortlink","type": "shortlink","label": "Shortlink", "url": "http://10.0.0.6:3006", "apiKeyEnv": "SHORTLINK_API_KEY" },
-    { "id": "flags",   "type": "flags",   "label": "Flags",      "url": "http://10.0.0.7:3007", "apiKeyEnv": "FLAGS_API_KEY" },
-    { "id": "scheduler", "type": "scheduler", "label": "Scheduler", "url": "http://10.0.0.8:3008", "apiKeyEnv": "SCHEDULER_API_KEY" },
-    { "id": "webhooks", "type": "webhook-out", "label": "Webhooks", "url": "http://10.0.0.9:3009", "apiKeyEnv": "WEBHOOK_OUT_API_KEY" },
-    { "id": "search", "type": "search", "label": "Search", "url": "http://10.0.0.10:3010", "apiKeyEnv": "SEARCH_API_KEY" }
+    { "id": "atc-notify",  "type": "atc-notify",  "label": "Notify",     "url": "http://10.0.0.1:3001", "apiKeyEnv": "NOTIFY_API_KEY" },
+    { "id": "atc-auth",    "type": "atc-auth",    "label": "Auth",       "url": "http://10.0.0.2:3002", "apiKeyEnv": "AUTH_API_KEY", "publicUrl": "https://api.example.com" },
+    { "id": "atc-media",   "type": "atc-media",   "label": "Media (EU)", "url": "http://10.0.0.3:3003", "apiKeyEnv": "MEDIA_API_KEY" },
+    { "id": "media-us","type": "atc-media",   "label": "Media (US)", "url": "http://10.0.1.3:3003", "apiKeyEnv": "MEDIA_US_API_KEY" },
+    { "id": "atc-gateway", "type": "atc-gateway", "label": "Gateway",    "url": "http://10.0.0.4:3000", "metricsTokenEnv": "GATEWAY_METRICS_TOKEN" },
+    { "id": "atc-audit",   "type": "atc-audit",   "label": "Audit",      "url": "http://10.0.0.5:3005", "apiKeyEnv": "AUDIT_API_KEY" },
+    { "id": "atc-shortlink","type": "atc-shortlink","label": "Shortlink", "url": "http://10.0.0.6:3006", "apiKeyEnv": "SHORTLINK_API_KEY" },
+    { "id": "atc-flags",   "type": "atc-flags",   "label": "Flags",      "url": "http://10.0.0.7:3007", "apiKeyEnv": "FLAGS_API_KEY" },
+    { "id": "atc-scheduler", "type": "atc-scheduler", "label": "Scheduler", "url": "http://10.0.0.8:3008", "apiKeyEnv": "SCHEDULER_API_KEY" },
+    { "id": "webhooks", "type": "atc-webhook-out", "label": "Webhooks", "url": "http://10.0.0.9:3009", "apiKeyEnv": "WEBHOOK_OUT_API_KEY" },
+    { "id": "atc-search", "type": "atc-search", "label": "Search", "url": "http://10.0.0.10:3010", "apiKeyEnv": "SEARCH_API_KEY" }
   ]
 }
 ```

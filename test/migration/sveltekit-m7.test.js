@@ -22,9 +22,9 @@ test('M7 canonical service worker caches only explicit public/build assets', () 
   assert.equal(isCacheableAssetRequest(request('/manifest.webmanifest'), 'https://console.test', assets), true);
   for (const path of [
     '/', '/account', '/login', '/api/session', '/api/docs/services',
-    '/api/services/media/media/files/id/bytes/original',
-    '/api/services/audit/audit/events/export',
-    '/api/services/shortlink/shortlink/links/id/qr.png',
+    '/api/services/atc-media/atc-media/files/id/bytes/original',
+    '/api/services/atc-audit/atc-audit/events/export',
+    '/api/services/atc-shortlink/atc-shortlink/links/id/qr.png',
   ]) {
     assert.equal(isCacheableAssetRequest(request(path), 'https://console.test', assets), false, path);
   }

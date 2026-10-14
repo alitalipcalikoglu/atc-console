@@ -9,13 +9,13 @@
 | `login.` / `logout` | `login.succeeded` (with `{ totp: true }` when 2FA was used), `login.failed` with reason (`unknown_email`, `bad_password`, `bad_totp`, `locked`, `disabled`) |
 | `password.` / `totp.` / `sessions.` | own-account changes |
 | `admin.` | created, updated (with the patch), password_reset, unlocked, deleted |
-| `notify.` | `message.retry`, `message.send` (template, recipients) |
-| `auth.` | `user.create`, `user.update`, `user.delete`, `user.sessions.revoke_all`, `user.session.revoke`, `user.resend_verification`, `user.password_reset_email` |
-| `media.` | `file.upload` (name, size), `file.update`, `file.delete`, `file.restore`, `ticket.create` |
+| `atc-notify.` | `message.retry`, `message.send` (template, recipients) |
+| `atc-auth.` | `user.create`, `user.update`, `user.delete`, `user.sessions.revoke_all`, `user.session.revoke`, `user.resend_verification`, `user.password_reset_email` |
+| `atc-media.` | `file.upload` (name, size), `file.update`, `file.delete`, `file.restore`, `ticket.create` |
 | `service.` | `settings.update` (auto-refresh change, with the new `polling` value) |
-| `audit.` | `chain.verify` (result), `events.export` (format and filter) on the audit service pages |
-| `shortlink.` | `link.create` (url), `link.update` (patch), `link.delete` |
-| `flags.` | `flag.create` (kind), `flag.update` (patch), `flag.delete`, `env.update` (environment and patch), `env.copy` (from, to) |
+| `atc-audit.` | `chain.verify` (result), `events.export` (format and filter) on the audit service pages |
+| `atc-shortlink.` | `link.create` (url), `link.update` (patch), `link.delete` |
+| `atc-flags.` | `flag.create` (kind), `flag.update` (patch), `flag.delete`, `env.update` (environment and patch), `env.copy` (from, to) |
 
 Reads are not recorded; writes always are, including failed attempts to sign in.
 

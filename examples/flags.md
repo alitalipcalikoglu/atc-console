@@ -46,11 +46,11 @@ The last 20 changes of the flag: time, action, environment, actor (API key id) a
 |---|---|
 | `GET /api/services/:id/flags/environments`, `…/stats` | environments and counters |
 | `GET /api/services/:id/flags/flags?archived&kind&q&tag&limit&cursor` | list |
-| `POST /api/services/:id/flags/flags` | create; admin; audited `flags.flag.create` |
+| `POST /api/services/:id/flags/flags` | create; admin; audited `atc-flags.flag.create` |
 | `GET /api/services/:id/flags/flags/:key` | flag with every environment plus the last 20 history rows |
 | `PATCH` / `DELETE /api/services/:id/flags/flags/:key` | metadata, archive, reshuffle / delete; admin; audited |
-| `PATCH /api/services/:id/flags/flags/:key/envs/:env` | one environment's state; admin; audited `flags.env.update` |
-| `POST /api/services/:id/flags/flags/:key/envs/:env/copy` | `{ to }`; admin; audited `flags.env.copy` |
+| `PATCH /api/services/:id/flags/flags/:key/envs/:env` | one environment's state; admin; audited `atc-flags.env.update` |
+| `POST /api/services/:id/flags/flags/:key/envs/:env/copy` | `{ to }`; admin; audited `atc-flags.env.copy` |
 | `POST /api/services/:id/flags/evaluate` | `{ env, context, keys }` with details |
 
 The console's key must be `readwrite` without an environment scope; a scoped key would hide the other environments from every screen.

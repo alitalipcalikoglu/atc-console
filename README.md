@@ -1,10 +1,10 @@
-# console
+# atc-console
 
 One installable SvelteKit application to watch and operate the atc-web services: notify, auth, media, gateway, audit, shortlink, flags, scheduler, webhook-out, search, ratelimit and geo. It uses filesystem routes for both SSR pages and typed API endpoints and runs through adapter-node. Works on phones and desktops, light and dark, Turkish and English.
 
 The console depends on nothing else to run: its own administrator accounts, sessions, two-factor authentication and audit log live in its own SQLite database. Services are reached over HTTP with dedicated API keys; a service being down shows up as a red card, not as a broken console.
 
-Runtime dependencies include `@atc-web/service-core`, `yaml`, `ajv` and `ajv-formats`; the locally bundled API reference uses `swagger-ui-dist`. SvelteKit, adapter-node and Vite produce the application build. Storage uses `node:sqlite` (Node 22.13+).
+Runtime dependencies include `@atc-web/atc-service-core`, `yaml`, `ajv` and `ajv-formats`; the locally bundled API reference uses `swagger-ui-dist`. SvelteKit, adapter-node and Vite produce the application build. Storage uses `node:sqlite` (Node 22.13+).
 
 ## Run
 
@@ -87,7 +87,7 @@ npm run typecheck
 `services.json` lists service instances; secrets stay in `.env` and are referenced by variable name:
 
 ```json
-{ "id": "media", "type": "media", "label": "Media (EU)", "url": "http://10.0.0.3:3003", "apiKeyEnv": "MEDIA_API_KEY" }
+{ "id": "atc-media", "type": "atc-media", "label": "Media (EU)", "url": "http://10.0.0.3:3003", "apiKeyEnv": "MEDIA_API_KEY" }
 ```
 
 `type` is one of `notify`, `auth`, `media`, `gateway`, `audit`, `shortlink`, `flags`, `scheduler`, `webhook-out`, `search`, `ratelimit`, `geo` and selects the screens and endpoints; several instances of one type are allowed (tabs appear). `url` is the internal address the console calls; `publicUrl` is optional information for auth. The gateway needs `metricsTokenEnv` instead of an API key. The file is validated at startup with precise error messages. Changing connections means a restart (`pm2 reload console`).
@@ -118,7 +118,7 @@ Environment only; see [.env.example](.env.example) for the full list, and "How i
 
 ## TOTP secret storage
 
-`totp_secret` is sealed at rest with `SecretBox` (`@atc-web/service-core/secrets`, AES-256-GCM,
+`totp_secret` is sealed at rest with `SecretBox` (`@atc-web/atc-service-core/secrets`, AES-256-GCM,
 authenticated encryption — not a hand-rolled cipher). The key comes from `SECRETS_KEY` (env, 32
 bytes hex) and is never stored in the database; a leaked database file alone reveals no TOTP secret.
 `Totp.verify`'s comparison and timing (constant-time, ±1 step window) are unchanged — the seal/open
@@ -235,7 +235,7 @@ When an `audit` service is configured in `services.json` with a key that has the
 
 Single-node stateful: one process, one SQLite file for admins/sessions/its own log, an in-memory
 login rate limiter, and an `AsyncLocalStorage`-based request context (post-production Phase 5: the
-shared `@atc-web/service-core/request-context` primitive every backend uses, not a local copy) —
+shared `@atc-web/atc-service-core/request-context` primitive every backend uses, not a local copy) —
 inherently per-process, not something that needs to be shared. Two instances against the same
 database file are not a supported deployment.
 

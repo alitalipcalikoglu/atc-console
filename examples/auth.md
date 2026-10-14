@@ -24,7 +24,7 @@ Header shows status (active / disabled / locked), verification state and the use
 | Delete | hard delete; you must type the email | `DELETE /v1/users/:id` |
 | Create user (list page) | account + verification email | `POST /v1/users` |
 
-Every action is written to the console audit log (`auth.user.*`) with the target user id and the service id, in addition to auth's own trail.
+Every action is written to the console audit log (`atc-auth.user.*`) with the target user id and the service id, in addition to auth's own trail.
 
 ## Lockouts
 

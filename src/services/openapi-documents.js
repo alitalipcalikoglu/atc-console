@@ -3,8 +3,8 @@ import { parse } from 'yaml';
 import { ServiceError } from './client.js';
 
 const SERVICE_TYPES = new Set([
-  'audit', 'auth', 'console', 'flags', 'gateway', 'geo', 'media', 'notify',
-  'ratelimit', 'scheduler', 'search', 'shortlink', 'webhook-out',
+  'atc-audit', 'atc-auth', 'atc-console', 'atc-flags', 'atc-gateway', 'atc-geo', 'atc-media', 'atc-notify',
+  'atc-ratelimit', 'atc-scheduler', 'atc-search', 'atc-shortlink', 'atc-webhook-out',
 ]);
 
 /** Explicit, read-only OpenAPI aggregation. This is intentionally not a generic service proxy. */
@@ -18,20 +18,20 @@ export class OpenApiDocuments {
   constructor(clients, { localSpecUrl = new URL('../../openapi.yaml', import.meta.url), timeoutMs = 3_000 } = {}) {
     this.clients = clients;
     this.timeoutMs = timeoutMs;
-    this.local = OpenApiDocuments.parse(readFileSync(localSpecUrl, 'utf8'), 'console');
+    this.local = OpenApiDocuments.parse(readFileSync(localSpecUrl, 'utf8'), 'atc-console');
   }
 
   /** Public descriptions only; credentials and internal request details never enter this object. */
   list() {
     return [
-      { id: 'console', type: 'console', label: 'Console' },
+      { id: 'atc-console', type: 'atc-console', label: 'Console' },
       ...this.clients.registry.describe().map(({ id, type, label }) => ({ id, type, label })),
     ];
   }
 
   /** @param {string} id */
   async get(id) {
-    if (id === 'console') return { service: this.list()[0], document: this.local };
+    if (id === 'atc-console') return { service: this.list()[0], document: this.local };
     const def = this.clients.registry.get(id);
     if (!def) {
       const knownButMissing = SERVICE_TYPES.has(id);

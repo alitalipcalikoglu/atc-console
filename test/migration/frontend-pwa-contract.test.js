@@ -20,7 +20,7 @@ function svelteKitPagePatterns() {
 /** @param {string} pattern */
 function materialize(pattern) {
   const service = pattern.split('/')[1];
-  return pattern.replaceAll(':sid', service === 'webhook-out' ? 'webhooks' : service).replaceAll(':id', 'fixture-id');
+  return pattern.replaceAll(':sid', service === 'atc-webhook-out' ? 'webhooks' : service).replaceAll(':id', 'fixture-id');
 }
 
 /** @type {Awaited<ReturnType<typeof startConsole>>} */ let consoleApp;

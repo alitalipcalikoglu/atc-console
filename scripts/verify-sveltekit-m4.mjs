@@ -72,12 +72,12 @@ try {
   const downstreamOrigin = `http://127.0.0.1:${downstreamAddress.port}`;
   const dbPath = join(scratch, 'console.db');
   const servicesFile = join(scratch, 'services.json');
-  const serviceTypes = ['notify', 'auth', 'media', 'gateway', 'audit', 'shortlink', 'flags', 'scheduler', 'webhook-out', 'search', 'ratelimit', 'geo'];
+  const serviceTypes = ['atc-notify', 'atc-auth', 'atc-media', 'atc-gateway', 'atc-audit', 'atc-shortlink', 'atc-flags', 'atc-scheduler', 'atc-webhook-out', 'atc-search', 'atc-ratelimit', 'atc-geo'];
   writeFileSync(servicesFile, JSON.stringify({ services: serviceTypes.map((type) => ({
-    id: type === 'webhook-out' ? 'webhooks' : type,
+    id: type === 'atc-webhook-out' ? 'webhooks' : type,
     type,
     url: downstreamOrigin,
-    ...(type === 'gateway' ? { metricsTokenEnv: 'M4_API_KEY' } : { apiKeyEnv: 'M4_API_KEY' }),
+    ...(type === 'atc-gateway' ? { metricsTokenEnv: 'M4_API_KEY' } : { apiKeyEnv: 'M4_API_KEY' }),
   })) }));
 
   const seedRuntime = new ConsoleRuntime(Config.fromEnv({
@@ -110,7 +110,7 @@ try {
   assert.equal(ready, 'ready');
   const origin = `http://127.0.0.1:${port}`;
 
-  let response = await fetch(`${origin}/api/services/notify/notify/messages`);
+  let response = await fetch(`${origin}/api/services/atc-notify/atc-notify/messages`);
   assert.equal(response.status, 401);
   assert.deepEqual(await readBody(response), { error: { code: 'UNAUTHENTICATED', message: 'sign in required' } });
 
@@ -122,50 +122,50 @@ try {
   const admin = await login('admin@m4.test');
   const viewer = await login('viewer@m4.test');
 
-  response = await fetch(`${origin}/api/services/notify/notify/messages?status=queued&limit=7&cursor=next`, { headers: { cookie: viewer } });
+  response = await fetch(`${origin}/api/services/atc-notify/atc-notify/messages?status=queued&limit=7&cursor=next`, { headers: { cookie: viewer } });
   assert.equal(response.status, 200, await response.clone().text());
   const getRequest = seen.findLast((entry) => entry.url?.startsWith('/v1/messages?'));
   assert.equal(getRequest?.url, '/v1/messages?status=queued&limit=7&cursor=next');
   assert.equal(getRequest?.headers.authorization, `Bearer ${API_KEY}`);
   assert.match(String(getRequest?.headers.traceparent), /^00-[0-9a-f]{32}-[0-9a-f]{16}-[0-9a-f]{2}$/);
 
-  response = await fetch(`${origin}/api/services/notify/notify/messages?limit=0`, { headers: { cookie: viewer } });
+  response = await fetch(`${origin}/api/services/atc-notify/atc-notify/messages?limit=0`, { headers: { cookie: viewer } });
   assert.equal(response.status, 400, await response.clone().text());
-  response = await fetch(`${origin}/api/services/notify/notify/messages?limit=7&limit=8`, { headers: { cookie: viewer } });
+  response = await fetch(`${origin}/api/services/atc-notify/atc-notify/messages?limit=7&limit=8`, { headers: { cookie: viewer } });
   assert.equal(response.status, 400, 'repeated scalar query parameters stay invalid');
-  response = await fetch(`${origin}/api/services/notify/notify/messages`, json('POST', { channel: 'email' }, { cookie: viewer, ...CSRF }));
+  response = await fetch(`${origin}/api/services/atc-notify/atc-notify/messages`, json('POST', { channel: 'email' }, { cookie: viewer, ...CSRF }));
   assert.equal(response.status, 403);
-  response = await fetch(`${origin}/api/services/notify/notify/messages`, json('POST', { channel: 'email' }, { cookie: admin }));
+  response = await fetch(`${origin}/api/services/atc-notify/atc-notify/messages`, json('POST', { channel: 'email' }, { cookie: admin }));
   assert.equal(response.status, 403);
-  response = await fetch(`${origin}/api/services/notify/notify/messages`, json('POST', '{', { cookie: admin }));
+  response = await fetch(`${origin}/api/services/atc-notify/atc-notify/messages`, json('POST', '{', { cookie: admin }));
   assert.equal(response.status, 400, 'JSON validation remains ahead of CSRF/auth gates');
-  response = await fetch(`${origin}/api/services/notify/notify/messages`, { method: 'POST', headers: { cookie: admin, ...CSRF, origin, 'content-type': 'text/plain' }, body: '{}' });
+  response = await fetch(`${origin}/api/services/atc-notify/atc-notify/messages`, { method: 'POST', headers: { cookie: admin, ...CSRF, origin, 'content-type': 'text/plain' }, body: '{}' });
   assert.equal(response.status, 400, await response.clone().text());
   assert.equal((await readBody(response)).error.message, 'body must be object');
-  response = await fetch(`${origin}/api/services/notify/notify/messages`, { method: 'POST', headers: { cookie: admin, ...CSRF, 'content-type': 'application/octet-stream' }, body: '{}' });
+  response = await fetch(`${origin}/api/services/atc-notify/atc-notify/messages`, { method: 'POST', headers: { cookie: admin, ...CSRF, 'content-type': 'application/octet-stream' }, body: '{}' });
   assert.equal(response.status, 415);
   assert.equal((await readBody(response)).error.code, 'FST_ERR_CTP_INVALID_MEDIA_TYPE');
-  response = await fetch(`${origin}/api/services/notify/notify/messages`, { method: 'POST', headers: { cookie: admin, ...CSRF, 'content-type': 'application/json' } });
+  response = await fetch(`${origin}/api/services/atc-notify/atc-notify/messages`, { method: 'POST', headers: { cookie: admin, ...CSRF, 'content-type': 'application/json' } });
   assert.equal(response.status, 400);
   assert.equal((await readBody(response)).error.code, 'FST_ERR_CTP_EMPTY_JSON_BODY');
-  response = await fetch(`${origin}/api/services/notify/notify/messages`, json('POST', { channel: 'email', to: 'person@example.test' }, { cookie: admin, ...CSRF }));
+  response = await fetch(`${origin}/api/services/atc-notify/atc-notify/messages`, json('POST', { channel: 'email', to: 'person@example.test' }, { cookie: admin, ...CSRF }));
   assert.equal(response.status, 202);
   assert.deepEqual(JSON.parse(seen.findLast((entry) => entry.url === '/v1/messages' && entry.method === 'POST').body), { channel: 'email', to: 'person@example.test' });
 
-  response = await fetch(`${origin}/api/services/auth/auth/users/user:1`, json('PATCH', { status: 'disabled', extra: true }, { cookie: admin, ...CSRF }));
+  response = await fetch(`${origin}/api/services/atc-auth/atc-auth/users/user:1`, json('PATCH', { status: 'disabled', extra: true }, { cookie: admin, ...CSRF }));
   assert.equal(response.status, 400);
-  response = await fetch(`${origin}/api/services/auth/auth/users/user:1`, json('PATCH', { status: 'disabled' }, { cookie: admin, ...CSRF }));
+  response = await fetch(`${origin}/api/services/atc-auth/atc-auth/users/user:1`, json('PATCH', { status: 'disabled' }, { cookie: admin, ...CSRF }));
   assert.equal(response.status, 200);
   assert.equal(seen.findLast((entry) => entry.method === 'PATCH')?.url, '/v1/users/user%3A1');
-  response = await fetch(`${origin}/api/services/auth/auth/users/user:1`, { method: 'DELETE', headers: { cookie: admin, ...CSRF } });
+  response = await fetch(`${origin}/api/services/atc-auth/atc-auth/users/user:1`, { method: 'DELETE', headers: { cookie: admin, ...CSRF } });
   assert.equal(response.status, 204);
 
-  response = await fetch(`${origin}/api/services/auth/auth/users/%20`, { headers: { cookie: admin } });
+  response = await fetch(`${origin}/api/services/atc-auth/atc-auth/users/%20`, { headers: { cookie: admin } });
   assert.equal(response.status, 400);
-  response = await fetch(`${origin}/api/services/notify/notify/messages?status=failed`, { headers: { cookie: admin } });
+  response = await fetch(`${origin}/api/services/atc-notify/atc-notify/messages?status=failed`, { headers: { cookie: admin } });
   assert.equal(response.status, 409);
-  assert.deepEqual(await readBody(response), { error: { code: 'DOWNSTREAM_CONFLICT', message: 'fixture conflict', service: 'notify', details: { safe: true } } });
-  response = await fetch(`${origin}/api/services/notify/notify/messages?status=scheduled`, { headers: { cookie: admin } });
+  assert.deepEqual(await readBody(response), { error: { code: 'DOWNSTREAM_CONFLICT', message: 'fixture conflict', service: 'atc-notify', details: { safe: true } } });
+  response = await fetch(`${origin}/api/services/atc-notify/atc-notify/messages?status=scheduled`, { headers: { cookie: admin } });
   assert.equal(response.status, 502);
   assert.equal((await readBody(response)).error.code, 'UPSTREAM_UNREACHABLE');
 
@@ -179,7 +179,7 @@ try {
   assert.equal(response.status, 200);
   assert.ok((await readBody(response)).items.some((entry) => entry.action === 'admin.created'));
 
-  response = await fetch(`${origin}/api/services/notify/notify/messages`, json('POST', { payload: 'x'.repeat(70_000) }, { cookie: admin, ...CSRF }));
+  response = await fetch(`${origin}/api/services/atc-notify/atc-notify/messages`, json('POST', { payload: 'x'.repeat(70_000) }, { cookie: admin, ...CSRF }));
   assert.equal(response.status, 413);
   response = await fetch(`${origin}/api/not-an-operation`, { headers: { cookie: admin } });
   assert.equal(response.status, 404);

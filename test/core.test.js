@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { test } from 'node:test';
-import { SecretBox } from '@atc-web/service-core/secrets';
+import { SecretBox } from '@atc-web/atc-service-core/secrets';
 import { Config, ConfigError } from '../src/config.js';
 import { Totp } from '../src/crypto/totp.js';
 import { TotpKeyring } from '../src/crypto/totp-keyring.js';
@@ -120,13 +120,13 @@ test('AuditStore records and pages, filters by action prefix', () => {
 
 test('ServiceRegistry parses, resolves secrets, rejects broken files', () => {
   const r = testRegistry({ auth: 'http://10.0.0.2:3002/' });
-  assert.deepEqual(r.services.map((s) => s.id), ['notify', 'auth', 'media', 'gateway', 'audit', 'shortlink', 'flags', 'scheduler', 'webhooks', 'search', 'ratelimit', 'geo']);
-  assert.equal(r.get('auth')?.url, 'http://10.0.0.2:3002');
-  assert.equal(r.get('auth')?.apiKey, servicesEnv.AUTH_API_KEY);
-  assert.equal(r.get('auth')?.label, 'Auth (prod)');
-  assert.equal(r.get('gateway')?.apiKey, null);
-  assert.equal(r.get('gateway')?.metricsToken, servicesEnv.GATEWAY_METRICS_TOKEN);
-  assert.equal(r.ofType('media').length, 1);
+  assert.deepEqual(r.services.map((s) => s.id), ['atc-notify', 'atc-auth', 'atc-media', 'atc-gateway', 'atc-audit', 'atc-shortlink', 'atc-flags', 'atc-scheduler', 'webhooks', 'atc-search', 'atc-ratelimit', 'atc-geo']);
+  assert.equal(r.get('atc-auth')?.url, 'http://10.0.0.2:3002');
+  assert.equal(r.get('atc-auth')?.apiKey, servicesEnv.AUTH_API_KEY);
+  assert.equal(r.get('atc-auth')?.label, 'Auth (prod)');
+  assert.equal(r.get('atc-gateway')?.apiKey, null);
+  assert.equal(r.get('atc-gateway')?.metricsToken, servicesEnv.GATEWAY_METRICS_TOKEN);
+  assert.equal(r.ofType('atc-media').length, 1);
   assert.equal('apiKey' in r.describe()[0], false, 'describe() has no secrets');
   assert.equal(r.describe()[3].hasMetrics, true);
   /** @param {(d: any) => void} mutate @param {NodeJS.ProcessEnv} [env] */
@@ -140,12 +140,12 @@ test('ServiceRegistry parses, resolves secrets, rejects broken files', () => {
   bad((d) => { d.services[0].url = 'http://h:1/path'; });
   bad((d) => { delete d.services[0].apiKeyEnv; });
   bad((d) => { d.services[0].apiKeyEnv = 'lower'; });
-  bad((d) => { d.services[1].id = 'notify'; });
+  bad((d) => { d.services[1].id = 'atc-notify'; });
   bad((d) => { d.services[0].id = 'Notify'; });
   bad(() => {}, { ...servicesEnv, NOTIFY_API_KEY: 'short' });
   bad(() => {}, { ...servicesEnv, NOTIFY_API_KEY: undefined });
   assert.throws(() => ServiceRegistry.load('/nonexistent.json'), /cannot read/);
-  const noMetrics = ServiceRegistry.parse({ services: [{ id: 'gw', type: 'gateway', url: 'http://h:1' }] }, {});
+  const noMetrics = ServiceRegistry.parse({ services: [{ id: 'gw', type: 'atc-gateway', url: 'http://h:1' }] }, {});
   assert.equal(noMetrics.describe()[0].hasMetrics, false);
 });
 
@@ -161,11 +161,11 @@ test('ServiceRegistry polling setting: defaults, validation, update and atomic s
     doc.services[1].extraNote = 'kept as-is';
     writeFileSync(path, JSON.stringify(doc));
     const r = ServiceRegistry.load(path, servicesEnv);
-    assert.deepEqual(r.get('notify')?.polling, { enabled: true, intervalSec: 15 });
-    assert.deepEqual(r.get('auth')?.polling, { enabled: false, intervalSec: 30 }, 'default when absent');
+    assert.deepEqual(r.get('atc-notify')?.polling, { enabled: true, intervalSec: 15 });
+    assert.deepEqual(r.get('atc-auth')?.polling, { enabled: false, intervalSec: 30 }, 'default when absent');
     assert.deepEqual(r.describe()[0].polling, { enabled: true, intervalSec: 15 });
-    r.updatePolling('auth', { enabled: true, intervalSec: 60 });
-    assert.deepEqual(r.get('auth')?.polling, { enabled: true, intervalSec: 60 });
+    r.updatePolling('atc-auth', { enabled: true, intervalSec: 60 });
+    assert.deepEqual(r.get('atc-auth')?.polling, { enabled: true, intervalSec: 60 });
     r.save();
     const written = JSON.parse(readFileSync(path, 'utf8'));
     assert.deepEqual(written.services[1].polling, { enabled: true, intervalSec: 60 });
@@ -173,11 +173,11 @@ test('ServiceRegistry polling setting: defaults, validation, update and atomic s
     assert.equal(written.services[1].apiKeyEnv, 'AUTH_API_KEY', 'secrets stay as env names');
     assert.equal(JSON.stringify(written).includes(servicesEnv.AUTH_API_KEY), false, 'no secret ever written');
     const reloaded = ServiceRegistry.load(path, servicesEnv);
-    assert.deepEqual(reloaded.get('auth')?.polling, { enabled: true, intervalSec: 60 });
-    assert.throws(() => r.updatePolling('auth', { enabled: true, intervalSec: 1 }), ConfigError);
-    assert.throws(() => r.updatePolling('auth', { enabled: 'yes', intervalSec: 30 }), ConfigError);
+    assert.deepEqual(reloaded.get('atc-auth')?.polling, { enabled: true, intervalSec: 60 });
+    assert.throws(() => r.updatePolling('atc-auth', { enabled: true, intervalSec: 1 }), ConfigError);
+    assert.throws(() => r.updatePolling('atc-auth', { enabled: 'yes', intervalSec: 30 }), ConfigError);
     assert.throws(() => r.updatePolling('nope', { enabled: true, intervalSec: 30 }), ConfigError);
-    assert.throws(() => ServiceRegistry.parse({ services: [{ id: 'a', type: 'gateway', url: 'http://h:1', polling: { intervalSec: 99999 } }] }, {}), ConfigError);
+    assert.throws(() => ServiceRegistry.parse({ services: [{ id: 'a', type: 'atc-gateway', url: 'http://h:1', polling: { intervalSec: 99999 } }] }, {}), ConfigError);
     assert.throws(() => new ServiceRegistry([]).save(), /not loaded from a file/);
   } finally {
     rmSync(dir, { recursive: true, force: true });

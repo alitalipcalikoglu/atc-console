@@ -13,10 +13,10 @@ import { WebhookOutClient } from './webhook-out-client.js';
 import { ServiceClient, ServiceError } from './client.js';
 
 const CLIENT_TYPES = new Map([
-  ['NotifyClient', 'notify'], ['AuthClient', 'auth'], ['MediaClient', 'media'],
-  ['GatewayClient', 'gateway'], ['AuditClient', 'audit'], ['ShortlinkClient', 'shortlink'],
-  ['FlagsClient', 'flags'], ['SchedulerClient', 'scheduler'], ['WebhookOutClient', 'webhook-out'],
-  ['SearchClient', 'search'], ['RateLimitClient', 'ratelimit'], ['GeoClient', 'geo'],
+  ['NotifyClient', 'atc-notify'], ['AuthClient', 'atc-auth'], ['MediaClient', 'atc-media'],
+  ['GatewayClient', 'atc-gateway'], ['AuditClient', 'atc-audit'], ['ShortlinkClient', 'atc-shortlink'],
+  ['FlagsClient', 'atc-flags'], ['SchedulerClient', 'atc-scheduler'], ['WebhookOutClient', 'atc-webhook-out'],
+  ['SearchClient', 'atc-search'], ['RateLimitClient', 'atc-ratelimit'], ['GeoClient', 'atc-geo'],
 ]);
 
 /** @typedef {import('./registry.js').ServiceRegistry} ServiceRegistry */
@@ -41,18 +41,18 @@ export class ServiceClients {
    */
   static #build(def, o) {
     switch (def.type) {
-      case 'notify': return new NotifyClient(def, o);
-      case 'auth': return new AuthClient(def, o);
-      case 'media': return new MediaClient(def, o);
-      case 'gateway': return new GatewayClient(def, o);
-      case 'audit': return new AuditClient(def, o);
-      case 'shortlink': return new ShortlinkClient(def, o);
-      case 'flags': return new FlagsClient(def, o);
-      case 'scheduler': return new SchedulerClient(def, o);
-      case 'webhook-out': return new WebhookOutClient(def, o);
-      case 'search': return new SearchClient(def, o);
-      case 'ratelimit': return new RateLimitClient(def, o);
-      case 'geo': return new GeoClient(def, o);
+      case 'atc-notify': return new NotifyClient(def, o);
+      case 'atc-auth': return new AuthClient(def, o);
+      case 'atc-media': return new MediaClient(def, o);
+      case 'atc-gateway': return new GatewayClient(def, o);
+      case 'atc-audit': return new AuditClient(def, o);
+      case 'atc-shortlink': return new ShortlinkClient(def, o);
+      case 'atc-flags': return new FlagsClient(def, o);
+      case 'atc-scheduler': return new SchedulerClient(def, o);
+      case 'atc-webhook-out': return new WebhookOutClient(def, o);
+      case 'atc-search': return new SearchClient(def, o);
+      case 'atc-ratelimit': return new RateLimitClient(def, o);
+      case 'atc-geo': return new GeoClient(def, o);
       default: throw new Error(`unknown service type ${def.type}`);
     }
   }

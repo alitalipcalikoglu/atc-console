@@ -1,12 +1,12 @@
 {
-  "name": "@atc-web/console",
+  "name": "@atc-web/atc-console",
   "version": "1.13.0",
   "private": true,
   "description": "Admin console for the atc-web services: one installable web app to watch and operate notify, auth, media, gateway, audit, shortlink and flags",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/alitalipcalikoglu/console.git"
+    "url": "git+https://github.com/alitalipcalikoglu/atc-console.git"
   },
   "type": "module",
   "main": "server.mjs",
@@ -32,7 +32,7 @@
     "typecheck": "tsc -p jsconfig.json && npm run check"
   },
   "dependencies": {
-    "@atc-web/service-core": "github:alitalipcalikoglu/service-core#v1.13.0",
+    "@atc-web/atc-service-core": "github:alitalipcalikoglu/atc-service-core#v1.14.0",
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1",
     "swagger-ui-dist": "5.33.0",

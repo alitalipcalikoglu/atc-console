@@ -1,4 +1,4 @@
-import { SecretBox } from '@atc-web/service-core/secrets';
+import { SecretBox } from '@atc-web/atc-service-core/secrets';
 
 /**
  * Current-plus-previous key rotation for TOTP secrets, built on top of core's single-key

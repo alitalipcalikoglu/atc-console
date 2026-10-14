@@ -17,7 +17,7 @@
   /** @type {{ sid: string, id: string }} */
   let { sid, id } = $props();
   const fmt = $derived(new Fmt(i18n.lang));
-  const base = $derived(`/services/${sid}/scheduler/runs/${encodeURIComponent(id)}`);
+  const base = $derived(`/services/${sid}/atc-scheduler/runs/${encodeURIComponent(id)}`);
   const res = new Resource(() => api.get(base));
   $effect(() => { res.load(); });
   const r = $derived(/** @type {any} */ (res.data)?.run);
@@ -30,7 +30,7 @@
   }
 </script>
 
-<Page title="{t('sc.run')} #{id}" back="/scheduler/{sid}/jobs/{r?.job ?? ''}">
+<Page title="{t('sc.run')} #{id}" back="/atc-scheduler/{sid}/jobs/{r?.job ?? ''}">
   {#snippet actions()}
     {#if session.isAdmin && cancellable}<button class="btn danger" onclick={() => { confirm = true; }} disabled={busy}><Icon name="x" size={16} /><span class="hide-m"> {t('sc.cancel')}</span></button>{/if}
     <button class="btn icon" onclick={() => res.load()} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
@@ -46,7 +46,7 @@
           <span class="badge plain">{t('sc.attempt')} {r.attempt}/{r.maxAttempts}</span>
         </div>
         <dl class="kv">
-          <dt>{t('sc.job')}</dt><dd><a href="/scheduler/{sid}/jobs/{r.job}" class="mono">{r.job}</a></dd>
+          <dt>{t('sc.job')}</dt><dd><a href="/atc-scheduler/{sid}/jobs/{r.job}" class="mono">{r.job}</a></dd>
           <dt>{t('sc.scheduledFor')}</dt><dd><Time value={r.scheduledFor} mode="absolute" /> <span class="faint small">(<Time value={r.scheduledFor} />)</span></dd>
           <dt>{t('sc.started')}</dt><dd>{#if r.startedAt}<Time value={r.startedAt} mode="absolute" />{:else}<span class="faint">–</span>{/if}</dd>
           <dt>{t('sc.finished')}</dt><dd>{#if r.finishedAt}<Time value={r.finishedAt} mode="absolute" /> · {fmt.ms(r.durationMs)}{:else}<span class="faint">–</span>{/if}</dd>

@@ -21,7 +21,7 @@
   import { toasts } from '$lib/client/toast.svelte.js';
   /** @type {{ sid: string, id: string }} */
   let { sid, id } = $props();
-  const base = $derived(`/services/${sid}/flags/flags/${encodeURIComponent(id)}`);
+  const base = $derived(`/services/${sid}/atc-flags/flags/${encodeURIComponent(id)}`);
   const res = new Resource(() => api.get(base));
   $effect(() => { res.load(); });
   const d = $derived(/** @type {any} */ (res.data));
@@ -77,7 +77,7 @@
       /** @type {Record<string, string>} */ const attrs = {};
       for (const line of evAttrs.split('\n')) { const i = line.indexOf('='); if (i > 0) attrs[line.slice(0, i).trim()] = line.slice(i + 1).trim(); }
       const context = { ...(evUser.trim() ? { userId: evUser.trim() } : {}), ...(evEmail.trim() ? { email: evEmail.trim() } : {}), ...(Object.keys(attrs).length ? { attrs } : {}) };
-      evResult = await api.post(`/services/${sid}/flags/evaluate`, { env: evEnv, context, keys: [id] });
+      evResult = await api.post(`/services/${sid}/atc-flags/evaluate`, { env: evEnv, context, keys: [id] });
     } catch (e) { toasts.error(e); } finally { evBusy = false; }
   }
   const REASON_TONE = /** @type {Record<string, string>} */ ({ rule: 'success', rollout: 'success', default: 'success', disabled: 'disabled', excluded: 'expired', missing: 'failure' });
@@ -85,7 +85,7 @@
   const diff = (h) => { if (!h.before || !h.after) return ''; const keys = Object.keys(h.after).filter((k) => JSON.stringify(h.after[k]) !== JSON.stringify(h.before[k]) && k !== 'from'); return keys.join(', '); };
 </script>
 
-<Page title={f ? f.key : t('fl.flag')} back="/flags/{sid}">
+<Page title={f ? f.key : t('fl.flag')} back="/atc-flags/{sid}">
   {#snippet actions()}
     {#if f && session.isAdmin}
       <button class="btn" onclick={() => { editOpen = true; }} disabled={busy.flag}><Icon name="settings" size={16} /><span class="hide-m"> {t('fl.edit')}</span></button>
@@ -168,7 +168,7 @@
 <FlagForm open={editOpen} initial={f} busy={busy.flag} onsubmit={(body) => patchFlag(body, t('fl.updated'))} onclose={() => { editOpen = false; }} />
 <Confirm open={confirm === 'archive'} title={t('fl.archive')} message={t('fl.archiveDesc')} confirmLabel={t('fl.archive')} busy={busy.flag} onconfirm={() => patchFlag({ archived: true }, t('fl.archived'))} oncancel={() => { confirm = null; }} />
 <Confirm open={confirm === 'reshuffle'} title={t('fl.reshuffle')} message={t('fl.reshuffleDesc')} confirmLabel={t('fl.reshuffle')} busy={busy.flag} onconfirm={() => patchFlag({ reshuffle: true }, t('fl.reshuffled'))} oncancel={() => { confirm = null; }} />
-<Confirm open={confirm === 'delete'} title={t('fl.delete')} message={t('fl.deleteDesc')} danger typeWord={f?.key} confirmLabel={t('common.delete')} busy={busy.flag} onconfirm={() => run('flag', async () => { await api.delete(base); goto(`/flags/${sid}`); }, t('fl.deleted'))} oncancel={() => { confirm = null; }} />
+<Confirm open={confirm === 'delete'} title={t('fl.delete')} message={t('fl.deleteDesc')} danger typeWord={f?.key} confirmLabel={t('common.delete')} busy={busy.flag} onconfirm={() => run('flag', async () => { await api.delete(base); goto(`/atc-flags/${sid}`); }, t('fl.deleted'))} oncancel={() => { confirm = null; }} />
 
 <style>
   .linkish { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font: inherit; }

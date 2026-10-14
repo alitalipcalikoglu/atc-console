@@ -39,9 +39,9 @@
   /** @type {string|null} */ let cursor = $state(null);
   let more = $state(false);
   const qs = (/** @type {string|null} */ c) => { const p = new URLSearchParams({ limit: '50', archived: String(archived) }); if (q.trim()) p.set('q', q.trim()); if (tag.trim()) p.set('tag', tag.trim().toLowerCase()); if (kind) p.set('kind', kind); if (c) p.set('cursor', c); return p.toString(); };
-  const stats = new Resource(() => api.get(`/services/${sid}/flags/stats`));
+  const stats = new Resource(() => api.get(`/services/${sid}/atc-flags/stats`));
   const list = new Resource(async () => {
-    const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/flags/flags?${qs(null)}`));
+    const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-flags/flags?${qs(null)}`));
     items = r.items; cursor = r.nextCursor; return r;
   });
   /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
@@ -49,7 +49,7 @@
   $effect(() => { stats.load(); });
   async function loadMore() {
     more = true;
-    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/flags/flags?${qs(cursor)}`)); items = [...items, ...r.items]; cursor = r.nextCursor; }
+    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-flags/flags?${qs(cursor)}`)); items = [...items, ...r.items]; cursor = r.nextCursor; }
     catch (e) { toasts.error(e); } finally { more = false; }
   }
   const st = $derived(/** @type {any} */ (stats.data));
@@ -60,7 +60,7 @@
     const id = `${f.key}:${env}`;
     busy = { ...busy, [id]: true };
     try {
-      const r = /** @type {any} */ (await api.patch(`/services/${sid}/flags/flags/${encodeURIComponent(f.key)}/envs/${env}`, { enabled: next }));
+      const r = /** @type {any} */ (await api.patch(`/services/${sid}/atc-flags/flags/${encodeURIComponent(f.key)}/envs/${env}`, { enabled: next }));
       items = items.map((x) => (x.key === f.key ? { ...x, environments: { ...x.environments, [env]: r.state } } : x));
       toasts.ok(t(next ? 'fl.enabledIn' : 'fl.disabledIn', { key: f.key, env }));
       stats.load();
@@ -71,7 +71,7 @@
   /** @param {any} body */
   async function create(body) {
     creating = true;
-    try { const r = /** @type {any} */ (await api.post(`/services/${sid}/flags/flags`, body)); toasts.ok(t('fl.created', { key: r.flag.key })); createOpen = false; goto(`/flags/${sid}/flags/${r.flag.key}`); }
+    try { const r = /** @type {any} */ (await api.post(`/services/${sid}/atc-flags/flags`, body)); toasts.ok(t('fl.created', { key: r.flag.key })); createOpen = false; goto(`/atc-flags/${sid}/flags/${r.flag.key}`); }
     catch (e) { toasts.error(e); } finally { creating = false; }
   }
   const svc = $derived(services.get(sid));
@@ -85,7 +85,7 @@
     {#if session.isAdmin}<button class="btn primary" onclick={() => { createOpen = true; }} aria-label={t('fl.create')} title={t('fl.create')}><Icon name="plus" size={16} /><span class="hide-m"> {t('fl.create')}</span></button>{/if}
     <button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}
-  <ServiceTabs type="flags" {sid} />
+  <ServiceTabs type="atc-flags" {sid} />
   <PollStats {sid} />
   <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:20px">
     <Stat label={t('fl.flags')} value={fmt.int(st?.flags?.total)} sub={st ? `${t('fl.archived')}: ${fmt.int(st.flags.archived)}` : undefined} />
@@ -107,7 +107,7 @@
         <thead><tr><th>{t('fl.key')}</th><th class="hide-m">{t('fl.kind')}</th>{#each envs as e (e.env)}<th>{e.env}</th>{/each}<th class="hide-m">{t('sl.tags')}</th><th class="hide-m">{t('common.updated')}</th></tr></thead>
         <tbody>
           {#each items as f (f.key)}
-            <tr class="clickable" onclick={() => goto(`/flags/${sid}/flags/${f.key}`)}>
+            <tr class="clickable" onclick={() => goto(`/atc-flags/${sid}/flags/${f.key}`)}>
               <td><code>{f.key}</code>{#if f.description}<div class="xs faint truncate" style="max-width:280px">{f.description}</div>{/if}</td>
               <td class="hide-m"><span class="badge plain">{f.kind}</span></td>
               {#each envs as e (e.env)}

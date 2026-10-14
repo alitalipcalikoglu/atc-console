@@ -92,7 +92,7 @@ function latest(predicate) {
 }
 
 test('downstream oracle: GET/query, POST JSON, PATCH JSON, DELETE, key and trace propagation', async () => {
-  let response = await fetch(`${consoleApp.origin}/api/services/notify/notify/messages?status=queued&limit=7&cursor=next`, { headers: { cookie } });
+  let response = await fetch(`${consoleApp.origin}/api/services/atc-notify/atc-notify/messages?status=queued&limit=7&cursor=next`, { headers: { cookie } });
   assert.equal(response.status, 200);
   let request = latest((entry) => entry.url.startsWith('/v1/messages?'));
   assert.equal(request.method, 'GET');
@@ -107,35 +107,35 @@ test('downstream oracle: GET/query, POST JSON, PATCH JSON, DELETE, key and trace
   assert.notEqual(outboundTrace?.[2], responseTrace?.[2], 'outbound hop gets a fresh child span');
 
   const send = { channel: 'email', to: 'operator@example.test', template: 'fixture' };
-  response = await fetch(`${consoleApp.origin}/api/services/notify/notify/messages`, { method: 'POST', headers: { cookie, ...CSRF, 'content-type': 'application/json' }, body: JSON.stringify(send) });
+  response = await fetch(`${consoleApp.origin}/api/services/atc-notify/atc-notify/messages`, { method: 'POST', headers: { cookie, ...CSRF, 'content-type': 'application/json' }, body: JSON.stringify(send) });
   assert.equal(response.status, 202);
   request = latest((entry) => entry.url === '/v1/messages' && entry.method === 'POST');
   assert.ok(request.body);
   assert.deepEqual(JSON.parse(request.body.toString()), send);
 
-  response = await fetch(`${consoleApp.origin}/api/services/auth/auth/users/user:1`, { method: 'PATCH', headers: { cookie, ...CSRF, 'content-type': 'application/json' }, body: JSON.stringify({ status: 'disabled' }) });
+  response = await fetch(`${consoleApp.origin}/api/services/atc-auth/atc-auth/users/user:1`, { method: 'PATCH', headers: { cookie, ...CSRF, 'content-type': 'application/json' }, body: JSON.stringify({ status: 'disabled' }) });
   assert.equal(response.status, 200);
   request = latest((entry) => entry.method === 'PATCH');
   assert.equal(request.url, '/v1/users/user%3A1');
   assert.ok(request.body);
   assert.deepEqual(JSON.parse(request.body.toString()), { status: 'disabled' });
 
-  response = await fetch(`${consoleApp.origin}/api/services/auth/auth/users/user:1`, { method: 'DELETE', headers: { cookie, ...CSRF } });
+  response = await fetch(`${consoleApp.origin}/api/services/atc-auth/atc-auth/users/user:1`, { method: 'DELETE', headers: { cookie, ...CSRF } });
   assert.equal(response.status, 204);
   assert.equal(latest((entry) => entry.method === 'DELETE').url, '/v1/users/user%3A1');
 });
 
 test('downstream oracle: service errors keep status, code, details and service id', async () => {
-  const response = await fetch(`${consoleApp.origin}/api/services/notify/notify/messages?status=failed`, { headers: { cookie } });
+  const response = await fetch(`${consoleApp.origin}/api/services/atc-notify/atc-notify/messages?status=failed`, { headers: { cookie } });
   assert.equal(response.status, 409);
-  assert.deepEqual(await response.json(), { error: { code: 'DOWNSTREAM_CONFLICT', message: 'fixture conflict', service: 'notify', details: { safe: true } } });
+  assert.deepEqual(await response.json(), { error: { code: 'DOWNSTREAM_CONFLICT', message: 'fixture conflict', service: 'atc-notify', details: { safe: true } } });
 });
 
 test('downstream oracle: the configured request deadline maps an unresponsive service safely', { timeout: 7_000 }, async () => {
-  const response = await fetch(`${consoleApp.origin}/api/services/notify/notify/messages?status=scheduled`, { headers: { cookie } });
+  const response = await fetch(`${consoleApp.origin}/api/services/atc-notify/atc-notify/messages?status=scheduled`, { headers: { cookie } });
   assert.equal(response.status, 502);
   assert.deepEqual(await response.json(), {
-    error: { code: 'UPSTREAM_UNREACHABLE', message: 'notify timed out', service: 'notify' },
+    error: { code: 'UPSTREAM_UNREACHABLE', message: 'atc-notify timed out', service: 'atc-notify' },
   });
 });
 
@@ -152,7 +152,7 @@ test('trace oracle: inbound trace is rejected by default and adopted only with T
       const login = await fetch(`${app.origin}/api/session/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email, password: ADMIN_PASSWORD }) });
       const localCookie = cookiePair(login.headers.get('set-cookie'));
       seen.length = 0;
-      const response = await fetch(`${app.origin}/api/services/notify/notify/messages`, { headers: { cookie: localCookie, traceparent: inbound } });
+      const response = await fetch(`${app.origin}/api/services/atc-notify/atc-notify/messages`, { headers: { cookie: localCookie, traceparent: inbound } });
       const forwarded = String(latest((entry) => entry.url.startsWith('/v1/messages')).headers.traceparent).match(TRACEPARENT);
       return { status: response.status, responseTrace: String(response.headers.get('traceparent')).match(TRACEPARENT), forwarded };
     } finally {
@@ -169,7 +169,7 @@ test('trace oracle: inbound trace is rejected by default and adopted only with T
   assert.notEqual(trusted.forwarded?.[2], claimedParent);
 
   seen.length = 0;
-  const malformed = await fetch(`${consoleApp.origin}/api/services/notify/notify/messages`, { headers: { cookie, traceparent: 'not-a-trace' } });
+  const malformed = await fetch(`${consoleApp.origin}/api/services/atc-notify/atc-notify/messages`, { headers: { cookie, traceparent: 'not-a-trace' } });
   assert.equal(malformed.status, 200);
   const regenerated = String(latest((entry) => entry.url.startsWith('/v1/messages')).headers.traceparent);
   assert.match(regenerated, TRACEPARENT);
@@ -178,7 +178,7 @@ test('trace oracle: inbound trace is rejected by default and adopted only with T
 
 test('media upload oracle: raw streaming, metadata headers, content length and 512 MiB configured cap', async () => {
   firstUploadChunk = new Promise((resolve) => { firstUploadChunkResolve = resolve; });
-  const streamed = await chunkedRequest(`${consoleApp.origin}/api/services/media/media/files?visibility=private&name=two%20chunks.bin`, {
+  const streamed = await chunkedRequest(`${consoleApp.origin}/api/services/atc-media/atc-media/files?visibility=private&name=two%20chunks.bin`, {
     headers: { cookie, ...CSRF, 'content-type': 'application/octet-stream' },
     chunks: [Buffer.from('first-'), Buffer.from('second')],
     firstChunkSeen: firstUploadChunk,
@@ -194,7 +194,7 @@ test('media upload oracle: raw streaming, metadata headers, content length and 5
   assert.equal(streamRequest.headers['content-length'], undefined, 'chunked input remains without a fabricated content length');
 
   const fixed = Buffer.from('fixed-length');
-  const response = await fetch(`${consoleApp.origin}/api/services/media/media/files?name=fixed.bin`, /** @type {RequestInit & { duplex: 'half' }} */ ({ method: 'PUT', headers: { cookie, ...CSRF, 'content-type': 'application/x-fixture', 'content-length': String(fixed.length) }, body: fixed, duplex: 'half' }));
+  const response = await fetch(`${consoleApp.origin}/api/services/atc-media/atc-media/files?name=fixed.bin`, /** @type {RequestInit & { duplex: 'half' }} */ ({ method: 'PUT', headers: { cookie, ...CSRF, 'content-type': 'application/x-fixture', 'content-length': String(fixed.length) }, body: fixed, duplex: 'half' }));
   assert.equal(response.status, 201);
   assert.deepEqual(await response.json(), { file: { id: 'file-1', name: 'fixture.bin', size: fixed.length } });
   const fixedRequest = latest((entry) => entry.method === 'PUT' && entry.headers['x-file-name'] === 'fixed.bin');
@@ -203,7 +203,7 @@ test('media upload oracle: raw streaming, metadata headers, content length and 5
 
   const source = readFileSync(new URL('../../src/services/upload-stream.js', import.meta.url), 'utf8');
   const wrapper = readFileSync(new URL('../../server.mjs', import.meta.url), 'utf8');
-  const route = readFileSync(new URL('../../src/routes/api/services/[sid]/media/files/+server.ts', import.meta.url), 'utf8');
+  const route = readFileSync(new URL('../../src/routes/api/services/[sid]/atc-media/files/+server.ts', import.meta.url), 'utf8');
   assert.match(source, /CONSOLE_UPLOAD_LIMIT_BYTES\s*=\s*512\s*\*\s*1024\s*\*\s*1024/);
   assert.match(wrapper, /BODY_SIZE_LIMIT.*CONSOLE_UPLOAD_LIMIT_BYTES/);
   assert.match(route, /contentLength.*CONSOLE_UPLOAD_LIMIT_BYTES/);
@@ -214,7 +214,7 @@ test('media upload oracle: raw streaming, metadata headers, content length and 5
 });
 
 test('media bytes oracle: exact bytes and filtered headers; inbound Range is not forwarded', async () => {
-  let response = await fetch(`${consoleApp.origin}/api/services/media/media/files/file-1/bytes/thumb`, { headers: { cookie, range: 'bytes=0-3' } });
+  let response = await fetch(`${consoleApp.origin}/api/services/atc-media/atc-media/files/file-1/bytes/thumb`, { headers: { cookie, range: 'bytes=0-3' } });
   assert.equal(response.status, 200);
   assert.deepEqual(Buffer.from(await response.arrayBuffer()), MEDIA);
   assert.equal(response.headers.get('content-type'), 'image/webp');
@@ -228,14 +228,14 @@ test('media bytes oracle: exact bytes and filtered headers; inbound Range is not
   const byteRequest = latest((entry) => entry.url === '/files/file-1/thumb');
   assert.equal(byteRequest.headers.range, undefined, 'KNOWN CURRENT BEHAVIOR: inbound Range is not forwarded');
 
-  response = await fetch(`${consoleApp.origin}/api/services/media/media/files/file-1/bytes/original`, { headers: { cookie } });
+  response = await fetch(`${consoleApp.origin}/api/services/atc-media/atc-media/files/file-1/bytes/original`, { headers: { cookie } });
   assert.deepEqual(Buffer.from(await response.arrayBuffer()), SVG);
   assert.equal(response.headers.get('content-type'), 'application/octet-stream');
   assert.equal(response.headers.get('content-disposition'), 'attachment; filename="file-1.bin"');
 });
 
 test('audit export oracle: bytes and download headers survive; errors stay JSON', async () => {
-  let response = await fetch(`${consoleApp.origin}/api/services/audit/audit/events/export?format=ndjson&source=auth`, { headers: { cookie } });
+  let response = await fetch(`${consoleApp.origin}/api/services/atc-audit/atc-audit/events/export?format=ndjson&source=auth`, { headers: { cookie } });
   assert.equal(response.status, 200);
   assert.deepEqual(Buffer.from(await response.arrayBuffer()), EXPORT);
   assert.equal(response.headers.get('content-type'), 'application/x-ndjson; charset=utf-8');
@@ -243,13 +243,13 @@ test('audit export oracle: bytes and download headers survive; errors stay JSON'
   assert.equal(response.headers.get('content-security-policy'), "default-src 'none'; sandbox");
   assert.equal(response.headers.get('cache-control'), 'no-store');
 
-  response = await fetch(`${consoleApp.origin}/api/services/audit/audit/events/export?source=broken`, { headers: { cookie } });
+  response = await fetch(`${consoleApp.origin}/api/services/atc-audit/atc-audit/events/export?source=broken`, { headers: { cookie } });
   assert.equal(response.status, 503);
-  assert.deepEqual(await response.json(), { error: { code: 'UPSTREAM_ERROR', message: 'audit export responded 503', service: 'audit' } });
+  assert.deepEqual(await response.json(), { error: { code: 'UPSTREAM_ERROR', message: 'atc-audit export responded 503', service: 'atc-audit' } });
 });
 
 test('QR PNG oracle: magic bytes, headers and not-found error', async () => {
-  let response = await fetch(`${consoleApp.origin}/api/services/shortlink/shortlink/links/abc/qr.png`, { headers: { cookie } });
+  let response = await fetch(`${consoleApp.origin}/api/services/atc-shortlink/atc-shortlink/links/abc/qr.png`, { headers: { cookie } });
   assert.equal(response.status, 200);
   const bytes = Buffer.from(await response.arrayBuffer());
   assert.deepEqual(bytes.subarray(0, 8), PNG.subarray(0, 8));
@@ -259,7 +259,7 @@ test('QR PNG oracle: magic bytes, headers and not-found error', async () => {
   assert.equal(response.headers.get('cache-control'), 'no-store', 'the common API onSend hook currently overrides the route cache directive');
   assert.equal(response.headers.get('content-security-policy'), "default-src 'none'; sandbox");
 
-  response = await fetch(`${consoleApp.origin}/api/services/shortlink/shortlink/links/missing/qr.png`, { headers: { cookie } });
+  response = await fetch(`${consoleApp.origin}/api/services/atc-shortlink/atc-shortlink/links/missing/qr.png`, { headers: { cookie } });
   assert.equal(response.status, 404);
-  assert.deepEqual(await response.json(), { error: { code: 'UPSTREAM_REJECTED', message: 'shortlink qr responded 404', service: 'shortlink' } });
+  assert.deepEqual(await response.json(), { error: { code: 'UPSTREAM_REJECTED', message: 'atc-shortlink qr responded 404', service: 'atc-shortlink' } });
 });

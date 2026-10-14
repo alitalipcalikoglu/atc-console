@@ -31,7 +31,7 @@
   const service = $derived(poller.for(sid));
   $effect(() => service.subscribe(() => Promise.all([stats.load(), list.load()])));
   const fmt = $derived(new Fmt(i18n.lang));
-  const base = $derived(`/services/${sid}/geo`);
+  const base = $derived(`/services/${sid}/atc-geo`);
   const stats = new Resource(() => api.get(`${base}/stats`));
   const list = new Resource(() => api.get(`${base}/collections`));
   $effect(() => { stats.load(); list.load(); });
@@ -81,7 +81,7 @@
   /** @param {any} body */
   async function create(body) {
     creating = true;
-    try { const r = /** @type {any} */ (await api.post(`${base}/collections`, body)); toasts.ok(t('ge.created', { name: r.collection.name })); createOpen = false; goto(`/geo/${sid}/collections/${r.collection.name}`); }
+    try { const r = /** @type {any} */ (await api.post(`${base}/collections`, body)); toasts.ok(t('ge.created', { name: r.collection.name })); createOpen = false; goto(`/atc-geo/${sid}/collections/${r.collection.name}`); }
     catch (e) { toasts.error(e); } finally { creating = false; }
   }
   /** @param {any} c */
@@ -91,11 +91,11 @@
 <Page title={svc?.label ?? t('ge.title')} desc={t('ge.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
-    <a class="btn" href="/geo/{sid}/reference"><Icon name="globe" size={16} /><span class="hide-m"> {t('ge.reference')}</span></a>
+    <a class="btn" href="/atc-geo/{sid}/reference"><Icon name="globe" size={16} /><span class="hide-m"> {t('ge.reference')}</span></a>
     {#if session.isAdmin}<button class="btn primary" onclick={() => { createOpen = true; }} aria-label={t('ge.createCollection')} title={t('ge.createCollection')}><Icon name="plus" size={16} /><span class="hide-m"> {t('ge.createCollection')}</span></button>{/if}
     <button class="btn icon" onclick={() => service.trigger()} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}
-  <ServiceTabs type="geo" {sid} />
+  <ServiceTabs type="atc-geo" {sid} />
   <PollStats {sid} />
   <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:20px">
     <Stat label={t('ge.database')} value={db ? (db.loaded ? t('ge.loaded') : db.configured ? t('ge.notLoaded') : t('ge.none')) : undefined} tone={db && db.configured && !db.loaded ? 'danger' : db?.loaded ? 'ok' : ''} sub={db?.city ? `${db.city.type} · ${fmt.dateTime(db.city.builtAt)}` : undefined} />
@@ -187,7 +187,7 @@
             <thead><tr><th>{t('ge.name')}</th><th>{t('ge.places')}</th><th class="hide-m">{t('common.updated')}</th></tr></thead>
             <tbody>
               {#each items as c (c.name)}
-                <tr class="clickable" onclick={() => goto(`/geo/${sid}/collections/${c.name}`)}>
+                <tr class="clickable" onclick={() => goto(`/atc-geo/${sid}/collections/${c.name}`)}>
                   <td><code>{c.name}</code>{#if c.description}<div class="xs faint truncate" style="max-width:240px">{c.description}</div>{/if}</td>
                   <td>{fmt.int(c.places)}</td>
                   <td class="hide-m" style="white-space:nowrap"><Time value={c.updatedAt} /></td>

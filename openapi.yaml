@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: console
+  title: atc-console
   version: 1.1.0
   description: |-
     Independent admin console for the atc-web platform: its own accounts, sessions, TOTP and
@@ -67,7 +67,7 @@ tags:
 paths:
   /openapi.yaml:
     get:
-      operationId: console.openapi
+      operationId: atc-console.openapi
       summary: Download the canonical OpenAPI document
       description: Returns this service's repository-root OpenAPI 3.1 document byte-for-byte.
       security: []
@@ -80,7 +80,7 @@ paths:
 
   /health:
     get:
-      operationId: console.health.get
+      operationId: atc-console.health.get
       tags:
         - operational
       summary: Liveness probe.
@@ -97,7 +97,7 @@ paths:
                 $ref: "#/components/schemas/Health"
   /ready:
     get:
-      operationId: console.ready.get
+      operationId: atc-console.ready.get
       tags:
         - operational
       summary: Readiness probe.
@@ -120,7 +120,7 @@ paths:
                 $ref: "#/components/schemas/ReadyUnavailable"
   /v1/info:
     get:
-      operationId: console.info.get
+      operationId: atc-console.info.get
       tags:
         - operational
       summary: Service identity and capabilities.
@@ -137,7 +137,7 @@ paths:
                 $ref: "#/components/schemas/Info"
   /api/session/login:
     post:
-      operationId: console.session.login
+      operationId: atc-console.session.login
       tags:
         - session
       summary: "First step of sign-in: email and password."
@@ -219,7 +219,7 @@ paths:
           $ref: "#/components/responses/RateLimited"
   /api/session/totp:
     post:
-      operationId: console.session.totp
+      operationId: atc-console.session.totp
       tags:
         - session
       summary: "Second step of sign-in: TOTP code."
@@ -276,7 +276,7 @@ paths:
           $ref: "#/components/responses/RateLimited"
   /api/session:
     get:
-      operationId: console.session.get
+      operationId: atc-console.session.get
       tags:
         - session
       summary: Current session state.
@@ -306,7 +306,7 @@ paths:
                     type: boolean
   /api/session/logout:
     post:
-      operationId: console.session.logout
+      operationId: atc-console.session.logout
       tags:
         - session
       summary: Sign out.
@@ -332,7 +332,7 @@ paths:
           $ref: "#/components/responses/Forbidden"
   /api/me/sessions:
     get:
-      operationId: console.me.sessions.list
+      operationId: atc-console.me.sessions.list
       tags:
         - account
       summary: List my active sessions.
@@ -357,7 +357,7 @@ paths:
           $ref: "#/components/responses/Unauthenticated"
   /api/me/sessions/logout-others:
     post:
-      operationId: console.me.sessions.logoutOthers
+      operationId: atc-console.me.sessions.logoutOthers
       tags:
         - account
       summary: Revoke my other sessions.
@@ -385,7 +385,7 @@ paths:
           $ref: "#/components/responses/Forbidden"
   /api/me/password:
     post:
-      operationId: console.me.password.change
+      operationId: atc-console.me.password.change
       tags:
         - account
       summary: Change my password.
@@ -444,7 +444,7 @@ paths:
           $ref: "#/components/responses/Forbidden"
   /api/me/totp/start:
     post:
-      operationId: console.me.totp.start
+      operationId: atc-console.me.totp.start
       tags:
         - account
       summary: Begin TOTP enrolment.
@@ -494,7 +494,7 @@ paths:
                 $ref: "#/components/schemas/ErrorEnvelope"
   /api/me/totp/confirm:
     post:
-      operationId: console.me.totp.confirm
+      operationId: atc-console.me.totp.confirm
       tags:
         - account
       summary: Confirm TOTP enrolment.
@@ -540,7 +540,7 @@ paths:
                 $ref: "#/components/schemas/ErrorEnvelope"
   /api/me/totp/disable:
     post:
-      operationId: console.me.totp.disable
+      operationId: atc-console.me.totp.disable
       tags:
         - account
       summary: Disable TOTP.
@@ -602,7 +602,7 @@ paths:
                 $ref: "#/components/schemas/ErrorEnvelope"
   /api/admins:
     get:
-      operationId: console.admins.list
+      operationId: atc-console.admins.list
       tags:
         - admins
       summary: List console administrators.
@@ -629,7 +629,7 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthenticated"
     post:
-      operationId: console.admins.create
+      operationId: atc-console.admins.create
       tags:
         - admins
       summary: Create a console administrator.
@@ -700,7 +700,7 @@ paths:
                 $ref: "#/components/schemas/ErrorEnvelope"
   /api/admins/{id}:
     patch:
-      operationId: console.admins.update
+      operationId: atc-console.admins.update
       tags:
         - admins
       summary: Update an administrator's name, role or status.
@@ -770,7 +770,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorEnvelope"
     delete:
-      operationId: console.admins.delete
+      operationId: atc-console.admins.delete
       tags:
         - admins
       summary: Delete an administrator.
@@ -807,7 +807,7 @@ paths:
                 $ref: "#/components/schemas/ErrorEnvelope"
   /api/admins/{id}/password:
     post:
-      operationId: console.admins.resetPassword
+      operationId: atc-console.admins.resetPassword
       tags:
         - admins
       summary: Set another administrator's password.
@@ -855,7 +855,7 @@ paths:
                 $ref: "#/components/schemas/ErrorEnvelope"
   /api/admins/{id}/unlock:
     post:
-      operationId: console.admins.unlock
+      operationId: atc-console.admins.unlock
       tags:
         - admins
       summary: Clear a lockout.
@@ -885,13 +885,13 @@ paths:
                 $ref: "#/components/schemas/ErrorEnvelope"
   /api/audit:
     get:
-      operationId: console.activity.list
+      operationId: atc-console.activity.list
       tags:
         - activity
       summary: Read console's own admin-activity log.
       description: >-
         console's local log of what administrators did in this console — distinct from the audit service
-        reached through `/api/services/{sid}/audit/*`. Entries are also forwarded to the first configured
+        reached through `/api/services/{sid}/atc-audit/*`. Entries are also forwarded to the first configured
         audit service when one has a write-capable key. Keyset pagination: pass the previous page's
         `nextBefore` as `before`. Default page size 50.
 
@@ -937,7 +937,7 @@ paths:
           $ref: "#/components/responses/Unauthenticated"
   /api/docs/services:
     get:
-      operationId: console.docs.services.list
+      operationId: atc-console.docs.services.list
       tags: [documentation]
       summary: List services with API documentation.
       description: Returns Console plus every explicitly configured service instance. No credentials or internal URLs are exposed.
@@ -958,7 +958,7 @@ paths:
         "401": { $ref: "#/components/responses/Unauthenticated" }
   /api/docs/services/{sid}/openapi:
     get:
-      operationId: console.docs.openapi.get
+      operationId: atc-console.docs.openapi.get
       tags: [documentation]
       summary: Get one validated canonical OpenAPI document.
       description: >-
@@ -996,7 +996,7 @@ paths:
         "504": { $ref: "#/components/responses/DocumentationUpstreamError" }
   /api/services:
     get:
-      operationId: console.services.list
+      operationId: atc-console.services.list
       tags:
         - services
       summary: List configured service instances.
@@ -1026,7 +1026,7 @@ paths:
           $ref: "#/components/responses/Unauthenticated"
   /api/services/overview:
     get:
-      operationId: console.services.overview
+      operationId: atc-console.services.overview
       tags:
         - services
       summary: Probe and summarize every service.
@@ -1056,7 +1056,7 @@ paths:
           $ref: "#/components/responses/Unauthenticated"
   /api/services/about:
     get:
-      operationId: console.services.about
+      operationId: atc-console.services.about
       tags:
         - services
       summary: Collect every service's `/v1/info`.
@@ -1081,7 +1081,7 @@ paths:
           $ref: "#/components/responses/Unauthenticated"
   /api/services/{sid}/settings:
     patch:
-      operationId: console.services.updateSettings
+      operationId: atc-console.services.updateSettings
       tags:
         - services
       summary: Change a service's console-side polling settings.
@@ -1143,7 +1143,7 @@ paths:
                 $ref: "#/components/schemas/ErrorEnvelope"
   /api/services/{sid}/status:
     get:
-      operationId: console.services.status
+      operationId: atc-console.services.status
       tags:
         - services
       summary: Probe one service.
@@ -1178,9 +1178,9 @@ paths:
           $ref: "#/components/responses/Unauthenticated"
         "404":
           $ref: "#/components/responses/ProxyNotFound"
-  /api/services/{sid}/notify/messages:
+  /api/services/{sid}/atc-notify/messages:
     get:
-      operationId: console.notify.messages.list
+      operationId: atc-console.atc-notify.messages.list
       tags:
         - notify
       summary: List notification messages.
@@ -1231,7 +1231,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     post:
-      operationId: console.notify.messages.send
+      operationId: atc-console.atc-notify.messages.send
       tags:
         - notify
       summary: Send a message.
@@ -1283,9 +1283,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/notify/messages/{id}:
+  /api/services/{sid}/atc-notify/messages/{id}:
     get:
-      operationId: console.notify.messages.get
+      operationId: atc-console.atc-notify.messages.get
       tags:
         - notify
       summary: Get one message.
@@ -1321,9 +1321,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/notify/messages/{id}/retry:
+  /api/services/{sid}/atc-notify/messages/{id}/retry:
     post:
-      operationId: console.notify.messages.retry
+      operationId: atc-console.atc-notify.messages.retry
       tags:
         - notify
       summary: Retry a failed message.
@@ -1365,9 +1365,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/notify/templates:
+  /api/services/{sid}/atc-notify/templates:
     get:
-      operationId: console.notify.templates.list
+      operationId: atc-console.atc-notify.templates.list
       tags:
         - notify
       summary: List message templates.
@@ -1402,9 +1402,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/auth/users:
+  /api/services/{sid}/atc-auth/users:
     get:
-      operationId: console.auth.users.list
+      operationId: atc-console.atc-auth.users.list
       tags:
         - auth
       summary: List users.
@@ -1455,7 +1455,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     post:
-      operationId: console.auth.users.create
+      operationId: atc-console.atc-auth.users.create
       tags:
         - auth
       summary: Create a user.
@@ -1518,9 +1518,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/auth/users/{id}:
+  /api/services/{sid}/atc-auth/users/{id}:
     get:
-      operationId: console.auth.users.get
+      operationId: atc-console.atc-auth.users.get
       tags:
         - auth
       summary: Get a user with sessions and recent events.
@@ -1555,7 +1555,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     patch:
-      operationId: console.auth.users.update
+      operationId: atc-console.atc-auth.users.update
       tags:
         - auth
       summary: Update a user's name or status.
@@ -1617,7 +1617,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     delete:
-      operationId: console.auth.users.delete
+      operationId: atc-console.atc-auth.users.delete
       tags:
         - auth
       summary: Delete a user.
@@ -1652,9 +1652,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/auth/users/{id}/events:
+  /api/services/{sid}/atc-auth/users/{id}/events:
     get:
-      operationId: console.auth.users.events
+      operationId: atc-console.atc-auth.users.events
       tags:
         - auth
       summary: Page a user's events.
@@ -1705,9 +1705,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/auth/users/{id}/sessions:
+  /api/services/{sid}/atc-auth/users/{id}/sessions:
     delete:
-      operationId: console.auth.users.revokeAllSessions
+      operationId: atc-console.atc-auth.users.revokeAllSessions
       tags:
         - auth
       summary: Revoke all of a user's sessions.
@@ -1749,9 +1749,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/auth/users/{id}/sessions/{sub}:
+  /api/services/{sid}/atc-auth/users/{id}/sessions/{sub}:
     delete:
-      operationId: console.auth.users.revokeSession
+      operationId: atc-console.atc-auth.users.revokeSession
       tags:
         - auth
       summary: Revoke one session of a user.
@@ -1787,9 +1787,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/auth/users/{id}/resend-verification:
+  /api/services/{sid}/atc-auth/users/{id}/resend-verification:
     post:
-      operationId: console.auth.users.resendVerification
+      operationId: atc-console.atc-auth.users.resendVerification
       tags:
         - auth
       summary: Resend a verification email.
@@ -1850,9 +1850,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/auth/users/{id}/password-reset-email:
+  /api/services/{sid}/atc-auth/users/{id}/password-reset-email:
     post:
-      operationId: console.auth.users.passwordResetEmail
+      operationId: atc-console.atc-auth.users.passwordResetEmail
       tags:
         - auth
       summary: Send a password-reset email.
@@ -1913,9 +1913,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/auth/jwks:
+  /api/services/{sid}/atc-auth/jwks:
     get:
-      operationId: console.auth.jwks.get
+      operationId: atc-console.atc-auth.jwks.get
       tags:
         - auth
       summary: Fetch the auth service's JWKS.
@@ -1953,9 +1953,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/media/files:
+  /api/services/{sid}/atc-media/files:
     get:
-      operationId: console.media.files.list
+      operationId: atc-console.atc-media.files.list
       tags:
         - media
       summary: List stored files.
@@ -2006,7 +2006,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     put:
-      operationId: console.media.files.uploadTicketed
+      operationId: atc-console.atc-media.files.uploadTicketed
       tags:
         - media
       summary: Upload file bytes through the console.
@@ -2068,9 +2068,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/media/files/{id}:
+  /api/services/{sid}/atc-media/files/{id}:
     get:
-      operationId: console.media.files.get
+      operationId: atc-console.atc-media.files.get
       tags:
         - media
       summary: Get one file's metadata.
@@ -2107,7 +2107,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     patch:
-      operationId: console.media.files.update
+      operationId: atc-console.atc-media.files.update
       tags:
         - media
       summary: Rename a file or change its visibility.
@@ -2168,7 +2168,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     delete:
-      operationId: console.media.files.delete
+      operationId: atc-console.atc-media.files.delete
       tags:
         - media
       summary: Delete a file.
@@ -2203,9 +2203,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/media/files/{id}/bytes/{sub}:
+  /api/services/{sid}/atc-media/files/{id}/bytes/{sub}:
     get:
-      operationId: console.media.files.bytes
+      operationId: atc-console.atc-media.files.bytes
       tags:
         - media
       summary: Stream a file's bytes through the console.
@@ -2261,9 +2261,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/media/files/{id}/restore:
+  /api/services/{sid}/atc-media/files/{id}/restore:
     post:
-      operationId: console.media.files.restore
+      operationId: atc-console.atc-media.files.restore
       tags:
         - media
       summary: Restore a soft-deleted file.
@@ -2305,9 +2305,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/media/files/{id}/urls:
+  /api/services/{sid}/atc-media/files/{id}/urls:
     post:
-      operationId: console.media.files.urls
+      operationId: atc-console.atc-media.files.urls
       tags:
         - media
       summary: Mint signed URLs for a file.
@@ -2354,9 +2354,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/media/tickets:
+  /api/services/{sid}/atc-media/tickets:
     post:
-      operationId: console.media.tickets.create
+      operationId: atc-console.atc-media.tickets.create
       tags:
         - media
       summary: Create a direct-upload ticket.
@@ -2406,9 +2406,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/audit/events:
+  /api/services/{sid}/atc-audit/events:
     get:
-      operationId: console.audit.events.list
+      operationId: atc-console.atc-audit.events.list
       tags:
         - audit
       summary: Query audit events.
@@ -2461,9 +2461,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/audit/events/export:
+  /api/services/{sid}/atc-audit/events/export:
     get:
-      operationId: console.audit.events.export
+      operationId: atc-console.atc-audit.events.export
       tags:
         - audit
       summary: Export audit events as NDJSON or CSV.
@@ -2537,9 +2537,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/audit/events/{id}:
+  /api/services/{sid}/atc-audit/events/{id}:
     get:
-      operationId: console.audit.events.get
+      operationId: atc-console.atc-audit.events.get
       tags:
         - audit
       summary: Get one audit event.
@@ -2575,9 +2575,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/audit/stats:
+  /api/services/{sid}/atc-audit/stats:
     get:
-      operationId: console.audit.stats.get
+      operationId: atc-console.atc-audit.stats.get
       tags:
         - audit
       summary: Audit counters.
@@ -2634,9 +2634,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/audit/chain/head:
+  /api/services/{sid}/atc-audit/chain/head:
     get:
-      operationId: console.audit.chain.head
+      operationId: atc-console.atc-audit.chain.head
       tags:
         - audit
       summary: Current hash-chain head.
@@ -2671,9 +2671,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/audit/chain/verify:
+  /api/services/{sid}/atc-audit/chain/verify:
     get:
-      operationId: console.audit.chain.verify
+      operationId: atc-console.atc-audit.chain.verify
       tags:
         - audit
       summary: Verify the hash chain.
@@ -2734,9 +2734,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/shortlink/links:
+  /api/services/{sid}/atc-shortlink/links:
     get:
-      operationId: console.shortlink.links.list
+      operationId: atc-console.atc-shortlink.links.list
       tags:
         - shortlink
       summary: List short links.
@@ -2786,7 +2786,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     post:
-      operationId: console.shortlink.links.create
+      operationId: atc-console.atc-shortlink.links.create
       tags:
         - shortlink
       summary: Create a short link.
@@ -2869,9 +2869,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/shortlink/links/{id}:
+  /api/services/{sid}/atc-shortlink/links/{id}:
     get:
-      operationId: console.shortlink.links.get
+      operationId: atc-console.atc-shortlink.links.get
       tags:
         - shortlink
       summary: Get a short link with its stats.
@@ -2919,7 +2919,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     patch:
-      operationId: console.shortlink.links.update
+      operationId: atc-console.atc-shortlink.links.update
       tags:
         - shortlink
       summary: Update a short link.
@@ -3006,7 +3006,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     delete:
-      operationId: console.shortlink.links.delete
+      operationId: atc-console.atc-shortlink.links.delete
       tags:
         - shortlink
       summary: Delete a short link.
@@ -3041,9 +3041,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/shortlink/links/{id}/stats:
+  /api/services/{sid}/atc-shortlink/links/{id}/stats:
     get:
-      operationId: console.shortlink.links.stats
+      operationId: atc-console.atc-shortlink.links.stats
       tags:
         - shortlink
       summary: Stats for one short link.
@@ -3092,9 +3092,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/shortlink/links/{id}/qr.png:
+  /api/services/{sid}/atc-shortlink/links/{id}/qr.png:
     get:
-      operationId: console.shortlink.links.qr
+      operationId: atc-console.atc-shortlink.links.qr
       tags:
         - shortlink
       summary: QR code for a short link, as PNG.
@@ -3155,9 +3155,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/shortlink/stats:
+  /api/services/{sid}/atc-shortlink/stats:
     get:
-      operationId: console.shortlink.stats.get
+      operationId: atc-console.atc-shortlink.stats.get
       tags:
         - shortlink
       summary: Service-wide short-link stats.
@@ -3205,9 +3205,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/flags/environments:
+  /api/services/{sid}/atc-flags/environments:
     get:
-      operationId: console.flags.environments.list
+      operationId: atc-console.atc-flags.environments.list
       tags:
         - flags
       summary: List flag environments.
@@ -3242,9 +3242,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/flags/stats:
+  /api/services/{sid}/atc-flags/stats:
     get:
-      operationId: console.flags.stats.get
+      operationId: atc-console.atc-flags.stats.get
       tags:
         - flags
       summary: Flag counters.
@@ -3279,9 +3279,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/flags/flags:
+  /api/services/{sid}/atc-flags/flags:
     get:
-      operationId: console.flags.flags.list
+      operationId: atc-console.atc-flags.flags.list
       tags:
         - flags
       summary: List feature flags.
@@ -3324,7 +3324,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     post:
-      operationId: console.flags.flags.create
+      operationId: atc-console.atc-flags.flags.create
       tags:
         - flags
       summary: Create a feature flag.
@@ -3404,9 +3404,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/flags/flags/{id}:
+  /api/services/{sid}/atc-flags/flags/{id}:
     get:
-      operationId: console.flags.flags.get
+      operationId: atc-console.atc-flags.flags.get
       tags:
         - flags
       summary: Get a flag with its recent history.
@@ -3441,7 +3441,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     patch:
-      operationId: console.flags.flags.update
+      operationId: atc-console.atc-flags.flags.update
       tags:
         - flags
       summary: Update a flag's metadata.
@@ -3511,7 +3511,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     delete:
-      operationId: console.flags.flags.delete
+      operationId: atc-console.atc-flags.flags.delete
       tags:
         - flags
       summary: Delete a flag.
@@ -3546,9 +3546,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/flags/flags/{id}/history:
+  /api/services/{sid}/atc-flags/flags/{id}/history:
     get:
-      operationId: console.flags.flags.history
+      operationId: atc-console.atc-flags.flags.history
       tags:
         - flags
       summary: Page one flag's change history.
@@ -3595,9 +3595,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/flags/history:
+  /api/services/{sid}/atc-flags/history:
     get:
-      operationId: console.flags.history.list
+      operationId: atc-console.atc-flags.history.list
       tags:
         - flags
       summary: Page the service-wide change history.
@@ -3643,9 +3643,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/flags/flags/{id}/envs/{sub}:
+  /api/services/{sid}/atc-flags/flags/{id}/envs/{sub}:
     patch:
-      operationId: console.flags.envs.update
+      operationId: atc-console.atc-flags.envs.update
       tags:
         - flags
       summary: Update a flag in one environment.
@@ -3712,9 +3712,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/flags/flags/{id}/envs/{sub}/copy:
+  /api/services/{sid}/atc-flags/flags/{id}/envs/{sub}/copy:
     post:
-      operationId: console.flags.envs.copy
+      operationId: atc-console.atc-flags.envs.copy
       tags:
         - flags
       summary: Copy a flag's configuration between environments.
@@ -3774,9 +3774,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/flags/evaluate:
+  /api/services/{sid}/atc-flags/evaluate:
     post:
-      operationId: console.flags.evaluate.post
+      operationId: atc-console.atc-flags.evaluate.post
       tags:
         - flags
       summary: Evaluate flags for a context.
@@ -3857,9 +3857,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/scheduler/stats:
+  /api/services/{sid}/atc-scheduler/stats:
     get:
-      operationId: console.scheduler.stats.get
+      operationId: atc-console.atc-scheduler.stats.get
       tags:
         - scheduler
       summary: Scheduler counters.
@@ -3894,9 +3894,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/scheduler/target-keys:
+  /api/services/{sid}/atc-scheduler/target-keys:
     get:
-      operationId: console.scheduler.targetKeys.list
+      operationId: atc-console.atc-scheduler.targetKeys.list
       tags:
         - scheduler
       summary: List configured target keys.
@@ -3931,9 +3931,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/scheduler/timezones:
+  /api/services/{sid}/atc-scheduler/timezones:
     get:
-      operationId: console.scheduler.timezones.list
+      operationId: atc-console.atc-scheduler.timezones.list
       tags:
         - scheduler
       summary: List supported timezones.
@@ -3968,9 +3968,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/scheduler/preview:
+  /api/services/{sid}/atc-scheduler/preview:
     get:
-      operationId: console.scheduler.preview.get
+      operationId: atc-console.atc-scheduler.preview.get
       tags:
         - scheduler
       summary: Preview upcoming fire times for a cron expression.
@@ -4023,9 +4023,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/scheduler/jobs:
+  /api/services/{sid}/atc-scheduler/jobs:
     get:
-      operationId: console.scheduler.jobs.list
+      operationId: atc-console.atc-scheduler.jobs.list
       tags:
         - scheduler
       summary: List scheduled jobs.
@@ -4072,7 +4072,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     post:
-      operationId: console.scheduler.jobs.create
+      operationId: atc-console.atc-scheduler.jobs.create
       tags:
         - scheduler
       summary: Create a scheduled job.
@@ -4208,9 +4208,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/scheduler/jobs/{id}:
+  /api/services/{sid}/atc-scheduler/jobs/{id}:
     get:
-      operationId: console.scheduler.jobs.get
+      operationId: atc-console.atc-scheduler.jobs.get
       tags:
         - scheduler
       summary: Get a job with its recent runs.
@@ -4245,7 +4245,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     patch:
-      operationId: console.scheduler.jobs.update
+      operationId: atc-console.atc-scheduler.jobs.update
       tags:
         - scheduler
       summary: Update a scheduled job.
@@ -4379,7 +4379,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     delete:
-      operationId: console.scheduler.jobs.delete
+      operationId: atc-console.atc-scheduler.jobs.delete
       tags:
         - scheduler
       summary: Delete a scheduled job.
@@ -4414,9 +4414,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/scheduler/jobs/{id}/run:
+  /api/services/{sid}/atc-scheduler/jobs/{id}/run:
     post:
-      operationId: console.scheduler.jobs.run
+      operationId: atc-console.atc-scheduler.jobs.run
       tags:
         - scheduler
       summary: Trigger a job now.
@@ -4458,9 +4458,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/scheduler/jobs/{id}/runs:
+  /api/services/{sid}/atc-scheduler/jobs/{id}/runs:
     get:
-      operationId: console.scheduler.jobs.runs
+      operationId: atc-console.atc-scheduler.jobs.runs
       tags:
         - scheduler
       summary: Page one job's runs.
@@ -4511,9 +4511,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/scheduler/runs:
+  /api/services/{sid}/atc-scheduler/runs:
     get:
-      operationId: console.scheduler.runs.list
+      operationId: atc-console.atc-scheduler.runs.list
       tags:
         - scheduler
       summary: Page runs across jobs.
@@ -4563,9 +4563,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/scheduler/runs/{id}:
+  /api/services/{sid}/atc-scheduler/runs/{id}:
     get:
-      operationId: console.scheduler.runs.get
+      operationId: atc-console.atc-scheduler.runs.get
       tags:
         - scheduler
       summary: Get one run.
@@ -4601,9 +4601,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/scheduler/runs/{id}/cancel:
+  /api/services/{sid}/atc-scheduler/runs/{id}/cancel:
     post:
-      operationId: console.scheduler.runs.cancel
+      operationId: atc-console.atc-scheduler.runs.cancel
       tags:
         - scheduler
       summary: Cancel a run.
@@ -4645,9 +4645,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/webhook-out/stats:
+  /api/services/{sid}/atc-webhook-out/stats:
     get:
-      operationId: console.webhookOut.stats.get
+      operationId: atc-console.atc-webhook-out.stats.get
       tags:
         - webhook-out
       summary: Webhook counters.
@@ -4682,9 +4682,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/webhook-out/event-types:
+  /api/services/{sid}/atc-webhook-out/event-types:
     get:
-      operationId: console.webhookOut.eventTypes.list
+      operationId: atc-console.atc-webhook-out.eventTypes.list
       tags:
         - webhook-out
       summary: List known event types.
@@ -4719,9 +4719,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/webhook-out/subscriptions:
+  /api/services/{sid}/atc-webhook-out/subscriptions:
     get:
-      operationId: console.webhookOut.subscriptions.list
+      operationId: atc-console.atc-webhook-out.subscriptions.list
       tags:
         - webhook-out
       summary: List subscriptions.
@@ -4765,7 +4765,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     post:
-      operationId: console.webhookOut.subscriptions.create
+      operationId: atc-console.atc-webhook-out.subscriptions.create
       tags:
         - webhook-out
       summary: Create a subscription.
@@ -4847,9 +4847,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/webhook-out/subscriptions/{id}:
+  /api/services/{sid}/atc-webhook-out/subscriptions/{id}:
     get:
-      operationId: console.webhookOut.subscriptions.get
+      operationId: atc-console.atc-webhook-out.subscriptions.get
       tags:
         - webhook-out
       summary: Get a subscription with its recent deliveries.
@@ -4884,7 +4884,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     patch:
-      operationId: console.webhookOut.subscriptions.update
+      operationId: atc-console.atc-webhook-out.subscriptions.update
       tags:
         - webhook-out
       summary: Update a subscription.
@@ -4969,7 +4969,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     delete:
-      operationId: console.webhookOut.subscriptions.delete
+      operationId: atc-console.atc-webhook-out.subscriptions.delete
       tags:
         - webhook-out
       summary: Delete a subscription.
@@ -5004,9 +5004,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/webhook-out/subscriptions/{id}/rotate:
+  /api/services/{sid}/atc-webhook-out/subscriptions/{id}/rotate:
     post:
-      operationId: console.webhookOut.subscriptions.rotate
+      operationId: atc-console.atc-webhook-out.subscriptions.rotate
       tags:
         - webhook-out
       summary: Rotate a subscription's signing secret.
@@ -5048,9 +5048,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/webhook-out/subscriptions/{id}/test:
+  /api/services/{sid}/atc-webhook-out/subscriptions/{id}/test:
     post:
-      operationId: console.webhookOut.subscriptions.test
+      operationId: atc-console.atc-webhook-out.subscriptions.test
       tags:
         - webhook-out
       summary: Send a test delivery.
@@ -5092,9 +5092,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/webhook-out/subscriptions/{id}/replay:
+  /api/services/{sid}/atc-webhook-out/subscriptions/{id}/replay:
     post:
-      operationId: console.webhookOut.subscriptions.replay
+      operationId: atc-console.atc-webhook-out.subscriptions.replay
       tags:
         - webhook-out
       summary: Replay a time range of events to a subscription.
@@ -5156,9 +5156,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/webhook-out/deliveries:
+  /api/services/{sid}/atc-webhook-out/deliveries:
     get:
-      operationId: console.webhookOut.deliveries.list
+      operationId: atc-console.atc-webhook-out.deliveries.list
       tags:
         - webhook-out
       summary: Page deliveries.
@@ -5206,9 +5206,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/webhook-out/deliveries/{id}:
+  /api/services/{sid}/atc-webhook-out/deliveries/{id}:
     get:
-      operationId: console.webhookOut.deliveries.get
+      operationId: atc-console.atc-webhook-out.deliveries.get
       tags:
         - webhook-out
       summary: Get one delivery.
@@ -5244,9 +5244,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/webhook-out/deliveries/{id}/redeliver:
+  /api/services/{sid}/atc-webhook-out/deliveries/{id}/redeliver:
     post:
-      operationId: console.webhookOut.deliveries.redeliver
+      operationId: atc-console.atc-webhook-out.deliveries.redeliver
       tags:
         - webhook-out
       summary: Redeliver a delivery.
@@ -5288,9 +5288,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/webhook-out/deliveries/{id}/cancel:
+  /api/services/{sid}/atc-webhook-out/deliveries/{id}/cancel:
     post:
-      operationId: console.webhookOut.deliveries.cancel
+      operationId: atc-console.atc-webhook-out.deliveries.cancel
       tags:
         - webhook-out
       summary: Cancel a pending delivery.
@@ -5332,9 +5332,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/webhook-out/events:
+  /api/services/{sid}/atc-webhook-out/events:
     get:
-      operationId: console.webhookOut.events.list
+      operationId: atc-console.atc-webhook-out.events.list
       tags:
         - webhook-out
       summary: Page emitted events.
@@ -5381,9 +5381,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/webhook-out/events/{id}:
+  /api/services/{sid}/atc-webhook-out/events/{id}:
     get:
-      operationId: console.webhookOut.events.get
+      operationId: atc-console.atc-webhook-out.events.get
       tags:
         - webhook-out
       summary: Get one emitted event.
@@ -5419,9 +5419,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/search/stats:
+  /api/services/{sid}/atc-search/stats:
     get:
-      operationId: console.search.stats.get
+      operationId: atc-console.atc-search.stats.get
       tags:
         - search
       summary: Search counters.
@@ -5456,9 +5456,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/search/indexes:
+  /api/services/{sid}/atc-search/indexes:
     get:
-      operationId: console.search.indexes.list
+      operationId: atc-console.atc-search.indexes.list
       tags:
         - search
       summary: List indexes.
@@ -5494,7 +5494,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     post:
-      operationId: console.search.indexes.create
+      operationId: atc-console.atc-search.indexes.create
       tags:
         - search
       summary: Create an index.
@@ -5569,9 +5569,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/search/indexes/{id}:
+  /api/services/{sid}/atc-search/indexes/{id}:
     get:
-      operationId: console.search.indexes.get
+      operationId: atc-console.atc-search.indexes.get
       tags:
         - search
       summary: Get one index.
@@ -5608,7 +5608,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     patch:
-      operationId: console.search.indexes.update
+      operationId: atc-console.atc-search.indexes.update
       tags:
         - search
       summary: Update an index.
@@ -5680,7 +5680,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     delete:
-      operationId: console.search.indexes.delete
+      operationId: atc-console.atc-search.indexes.delete
       tags:
         - search
       summary: Delete an index.
@@ -5715,9 +5715,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/search/indexes/{id}/clear:
+  /api/services/{sid}/atc-search/indexes/{id}/clear:
     post:
-      operationId: console.search.indexes.clear
+      operationId: atc-console.atc-search.indexes.clear
       tags:
         - search
       summary: Remove every document from an index.
@@ -5759,9 +5759,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/search/indexes/{id}/search:
+  /api/services/{sid}/atc-search/indexes/{id}/search:
     post:
-      operationId: console.search.indexes.search
+      operationId: atc-console.atc-search.indexes.search
       tags:
         - search
       summary: Run a search.
@@ -5850,9 +5850,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/search/indexes/{id}/documents:
+  /api/services/{sid}/atc-search/indexes/{id}/documents:
     get:
-      operationId: console.search.documents.browse
+      operationId: atc-console.atc-search.documents.browse
       tags:
         - search
       summary: Browse documents in an index.
@@ -5895,7 +5895,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     put:
-      operationId: console.search.documents.upsert
+      operationId: atc-console.atc-search.documents.upsert
       tags:
         - search
       summary: Upsert documents.
@@ -5979,9 +5979,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/search/indexes/{id}/documents/{sub}:
+  /api/services/{sid}/atc-search/indexes/{id}/documents/{sub}:
     get:
-      operationId: console.search.documents.get
+      operationId: atc-console.atc-search.documents.get
       tags:
         - search
       summary: Get one document.
@@ -6019,7 +6019,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     delete:
-      operationId: console.search.documents.delete
+      operationId: atc-console.atc-search.documents.delete
       tags:
         - search
       summary: Delete one document.
@@ -6055,9 +6055,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/ratelimit/stats:
+  /api/services/{sid}/atc-ratelimit/stats:
     get:
-      operationId: console.ratelimit.stats.get
+      operationId: atc-console.atc-ratelimit.stats.get
       tags:
         - ratelimit
       summary: Rate-limit counters.
@@ -6092,9 +6092,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/ratelimit/policies:
+  /api/services/{sid}/atc-ratelimit/policies:
     get:
-      operationId: console.ratelimit.policies.list
+      operationId: atc-console.atc-ratelimit.policies.list
       tags:
         - ratelimit
       summary: List policies.
@@ -6130,7 +6130,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     post:
-      operationId: console.ratelimit.policies.create
+      operationId: atc-console.atc-ratelimit.policies.create
       tags:
         - ratelimit
       summary: Create a policy.
@@ -6208,9 +6208,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/ratelimit/policies/{id}:
+  /api/services/{sid}/atc-ratelimit/policies/{id}:
     get:
-      operationId: console.ratelimit.policies.get
+      operationId: atc-console.atc-ratelimit.policies.get
       tags:
         - ratelimit
       summary: Get one policy.
@@ -6247,7 +6247,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     patch:
-      operationId: console.ratelimit.policies.update
+      operationId: atc-console.atc-ratelimit.policies.update
       tags:
         - ratelimit
       summary: Update a policy.
@@ -6321,7 +6321,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     delete:
-      operationId: console.ratelimit.policies.delete
+      operationId: atc-console.atc-ratelimit.policies.delete
       tags:
         - ratelimit
       summary: Delete a policy.
@@ -6356,9 +6356,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/ratelimit/policies/{id}/stats:
+  /api/services/{sid}/atc-ratelimit/policies/{id}/stats:
     get:
-      operationId: console.ratelimit.policies.stats
+      operationId: atc-console.atc-ratelimit.policies.stats
       tags:
         - ratelimit
       summary: Counters for one policy.
@@ -6395,9 +6395,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/ratelimit/policies/{id}/top:
+  /api/services/{sid}/atc-ratelimit/policies/{id}/top:
     get:
-      operationId: console.ratelimit.policies.top
+      operationId: atc-console.atc-ratelimit.policies.top
       tags:
         - ratelimit
       summary: Top subjects for a policy.
@@ -6435,9 +6435,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/ratelimit/policies/{id}/overrides:
+  /api/services/{sid}/atc-ratelimit/policies/{id}/overrides:
     get:
-      operationId: console.ratelimit.overrides.list
+      operationId: atc-console.atc-ratelimit.overrides.list
       tags:
         - ratelimit
       summary: List per-subject overrides.
@@ -6475,9 +6475,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/ratelimit/policies/{id}/overrides/{sub}:
+  /api/services/{sid}/atc-ratelimit/policies/{id}/overrides/{sub}:
     put:
-      operationId: console.ratelimit.overrides.set
+      operationId: atc-console.atc-ratelimit.overrides.set
       tags:
         - ratelimit
       summary: Set an override for one subject.
@@ -6559,7 +6559,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     delete:
-      operationId: console.ratelimit.overrides.delete
+      operationId: atc-console.atc-ratelimit.overrides.delete
       tags:
         - ratelimit
       summary: Remove an override.
@@ -6595,9 +6595,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/ratelimit/policies/{id}/subjects/{sub}:
+  /api/services/{sid}/atc-ratelimit/policies/{id}/subjects/{sub}:
     get:
-      operationId: console.ratelimit.subjects.get
+      operationId: atc-console.atc-ratelimit.subjects.get
       tags:
         - ratelimit
       summary: Current usage for one subject.
@@ -6634,9 +6634,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/ratelimit/policies/{id}/subjects/{sub}/usage:
+  /api/services/{sid}/atc-ratelimit/policies/{id}/subjects/{sub}/usage:
     delete:
-      operationId: console.ratelimit.subjects.resetUsage
+      operationId: atc-console.atc-ratelimit.subjects.resetUsage
       tags:
         - ratelimit
       summary: Reset one subject's usage.
@@ -6680,9 +6680,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/ratelimit/check:
+  /api/services/{sid}/atc-ratelimit/check:
     post:
-      operationId: console.ratelimit.check.post
+      operationId: atc-console.atc-ratelimit.check.post
       tags:
         - ratelimit
       summary: Check (and by default consume) a rate-limit budget.
@@ -6756,9 +6756,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/geo/stats:
+  /api/services/{sid}/atc-geo/stats:
     get:
-      operationId: console.geo.stats.get
+      operationId: atc-console.atc-geo.stats.get
       tags:
         - geo
       summary: Geo counters.
@@ -6793,9 +6793,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/geo/database:
+  /api/services/{sid}/atc-geo/database:
     get:
-      operationId: console.geo.database.get
+      operationId: atc-console.atc-geo.database.get
       tags:
         - geo
       summary: Loaded geo database details.
@@ -6830,9 +6830,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/geo/database/reload:
+  /api/services/{sid}/atc-geo/database/reload:
     post:
-      operationId: console.geo.database.reload
+      operationId: atc-console.atc-geo.database.reload
       tags:
         - geo
       summary: Reload the geo databases from disk.
@@ -6873,9 +6873,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/geo/ip:
+  /api/services/{sid}/atc-geo/ip:
     get:
-      operationId: console.geo.ip.lookup
+      operationId: atc-console.atc-geo.ip.lookup
       tags:
         - geo
       summary: Look up one IP address.
@@ -6912,9 +6912,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/geo/ip/batch:
+  /api/services/{sid}/atc-geo/ip/batch:
     post:
-      operationId: console.geo.ip.batch
+      operationId: atc-console.atc-geo.ip.batch
       tags:
         - geo
       summary: Look up up to 100 IP addresses.
@@ -6981,9 +6981,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/geo/countries:
+  /api/services/{sid}/atc-geo/countries:
     get:
-      operationId: console.geo.countries.list
+      operationId: atc-console.atc-geo.countries.list
       tags:
         - geo
       summary: List or search countries.
@@ -7023,9 +7023,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/geo/countries/{id}:
+  /api/services/{sid}/atc-geo/countries/{id}:
     get:
-      operationId: console.geo.countries.get
+      operationId: atc-console.atc-geo.countries.get
       tags:
         - geo
       summary: Get one country.
@@ -7068,9 +7068,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/geo/currencies:
+  /api/services/{sid}/atc-geo/currencies:
     get:
-      operationId: console.geo.currencies.list
+      operationId: atc-console.atc-geo.currencies.list
       tags:
         - geo
       summary: List currencies.
@@ -7112,9 +7112,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/geo/timezones:
+  /api/services/{sid}/atc-geo/timezones:
     get:
-      operationId: console.geo.timezones.list
+      operationId: atc-console.atc-geo.timezones.list
       tags:
         - geo
       summary: List or search timezones.
@@ -7152,9 +7152,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/geo/phone:
+  /api/services/{sid}/atc-geo/phone:
     get:
-      operationId: console.geo.phone.lookup
+      operationId: atc-console.atc-geo.phone.lookup
       tags:
         - geo
       summary: Parse a phone number.
@@ -7191,9 +7191,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/geo/distance:
+  /api/services/{sid}/atc-geo/distance:
     get:
-      operationId: console.geo.distance.get
+      operationId: atc-console.atc-geo.distance.get
       tags:
         - geo
       summary: Distance between two coordinate pairs.
@@ -7230,9 +7230,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/geo/collections:
+  /api/services/{sid}/atc-geo/collections:
     get:
-      operationId: console.geo.collections.list
+      operationId: atc-console.atc-geo.collections.list
       tags:
         - geo
       summary: List place collections.
@@ -7268,7 +7268,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     post:
-      operationId: console.geo.collections.create
+      operationId: atc-console.atc-geo.collections.create
       tags:
         - geo
       summary: Create a place collection.
@@ -7326,9 +7326,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/geo/collections/{id}:
+  /api/services/{sid}/atc-geo/collections/{id}:
     get:
-      operationId: console.geo.collections.get
+      operationId: atc-console.atc-geo.collections.get
       tags:
         - geo
       summary: Get one collection.
@@ -7365,7 +7365,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     patch:
-      operationId: console.geo.collections.update
+      operationId: atc-console.atc-geo.collections.update
       tags:
         - geo
       summary: Update a collection's description.
@@ -7420,7 +7420,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     delete:
-      operationId: console.geo.collections.delete
+      operationId: atc-console.atc-geo.collections.delete
       tags:
         - geo
       summary: Delete a collection.
@@ -7455,9 +7455,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/geo/collections/{id}/clear:
+  /api/services/{sid}/atc-geo/collections/{id}/clear:
     post:
-      operationId: console.geo.collections.clear
+      operationId: atc-console.atc-geo.collections.clear
       tags:
         - geo
       summary: Remove every place from a collection.
@@ -7499,9 +7499,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/geo/collections/{id}/places:
+  /api/services/{sid}/atc-geo/collections/{id}/places:
     put:
-      operationId: console.geo.places.upsert
+      operationId: atc-console.atc-geo.places.upsert
       tags:
         - geo
       summary: Upsert places into a collection.
@@ -7583,7 +7583,7 @@ paths:
         default:
           $ref: "#/components/responses/DownstreamDefault"
     get:
-      operationId: console.geo.places.list
+      operationId: atc-console.atc-geo.places.list
       tags:
         - geo
       summary: Page a collection's places.
@@ -7621,9 +7621,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/geo/collections/{id}/places/{sub}:
+  /api/services/{sid}/atc-geo/collections/{id}/places/{sub}:
     delete:
-      operationId: console.geo.places.delete
+      operationId: atc-console.atc-geo.places.delete
       tags:
         - geo
       summary: Delete one place.
@@ -7659,9 +7659,9 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
-  /api/services/{sid}/geo/collections/{id}/nearby:
+  /api/services/{sid}/atc-geo/collections/{id}/nearby:
     get:
-      operationId: console.geo.collections.nearby
+      operationId: atc-console.atc-geo.collections.nearby
       tags:
         - geo
       summary: Find places near a point.
@@ -8592,8 +8592,8 @@ components:
         serviceCore:
           type: string
           description: >-
-            Version of the `@atc-web/service-core` copy actually running. Console imports
-            `registerInfo` from `@atc-web/service-core/fastify`, so unlike `gateway` (the one
+            Version of the `@atc-web/atc-service-core` copy actually running. Console imports
+            `registerInfo` from `@atc-web/atc-service-core/fastify`, so unlike `gateway` (the one
             service in this platform with no `service-core` dependency, where this field is
             always `null`) this field is always a real semver string here, never `null`.
     Admin:
@@ -8706,7 +8706,7 @@ components:
         action:
           type: string
           description: e.g. `login.succeeded`, `login.failed`, `password.changed`, `totp.enabled`, `admin.created`,
-            `flags.flag.update`.
+            `atc-flags.flag.update`.
         target:
           type:
             - string

@@ -162,7 +162,7 @@ test('validation oracle: body, query, path, enum, malformed JSON and normal-body
   actual = await observed(await fetch(`${consoleApp.origin}/api/audit?limit=201`, { headers }));
   assert.equal(actual.status, 400);
   assert.equal(actual.body.error.code, 'VALIDATION_FAILED');
-  actual = await observed(await fetch(`${consoleApp.origin}/api/services/audit/audit/events?outcome=unknown`, { headers }));
+  actual = await observed(await fetch(`${consoleApp.origin}/api/services/atc-audit/atc-audit/events?outcome=unknown`, { headers }));
   assert.equal(actual.status, 400);
   assert.deepEqual(actual.body.error.details, [{ path: '/outcome', message: 'must be equal to one of the allowed values' }]);
 

@@ -33,7 +33,7 @@
 
 <Page title={svc?.label ?? t('gateway.title')} desc={t('gateway.desc')}>
   {#snippet actions()}<AutoRefresh {sid} /><button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>{/snippet}
-  <ServiceTabs type="gateway" {sid} />
+  <ServiceTabs type="atc-gateway" {sid} />
   <PollStats {sid} />
   {#if res.error}<ErrorBox error={res.error} onretry={() => res.load()} boxed />
   {:else if !d}<Skeleton rows={5} />

@@ -35,13 +35,13 @@
   let more = $state(false);
   const summary = new Resource(() => api.get(`/services/${sid}/status`));
   const list = new Resource(async () => {
-    const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/media/files?limit=48`));
+    const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-media/files?limit=48`));
     items = r.items; cursor = r.nextCursor; return r;
   });
   $effect(() => { list.load(); summary.load(); });
   async function loadMore() {
     more = true;
-    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/media/files?limit=48&cursor=${encodeURIComponent(cursor ?? '')}`)); items = [...items, ...r.items]; cursor = r.nextCursor; }
+    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-media/files?limit=48&cursor=${encodeURIComponent(cursor ?? '')}`)); items = [...items, ...r.items]; cursor = r.nextCursor; }
     catch (e) { toasts.error(e); } finally { more = false; }
   }
 
@@ -58,7 +58,7 @@
       const entry = $state({ name: file.name, progress: 0 });
       uploads = [...uploads, entry];
       try {
-        const r = await api.upload(`/services/${sid}/media/files?visibility=${visibility}&name=${encodeURIComponent(file.name)}`, file, (f) => { entry.progress = f; });
+        const r = await api.upload(`/services/${sid}/atc-media/files?visibility=${visibility}&name=${encodeURIComponent(file.name)}`, file, (f) => { entry.progress = f; });
         items = [r.file, ...items]; toasts.ok(t('media.uploaded', { name: r.file.name })); summary.load();
         uploads = uploads.filter((u) => u !== entry);
       } catch (e) { entry.error = /** @type {{ message?: string }} */ (e).message ?? t('common.error'); toasts.error(e); }
@@ -75,7 +75,7 @@
     <div class="seg"><button aria-pressed={view === 'grid'} onclick={() => { view = 'grid'; }} title={t('media.grid')}><Icon name="grid" size={14} /></button><button aria-pressed={view === 'list'} onclick={() => { view = 'list'; }} title={t('media.list')}><Icon name="list" size={14} /></button></div>
     <button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}
-  <ServiceTabs type="media" {sid} />
+  <ServiceTabs type="atc-media" {sid} />
   <PollStats {sid} />
   <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));margin-bottom:20px">
     <Stat label={t('media.files')} value={fmt.int(m?.files)} sub="{t('media.blobs')}: {fmt.int(m?.blobs)}" />
@@ -108,8 +108,8 @@
   {:else if view === 'grid'}
     <div class="file-grid">
       {#each items as f (f.id)}
-        <button class="file-tile" onclick={() => goto(`/media/${sid}/files/${f.id}`)}>
-          {#if isImage(f)}<img class="thumb" src="/api/services/{sid}/media/files/{f.id}/bytes/thumb" alt="" loading="lazy" />
+        <button class="file-tile" onclick={() => goto(`/atc-media/${sid}/files/${f.id}`)}>
+          {#if isImage(f)}<img class="thumb" src="/api/services/{sid}/atc-media/files/{f.id}/bytes/thumb" alt="" loading="lazy" />
           {:else}<div class="thumb" style="display:grid;place-items:center;color:var(--text-3)"><Icon name="file" size={32} /></div>{/if}
           <div class="truncate small" style="margin-top:8px;font-weight:550" title={f.name}>{f.name}</div>
           <div class="row xs faint"><span>{fmt.bytes(f.size)}</span><span class="grow"></span><StatusBadge status={f.visibility} label={t(`media.${f.visibility}`)} /></div>
@@ -119,8 +119,8 @@
   {:else}
     <div class="card flush"><div class="card-body"><div class="table-wrap"><table class="table">
       <thead><tr><th></th><th>{t('common.name')}</th><th class="hide-m">{t('common.type')}</th><th class="num">{t('common.size')}</th><th class="hide-m">{t('media.dimensions')}</th><th>{t('media.visibility')}</th><th class="hide-m">{t('common.created')}</th></tr></thead>
-      <tbody>{#each items as f (f.id)}<tr class="clickable" onclick={() => goto(`/media/${sid}/files/${f.id}`)}>
-        <td style="width:44px">{#if isImage(f)}<img src="/api/services/{sid}/media/files/{f.id}/bytes/thumb" alt="" width="36" height="36" style="border-radius:6px;object-fit:cover;display:block" loading="lazy" />{:else}<Icon name="file" />{/if}</td>
+      <tbody>{#each items as f (f.id)}<tr class="clickable" onclick={() => goto(`/atc-media/${sid}/files/${f.id}`)}>
+        <td style="width:44px">{#if isImage(f)}<img src="/api/services/{sid}/atc-media/files/{f.id}/bytes/thumb" alt="" width="36" height="36" style="border-radius:6px;object-fit:cover;display:block" loading="lazy" />{:else}<Icon name="file" />{/if}</td>
         <td class="truncate" style="max-width:280px">{f.name}</td><td class="mono small hide-m">{f.mime}</td><td class="num">{fmt.bytes(f.size)}</td>
         <td class="small muted hide-m">{f.width ? `${f.width}×${f.height}` : '–'}</td><td><StatusBadge status={f.visibility} label={t(`media.${f.visibility}`)} /></td><td class="hide-m"><Time value={f.createdAt} /></td>
       </tr>{/each}</tbody></table></div></div></div>

@@ -34,7 +34,7 @@
   $effect(() => service.subscribe(() => Promise.all([list.load(), stats.load(), deliveries.load(), events.load()])));
   const refreshNow = () => service.trigger();
   const fmt = $derived(new Fmt(i18n.lang));
-  const base = $derived(`/services/${sid}/webhook-out`);
+  const base = $derived(`/services/${sid}/atc-webhook-out`);
   let status = $state(route.url.searchParams.get('status') ?? '');
   let q = $state(route.url.searchParams.get('q') ?? '');
   let dstatus = $state(route.url.searchParams.get('dstatus') ?? '');
@@ -102,7 +102,7 @@
     } catch (e) { toasts.error(e); } finally { creating = false; }
   }
   /** The secret dialog closes into the new subscription's page. */
-  function closeSecret() { const id = createdId; secret = null; createdId = null; if (id) goto(`/webhook-out/${sid}/subscriptions/${id}`); }
+  function closeSecret() { const id = createdId; secret = null; createdId = null; if (id) goto(`/atc-webhook-out/${sid}/subscriptions/${id}`); }
   const svc = $derived(services.get(sid));
 </script>
 
@@ -112,7 +112,7 @@
     {#if session.isAdmin}<button class="btn primary" onclick={() => { createOpen = true; }} aria-label={t('wh.create')} title={t('wh.create')}><Icon name="plus" size={16} /><span class="hide-m"> {t('wh.create')}</span></button>{/if}
     <button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}
-  <ServiceTabs type="webhook-out" {sid} />
+  <ServiceTabs type="atc-webhook-out" {sid} />
   <PollStats {sid} />
   <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-bottom:20px">
     <Stat label={t('wh.activeSubs')} value={fmt.int(st?.subscriptions?.active)} sub={st ? `${fmt.int(st.subscriptions.paused)} ${t('wh.pausedShort')} · ${fmt.int(st.subscriptions.disabled)} ${t('wh.disabledShort')}` : undefined} subTone={st?.subscriptions?.disabled ? 'danger' : ''} />
@@ -135,7 +135,7 @@
           <thead><tr><th>{t('wh.name')}</th><th>{t('common.status')}</th><th>{t('wh.eventPatterns')}</th><th>{t('wh.lastDelivery')}</th><th class="hide-m">{t('wh.url')}</th></tr></thead>
           <tbody>
             {#each items as s (s.id)}
-              <tr class="clickable" onclick={() => goto(`/webhook-out/${sid}/subscriptions/${s.id}`)}>
+              <tr class="clickable" onclick={() => goto(`/atc-webhook-out/${sid}/subscriptions/${s.id}`)}>
                 <td><code>{s.name}</code>{#if s.description}<div class="xs faint truncate" style="max-width:260px">{s.description}</div>{/if}</td>
                 <td><StatusBadge status={s.status} label={t(`wh.status.${s.status}`)} />{#if s.consecutiveFailures}<span class="xs danger-text"> {s.consecutiveFailures}✕</span>{/if}</td>
                 <td><span class="row wrap" style="gap:4px">{#each s.events.slice(0, 3) as p (p)}<span class="badge plain mono">{p}</span>{/each}{#if s.events.length > 3}<span class="xs faint">+{s.events.length - 3}</span>{/if}</span></td>
@@ -174,7 +174,7 @@
           <thead><tr><th>{t('common.id')}</th><th>{t('wh.type')}</th><th>{t('common.created')}</th><th class="hide-m">{t('wh.source')}</th><th class="hide-m">{t('wh.idempotencyKey')}</th></tr></thead>
           <tbody>
             {#each eItems as e (e.id)}
-              <tr class="clickable" onclick={() => goto(`/webhook-out/${sid}/events/${e.id}`)}>
+              <tr class="clickable" onclick={() => goto(`/atc-webhook-out/${sid}/events/${e.id}`)}>
                 <td class="mono small">{e.id}</td>
                 <td><code>{e.type}</code></td>
                 <td style="white-space:nowrap"><Time value={e.createdAt} /></td>

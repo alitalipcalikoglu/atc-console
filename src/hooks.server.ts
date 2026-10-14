@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { RequestContext } from '@atc-web/service-core/request-context';
-import { TraceContext } from '@atc-web/service-core/trace';
+import { RequestContext } from '@atc-web/atc-service-core/request-context';
+import { TraceContext } from '@atc-web/atc-service-core/trace';
 import type { Handle } from '@sveltejs/kit';
 import { ApiResponse } from '$lib/server/api';
 import { AuthRequest, CSRF_HEADER } from '$lib/server/auth';

@@ -26,4 +26,4 @@ Actions in the app bar: **Upload places** (a JSON array of `{ id, name, lat, lng
 
 ## Recorded in the console log
 
-`geo.database.reload`, `geo.collection.create`, `geo.collection.update` (the patch), `geo.collection.clear` (removed count), `geo.collection.delete`, `geo.places.upsert` (count), `geo.place.delete` (collection in meta).
+`atc-geo.database.reload`, `atc-geo.collection.create`, `atc-geo.collection.update` (the patch), `atc-geo.collection.clear` (removed count), `atc-geo.collection.delete`, `atc-geo.places.upsert` (count), `atc-geo.place.delete` (collection in meta).

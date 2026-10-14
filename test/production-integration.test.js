@@ -34,7 +34,7 @@ test('PM2 runs exactly one canonical Console process with readiness and shutdown
     listenTimeout: config.apps[0].listen_timeout,
     killTimeout: config.apps[0].kill_timeout,
   }, {
-    name: 'console', script: 'server.mjs', mode: 'fork', instances: 1,
+    name: 'atc-console', script: 'server.mjs', mode: 'fork', instances: 1,
     waitReady: true, listenTimeout: 10_000, killTimeout: 35_000,
   });
 });
