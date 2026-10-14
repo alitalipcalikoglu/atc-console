@@ -129,3 +129,17 @@ test('AdminService protects the last active administrator and self-demotion', as
   assert.equal(t.admins.byId(root.id), undefined);
   assert.ok(t.audit.list({ limit: 50, action: 'admin.' }).length >= 5);
 });
+
+test('re-checking your own password (change password, turn two-factor off) shares the sign-in lockout', async () => {
+  const t = await testRuntime({ env: { CONSOLE_LOGIN_MAX_FAILURES: '3', CONSOLE_LOGIN_LOCKOUT_MIN: '15' } });
+  await t.adminService.create({ username: 'a', name: 'A', password: ADMIN_PASSWORD, role: 'admin' }, null, ctx);
+  const admin = /** @type {any} */ (t.admins.byUsername('a'));
+  const login = await t.auth.login({ username: 'a', password: ADMIN_PASSWORD }, ctx);
+  const session = /** @type {any} */ (t.auth.resolve(login.token)).session;
+  const change = (/** @type {string} */ pw) => t.auth.changePassword(admin, session, { currentPassword: pw, newPassword: 'another long password' }, ctx);
+  for (let i = 0; i < 3; i++) await rejectsWith(change('wrong password!!'), 'INVALID_CREDENTIALS');
+  await rejectsWith(change(ADMIN_PASSWORD), 'ACCOUNT_LOCKED');
+  await rejectsWith(t.auth.disableTotp(admin, { password: ADMIN_PASSWORD, code: '123456' }, ctx), 'ACCOUNT_LOCKED');
+  await rejectsWith(t.auth.login({ username: 'a', password: ADMIN_PASSWORD }, ctx), 'ACCOUNT_LOCKED');
+  assert.ok(t.audit.list({ limit: 20 }).some((e) => e.action === 'password.change_failed'), 'failures are recorded');
+});

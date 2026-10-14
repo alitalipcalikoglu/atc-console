@@ -175,13 +175,40 @@ export class ConsoleAuth {
   }
 
   /**
+   * Re-checking the signed-in admin's own password (password change, turning two-factor off) shares the
+   * sign-in lockout, so a stolen session cannot be used to guess the password: a locked account is refused
+   * and every wrong password counts and is recorded.
+   * @param {AdminRow} admin @param {string} password @param {Ctx} ctx @param {string} action
+   */
+  async #verifyOwnPassword(admin, password, ctx, action) {
+    const now = this.now();
+    const fresh = /** @type {AdminRow} */ (this.admins.byId(admin.id));
+    const ok = await this.hasher.verify(password, admin.password_hash);
+    if (fresh.locked_until !== null && fresh.locked_until > now) {
+      this.audit.record({ adminId: admin.id, adminUsername: admin.username, action, ip: ctx.ip, meta: { reason: 'locked' } }, now);
+      throw new ConsoleError('ACCOUNT_LOCKED', 'too many failed attempts, try again later', { retryAfterSec: Math.ceil((fresh.locked_until - now) / 1000) });
+    }
+    if (!ok) {
+      this.#countFailure(admin, ctx, action, 'bad_password');
+      throw new ConsoleError('INVALID_CREDENTIALS', 'password is incorrect');
+    }
+  }
+
+  /** @param {AdminRow} admin @param {Ctx} ctx @param {string} action @param {string} reason */
+  #countFailure(admin, ctx, action, reason) {
+    const now = this.now();
+    const r = this.admins.recordLoginFailure(admin.id, { maxFailures: this.options.loginMaxFailures, lockoutMs: this.options.lockoutMs, now });
+    this.audit.record({ adminId: admin.id, adminUsername: admin.username, action, ip: ctx.ip, meta: { reason, failures: r.failed_logins } }, now);
+  }
+
+  /**
    * @param {AdminRow} admin
    * @param {SessionRow} session
    * @param {{ currentPassword: string, newPassword: string }} input
    * @param {Ctx} ctx
    */
   async changePassword(admin, session, input, ctx) {
-    if (!(await this.hasher.verify(input.currentPassword, admin.password_hash))) throw new ConsoleError('INVALID_CREDENTIALS', 'current password is incorrect');
+    await this.#verifyOwnPassword(admin, input.currentPassword, ctx, 'password.change_failed');
     ConsoleAuth.assertPassword(input.newPassword);
     this.admins.setPassword(admin.id, await this.hasher.hash(input.newPassword), this.now());
     this.sessions.removeOthers(admin.id, session.id);
@@ -221,10 +248,10 @@ export class ConsoleAuth {
    * @param {Ctx} ctx
    */
   async disableTotp(admin, input, ctx) {
-    if (!(await this.hasher.verify(input.password, admin.password_hash))) throw new ConsoleError('INVALID_CREDENTIALS', 'password is incorrect');
+    await this.#verifyOwnPassword(admin, input.password, ctx, 'totp.disable_failed');
     if (!admin.totp_secret || admin.totp_enabled_at === null) throw new ConsoleError('CONFLICT', 'two-factor authentication is not enabled');
     const step = Totp.verify(/** @type {string} */ (this.#totpSecret(admin)), input.code, this.now());
-    if (step === null) throw new ConsoleError('INVALID_TOTP', 'code is incorrect');
+    if (step === null) { this.#countFailure(admin, ctx, 'totp.disable_failed', 'bad_totp'); throw new ConsoleError('INVALID_TOTP', 'code is incorrect'); }
     this.admins.disableTotp(admin.id, this.now());
     this.audit.record({ adminId: admin.id, adminUsername: admin.username, action: 'totp.disabled', ip: ctx.ip }, this.now());
   }

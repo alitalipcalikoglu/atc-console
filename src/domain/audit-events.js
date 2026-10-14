@@ -6,7 +6,7 @@
  * the entry's target. Sign-in failures and lockouts are failures.
  */
 export class AuditEvents {
-  static FAILURES = new Set(['login.failed', 'login.locked', 'totp.failed']);
+  static FAILURES = new Set(['login.failed', 'login.locked', 'totp.failed', 'password.change_failed', 'totp.disable_failed']);
 
   /**
    * @param {{ adminId: string|null, adminUsername: string|null, action: string, target: string|null, meta: object|null, ip: string|null }} e
