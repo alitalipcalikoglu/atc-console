@@ -59,6 +59,8 @@ const fake = createServer((req, res) => {
       if (p === '/v1/monitors/shop/check') return json(200, { check: { ok: false, status: 503, latencyMs: 30, error: 'unexpected status 503' }, monitor: MON });
       if (p === '/v1/monitors/shop/checks') return json(200, { items: [{ at: '2026-10-14T10:00:00.000Z', ok: true, status: 200, latencyMs: 12, error: null }], nextCursor: '5' });
       if (p === '/v1/incidents') return json(200, { items: [{ id: I, monitor: 'shop', state: 'open' }], nextCursor: null });
+      if (p === '/v1/alerts') return json(200, { items: [{ id: 'alr_mv8abcde0123456789abcdef', type: 'ops.queue.dead_letter', severity: 'warning', state: 'open', count: 2 }], nextCursor: null });
+      if (p === '/v1/alerts/alr_mv8abcde0123456789abcdef/ack') return json(200, { alert: { id: 'alr_mv8abcde0123456789abcdef', type: 'ops.queue.dead_letter', state: 'acked' } });
     }
     if (String(req.headers.authorization).endsWith('b'.repeat(40))) {
       const K = 'bk_mv8abcde0123456789abcdef';
@@ -70,6 +72,7 @@ const fake = createServer((req, res) => {
       if (p === `/v1/backups/${K}` && req.method === 'GET') return json(200, { backup: BK });
       if (p === `/v1/backups/${K}` && req.method === 'DELETE') return res.writeHead(204).end();
       if (p === `/v1/backups/${K}/verify`) return json(200, { backup: BK, checksumOk: true, integrity: 'ok' });
+      if (p === `/v1/backups/${K}/drill`) return json(200, { backup: BK, ok: true, detail: { integrity: 'ok', tables: { users: 3 } } });
       if (p === `/v1/backups/${K}/restore`) { const b = JSON.parse(body); return b.live ? json(403, { error: { code: 'LIVE_RESTORE_DISABLED', message: 'live restores are disabled' } }) : json(200, { backup: BK, live: false, target: b.target, size: 4096, sha256: BK.sha256, safetyBackupId: null }); }
       if (p === `/v1/backups/${K}/download`) return res.writeHead(200, { 'content-type': 'application/vnd.sqlite3', 'content-length': '16', 'content-disposition': `attachment; filename="${BK.file}"`, 'x-checksum-sha256': BK.sha256 }).end('SQLite format 3\0');
     }
@@ -913,8 +916,9 @@ test('export: sources, list, create, get, cancel, retry, download, delete (audit
   res = await t.app.inject({ method: 'POST', url: `${B}/exports/${E}/cancel`, headers: { cookie, ...CSRF } });
   assert.equal(res.json().export?.status, 'cancelled', res.body);
   assert.equal((await t.app.inject({ method: 'POST', url: `${B}/exports/${E}/retry`, headers: { cookie, ...CSRF } })).json().export.status, 'queued');
-  res = await t.app.inject({ url: `${B}/exports/${E}/download`, headers: { cookie: viewer.cookie } });
-  assert.equal(res.json().url, 'https://media.test/files/f1/original?sig=x', 'viewers may download');
+  assert.equal((await t.app.inject({ url: `${B}/exports/${E}/download`, headers: { cookie: viewer.cookie } })).statusCode, 403, 'an export can hold personal data: admins only');
+  res = await t.app.inject({ url: `${B}/exports/${E}/download`, headers: { cookie } });
+  assert.equal(res.json().url, 'https://media.test/files/f1/original?sig=x');
   assert.equal((await t.app.inject({ method: 'DELETE', url: `${B}/exports/${E}`, headers: { cookie: viewer.cookie, ...CSRF } })).statusCode, 403);
   assert.equal((await t.app.inject({ method: 'DELETE', url: `${B}/exports/${E}`, headers: { cookie, ...CSRF } })).statusCode, 204);
   const log = await t.app.inject({ url: '/api/audit?action=atc-export.', headers: { cookie } });
@@ -926,7 +930,8 @@ test('export file relay: streamed attachment, fixed types, sanitised name, error
   const viewer = await signIn(t, { username: 'viewer11', role: 'viewer' });
   const F = '/api/services/atc-export/atc-export/exports/exp_0000000000123456789ab/file';
   exportFileVariant = 'csv';
-  let res = await t.app.inject({ url: F, headers: { cookie: viewer.cookie } });
+  assert.equal((await t.app.inject({ url: F, headers: { cookie: viewer.cookie } })).statusCode, 403, 'an export can hold personal data: admins only');
+  let res = await t.app.inject({ url: F, headers: { cookie } });
   assert.equal(res.statusCode, 200, res.body);
   assert.equal(res.body, 'id,name\r\n1,a');
   assert.equal(res.headers['content-type'], 'text/csv; charset=utf-8');
@@ -1050,6 +1055,8 @@ test('backup: sources, run, history, verify, restore, download, delete (audited,
   assert.equal((await t.app.inject({ url: `${B}/backups?status=gone`, headers: { cookie } })).statusCode, 400);
   assert.equal((await t.app.inject({ url: `${B}/backups/${K}`, headers: { cookie: viewer.cookie } })).json().backup.id, K);
   assert.equal((await t.app.inject({ method: 'POST', url: `${B}/backups/${K}/verify`, headers: { cookie, ...CSRF } })).json().integrity, 'ok');
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/backups/${K}/drill`, headers: { cookie: (await signIn(t, { username: 'viewer16', role: 'viewer' })).cookie, ...CSRF } })).statusCode, 403);
+  assert.deepEqual((await t.app.inject({ method: 'POST', url: `${B}/backups/${K}/drill`, headers: { cookie, ...CSRF } })).json().detail, { integrity: 'ok', tables: { users: 3 } });
   assert.equal((await t.app.inject({ method: 'POST', url: `${B}/backups/${K}/restore`, headers: { cookie, ...CSRF }, payload: { target: '../x.db' } })).statusCode, 400);
   assert.equal((await t.app.inject({ method: 'POST', url: `${B}/backups/${K}/restore`, headers: { cookie, ...CSRF }, payload: { target: 'auth-check.db' } })).json().target, 'auth-check.db');
   res = await t.app.inject({ method: 'POST', url: `${B}/backups/${K}/restore`, headers: { cookie, ...CSRF }, payload: { live: true, confirm: 'atc-auth' } });
@@ -1061,7 +1068,7 @@ test('backup: sources, run, history, verify, restore, download, delete (audited,
   assert.equal(res.rawPayload.toString('latin1'), 'SQLite format 3\0');
   assert.equal((await t.app.inject({ method: 'DELETE', url: `${B}/backups/${K}`, headers: { cookie, ...CSRF } })).statusCode, 204);
   const log = await t.app.inject({ url: '/api/audit?action=atc-backup.', headers: { cookie } });
-  assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-backup.backup.delete', 'atc-backup.backup.download', 'atc-backup.backup.restore', 'atc-backup.backup.verify', 'atc-backup.backup.create']);
+  assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-backup.backup.delete', 'atc-backup.backup.download', 'atc-backup.backup.restore', 'atc-backup.backup.drill', 'atc-backup.backup.verify', 'atc-backup.backup.create']);
 });
 
 test('status: monitors, check now, checks, incidents, edit, delete (audited, admin only)', async () => {
@@ -1085,9 +1092,16 @@ test('status: monitors, check now, checks, incidents, edit, delete (audited, adm
   res = await t.app.inject({ url: `${B}/incidents?state=open&monitor=shop`, headers: { cookie } });
   assert.deepEqual([res.json().items[0].state, seen.at(-1)?.url], ['open', '/v1/incidents?monitor=shop&state=open']);
   assert.equal((await t.app.inject({ url: `${B}/incidents?state=maybe`, headers: { cookie } })).statusCode, 400);
+  const A = 'alr_mv8abcde0123456789abcdef';
+  res = await t.app.inject({ url: `${B}/alerts?state=open`, headers: { cookie: viewer.cookie } });
+  assert.deepEqual([res.json().items[0].severity, seen.at(-1)?.url], ['warning', '/v1/alerts?state=open']);
+  assert.equal((await t.app.inject({ url: `${B}/alerts?state=maybe`, headers: { cookie } })).statusCode, 400);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/alerts/${A}/ack`, headers: { cookie: viewer.cookie, ...CSRF } })).statusCode, 403);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/alerts/nope/ack`, headers: { cookie, ...CSRF } })).statusCode, 400);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/alerts/${A}/ack`, headers: { cookie, ...CSRF } })).json().alert.state, 'acked');
   assert.equal((await t.app.inject({ method: 'DELETE', url: `${B}/monitors/shop`, headers: { cookie, ...CSRF } })).statusCode, 204);
   const log = await t.app.inject({ url: '/api/audit?action=atc-status.', headers: { cookie } });
-  assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-status.monitor.delete', 'atc-status.monitor.check', 'atc-status.monitor.upsert']);
+  assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-status.monitor.delete', 'atc-status.alert.ack', 'atc-status.monitor.check', 'atc-status.monitor.upsert']);
 });
 
 test('payments: list, detail, sync, cancel, refund with an idempotency key header, webhook events (audited, admin only)', async () => {

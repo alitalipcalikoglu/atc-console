@@ -96,8 +96,8 @@
           <tbody>
             {#each srcItems as s (s.id)}
               <tr>
-                <td><code>{s.id}</code><div class="xs faint mono">{s.file}{#if !s.exists}{` · ${t('bk.missing')}`}{/if}</div></td>
-                <td>{#if s.running}<StatusBadge status="running" label={t('bk.s.running')} />{:else if s.lastBackup}<span class="row wrap tight"><StatusBadge status={s.lastBackup.status} label={t(`bk.s.${s.lastBackup.status}`)} /><span class="small"><Time value={s.lastBackup.startedAt} /></span></span>{:else}<span class="faint">–</span>{/if}</td>
+                <td><code>{s.id}</code><div class="xs faint mono">{s.kind === 'tree' ? `${t('bk.kindTree')} · ` : ''}{s.file}{#if !s.exists}{` · ${t('bk.missing')}`}{/if}</div></td>
+                <td>{#if s.running}<StatusBadge status="running" label={t('bk.s.running')} />{:else if s.lastBackup}<span class="row wrap tight"><StatusBadge status={s.lastBackup.status} label={t(`bk.s.${s.lastBackup.status}`)} /><span class="small"><Time value={s.lastBackup.startedAt} /></span>{#if s.lastDrill && !s.lastDrill.ok}<StatusBadge status="failed" label={t('bk.drill')} />{/if}</span>{:else}<span class="faint">–</span>{/if}</td>
                 <td class="hide-m small">{fmt.bytes(s.size)}</td>
                 <td class="hide-m small">{fmt.int(s.backups)} · {fmt.bytes(s.bytes)}</td>
                 <td class="hide-m small">{#if s.nextDueAt}<Time value={s.nextDueAt} />{:else}–{/if}</td>
@@ -125,7 +125,7 @@
                 <td><code>{b.source}</code><div class="xs faint mono">{b.id}</div></td>
                 <td><StatusBadge status={b.status} label={t(`bk.s.${b.status}`)} />{#if b.status === 'failed'}<div class="xs faint truncate err">{b.error}</div>{/if}</td>
                 <td class="hide-m small">{t(`bk.t.${b.trigger}`)}</td>
-                <td class="hide-m small">{fmt.bytes(b.size)}</td>
+                <td class="hide-m small">{fmt.bytes(b.size)}{#if b.encrypted} · {t('bk.encrypted')}{/if}</td>
                 <td class="small nowrap"><Time value={b.startedAt} /></td>
               </tr>
             {/each}

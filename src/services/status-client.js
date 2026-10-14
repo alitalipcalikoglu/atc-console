@@ -25,11 +25,15 @@ export class StatusClient extends ServiceClient {
   checks(id, q) { return this.json('GET', `/v1/monitors/${StatusClient.seg(id)}/checks?${StatusClient.params(q, ['limit', 'cursor'])}`); }
   /** @param {Record<string, string|number|undefined>} q */
   incidents(q) { return this.json('GET', `/v1/incidents?${StatusClient.params(q, ['monitor', 'state', 'limit', 'cursor'])}`); }
+  /** @param {Record<string, string|number|undefined>} q */
+  alerts(q) { return this.json('GET', `/v1/alerts?${StatusClient.params(q, ['state', 'limit', 'cursor'])}`); }
+  /** @param {string} id */
+  ackAlert(id) { return this.json('POST', `/v1/alerts/${StatusClient.seg(id)}/ack`); }
   stats() { return this.json('GET', '/v1/stats'); }
 
   /** Overview card facts, from `/v1/stats`. */
   async summary() {
     const s = /** @type {any} */ (await this.stats());
-    return { monitors: s.monitors, up: s.up, down: s.down, degraded: s.degraded, openIncidents: s.openIncidents };
+    return { monitors: s.monitors, up: s.up, down: s.down, degraded: s.degraded, openIncidents: s.openIncidents, openAlerts: s.openAlerts ?? 0 };
   }
 }

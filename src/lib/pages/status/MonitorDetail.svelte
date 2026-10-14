@@ -13,6 +13,7 @@
   import RowMenu from '#lib/components/RowMenu.svelte';
   import StatusBadge from '#lib/components/StatusBadge.svelte';
   import MonitorForm from './MonitorForm.svelte';
+  import PingToken from './PingToken.svelte';
   import { api } from '#lib/client/api.js';
   import { Resource } from '#lib/client/resource.svelte.js';
   import { goto } from '$app/navigation';
@@ -57,6 +58,13 @@
   let busy = $state(false);
   let editOpen = $state(false);
   let confirmDelete = $state(false);
+  let confirmRotate = $state(false);
+  /** @type {string|null} */ let pingPath = $state(null);
+  async function rotate() {
+    busy = true;
+    try { const r = /** @type {any} */ (await api.put(base, { rotateToken: true })); pingPath = r.pingPath ?? null; confirmRotate = false; toasts.ok(t('stx.rotated')); await res.load(); }
+    catch (e) { toasts.error(e); } finally { busy = false; confirmRotate = false; }
+  }
   async function checkNow() {
     busy = true;
     try { const r = /** @type {any} */ (await api.post(`${base}/check`, {})); if (r.check.ok) toasts.ok(t('stx.checkOk', { ms: fmt.int(r.check.latencyMs) })); else toasts.error(new Error(t('stx.checkFailed', { error: r.check.error }))); await reloadAll(); }
@@ -85,6 +93,7 @@
       <RowMenu label={t('common.actions')} items={[
         { label: t('stx.edit'), icon: 'settings', run: () => { editOpen = true; } },
         m.paused ? { label: t('stx.resume'), icon: 'play', run: () => setPaused(false) } : { label: t('stx.pause'), icon: 'pause', run: () => setPaused(true) },
+        ...(m.kind === 'heartbeat' ? [{ label: t('stx.rotate'), icon: 'refresh', run: () => { confirmRotate = true; } }] : []),
         ...(m.origin === 'api' ? [{ label: t('common.delete'), icon: 'trash', danger: true, run: () => { confirmDelete = true; } }] : []),
       ]} />
     {/if}
@@ -104,10 +113,18 @@
         {#snippet aside()}<span class="row wrap tight">{#if m.public}<StatusBadge status="public" label={t('stx.public')} />{/if}{#if m.origin === 'env'}<StatusBadge status="default" label={t('stx.seeded')} />{/if}</span>{/snippet}
         {#if m.description}<p class="no-margin desc-line">{m.description}</p>{/if}
         <dl class="kv">
-          <dt>{t('stx.url')}</dt><dd class="mono small truncate" title={m.url}>{m.method} {m.url}</dd>
+          <dt>{t('stx.kind')}</dt><dd>{t(`stx.k.${m.kind}`)}</dd>
+          {#if m.kind !== 'heartbeat'}<dt>{m.kind === 'http' ? t('stx.url') : t('stx.targetHost')}</dt><dd class="mono small truncate" title={m.url}>{m.kind === 'http' ? `${m.method} ` : ''}{m.url}</dd>{/if}
           <dt>{t('stx.every')}</dt><dd>{fmt.duration(m.intervalSec)}</dd>
-          <dt>{t('stx.timeoutLabel')}</dt><dd>{fmt.ms(m.timeoutMs)}</dd>
-          <dt>{t('stx.expect')}</dt><dd class="mono small">{m.expectStatus.join(', ')}</dd>
+          {#if m.kind === 'heartbeat'}
+            <dt>{t('stx.graceLabel')}</dt><dd>{fmt.duration(m.graceSec)}</dd>
+            <dt>{t('stx.lastPing')}</dt><dd>{#if m.lastPingAt}<Time value={m.lastPingAt} />{:else}{t('stx.neverPinged')}{/if}</dd>
+          {:else}
+            <dt>{t('stx.timeoutLabel')}</dt><dd>{fmt.ms(m.timeoutMs)}</dd>
+          {/if}
+          {#if m.kind === 'http'}<dt>{t('stx.expect')}</dt><dd class="mono small">{m.expectStatus.join(', ')}</dd>{/if}
+          {#if m.expectText}<dt>{t('stx.expectText')}</dt><dd class="mono small">{m.expectText}</dd>{/if}
+          {#if m.kind === 'tls'}<dt>{t('stx.warnDays')}</dt><dd>{m.warnDays}</dd>{/if}
           <dt>{t('stx.threshold')}</dt><dd>{m.failThreshold}</dd>
           <dt>{t('stx.nextCheck')}</dt><dd>{#if m.nextCheckAt}<Time value={m.nextCheckAt} />{:else}–{/if}</dd>
           <dt>{t('stx.createdBy')}</dt><dd class="mono small">{m.createdBy}</dd>
@@ -159,6 +176,8 @@
   {/if}
 </Page>
 
+<PingToken path={pingPath} onclose={() => { pingPath = null; }} />
+<Confirm open={confirmRotate} title={t('stx.rotateTitle')} message={t('stx.rotateDesc')} danger confirmLabel={t('stx.rotate')} {busy} onconfirm={rotate} oncancel={() => { confirmRotate = false; }} />
 <MonitorForm open={editOpen} initial={m} {busy} onsubmit={save} onclose={() => { editOpen = false; }} />
 <Confirm open={confirmDelete} title={t('stx.deleteTitle')} message={t('stx.deleteDesc')} danger typeWord={m?.id} confirmLabel={t('common.delete')} {busy} onconfirm={remove} oncancel={() => { confirmDelete = false; }} />
 

@@ -13,6 +13,8 @@
   import AutoRefresh from '#lib/components/AutoRefresh.svelte';
   import PollStats from '#lib/components/PollStats.svelte';
   import MonitorForm from './MonitorForm.svelte';
+  import PingToken from './PingToken.svelte';
+  import Confirm from '#lib/components/Confirm.svelte';
   import { poller } from '#lib/client/poller.svelte.js';
   import { api } from '#lib/client/api.js';
   import { Resource } from '#lib/client/resource.svelte.js';
@@ -30,8 +32,10 @@
   const base = $derived(`/services/${sid}/atc-status`);
   const list = new Resource(() => api.get(`${base}/monitors`));
   const open = new Resource(() => api.get(`${base}/incidents?state=open&limit=50`));
-  $effect(() => service.subscribe(() => { list.load(); open.load(); }));
-  $effect(() => { list.load(); open.load(); });
+  const alertsRes = new Resource(() => api.get(`${base}/alerts?state=open&limit=50`));
+  $effect(() => service.subscribe(() => { list.load(); open.load(); alertsRes.load(); }));
+  $effect(() => { list.load(); open.load(); alertsRes.load(); });
+  const alerts = $derived(/** @type {any[]} */ (/** @type {any} */ (alertsRes.data)?.items ?? []));
   const refreshNow = () => service.trigger();
   const items = $derived(/** @type {any[]} */ (/** @type {any} */ (list.data)?.items ?? []));
   const incidents = $derived(/** @type {any[]} */ (/** @type {any} */ (open.data)?.items ?? []));
@@ -40,12 +44,26 @@
   const svc = $derived(services.get(sid));
   /** @param {number|null} v */
   const pct = (v) => (v === null ? '–' : `${v.toFixed(v === 100 ? 0 : 2)}%`);
+  /** @type {string|null} */ let pingPath = $state(null);
+  /** @type {string|null} */ let afterPing = $state(null);
+  /** @type {any|null} */ let ackTarget = $state(null);
+  let acking = $state(false);
+  async function ack() {
+    if (!ackTarget) return;
+    acking = true;
+    try { await api.post(`${base}/alerts/${encodeURIComponent(ackTarget.id)}/ack`, {}); toasts.ok(t('stx.alertAcked')); ackTarget = null; await alertsRes.load(); }
+    catch (e) { toasts.error(e); } finally { acking = false; }
+  }
   let createOpen = $state(false);
   let creating = $state(false);
   /** @param {string} id @param {Record<string, unknown>} body */
   async function create(id, body) {
     creating = true;
-    try { await api.put(`${base}/monitors/${encodeURIComponent(id)}`, body); toasts.ok(t('stx.created', { id })); createOpen = false; goto(`/atc-status/${sid}/monitors/${id}`); }
+    try {
+      const r = /** @type {any} */ (await api.put(`${base}/monitors/${encodeURIComponent(id)}`, body));
+      toasts.ok(t('stx.created', { id })); createOpen = false;
+      if (r.pingPath) { pingPath = r.pingPath; afterPing = `/atc-status/${sid}/monitors/${id}`; } else goto(`/atc-status/${sid}/monitors/${id}`);
+    }
     catch (e) { toasts.error(e); } finally { creating = false; }
   }
 </script>
@@ -64,9 +82,28 @@
     <Stat label={t('stx.s.degraded')} value={list.data ? fmt.int(count('degraded')) : undefined} tone={count('degraded') ? 'warn' : ''} />
     <Stat label={t('stx.s.down')} value={list.data ? fmt.int(count('down')) : undefined} tone={count('down') ? 'danger' : ''} />
     <Stat label={t('stx.openIncidents')} value={open.data ? fmt.int(incidents.length) : undefined} tone={incidents.length ? 'danger' : ''} />
+    <Stat label={t('stx.statOpenAlerts')} value={alertsRes.data ? fmt.int(alerts.length) : undefined} tone={alerts.some((a) => a.severity === 'critical') ? 'danger' : alerts.length ? 'warn' : ''} />
   </div>
 
   <div class="stack">
+    {#if alerts.length}
+      <Panel title={t('stx.openAlerts')} flush>
+        <p class="small muted panel-note">{t('stx.alertsDesc')}</p>
+        <div class="table-wrap"><table class="table">
+          <thead><tr><th>{t('stx.alertSeverity')}</th><th>{t('stx.alertWhat')}</th><th class="hide-m">{t('stx.alertLast')}</th>{#if session.isAdmin}<th class="actions"></th>{/if}</tr></thead>
+          <tbody>
+            {#each alerts as a (a.id)}
+              <tr>
+                <td><StatusBadge status={a.severity} label={t(`stx.sev.${a.severity}`)} /></td>
+                <td><span class="truncate cause">{a.title}</span><div class="xs faint mono truncate cause" title={a.message}>{a.message}{#if a.count > 1} · {t('stx.alertTimes', { n: fmt.int(a.count) })}{/if}</div></td>
+                <td class="hide-m small nowrap"><Time value={a.lastAt} /></td>
+                {#if session.isAdmin}<td class="actions"><button class="btn sm" onclick={() => { ackTarget = a; }} aria-label={t('stx.alertAck')} title={t('stx.alertAck')}><Icon name="check" size={14} /><span class="hide-m"> {t('stx.alertAck')}</span></button></td>{/if}
+              </tr>
+            {/each}
+          </tbody>
+        </table></div>
+      </Panel>
+    {/if}
     {#if incidents.length}
       <Panel title={t('stx.openIncidents')} flush>
         <div class="table-wrap"><table class="table">
@@ -95,7 +132,7 @@
           <tbody>
             {#each items as m (m.id)}
               <tr class="clickable" onclick={() => goto(`/atc-status/${sid}/monitors/${m.id}`)}>
-                <td><span class="row wrap tight">{m.name}{#if m.public}<StatusBadge status="public" label={t('stx.public')} />{/if}</span><div class="xs faint mono truncate url">{m.url}</div></td>
+                <td><span class="row wrap tight">{m.name}{#if m.public}<StatusBadge status="public" label={t('stx.public')} />{/if}</span><div class="xs faint mono truncate url">{m.kind === 'heartbeat' ? t('stx.k.heartbeat') : m.kind === 'http' ? m.url : `${t(`stx.k.${m.kind}`)} · ${m.url}`}</div></td>
                 <td><StatusBadge status={m.state} label={t(`stx.s.${m.state}`)} /></td>
                 <td class="hide-m small">{pct(m.uptime24h)}</td>
                 <td class="hide-m small">{m.lastCheck?.ok ? `${fmt.int(m.lastCheck.latencyMs)} ms` : '–'}</td>
@@ -109,6 +146,8 @@
   </div>
 </Page>
 
+<PingToken path={pingPath} onclose={() => { pingPath = null; if (afterPing) { const to = afterPing; afterPing = null; goto(to); } }} />
+<Confirm open={ackTarget !== null} title={t('stx.alertAckTitle')} message={t('stx.alertAckDesc')} confirmLabel={t('stx.alertAck')} busy={acking} onconfirm={ack} oncancel={() => { ackTarget = null; }} />
 <MonitorForm open={createOpen} busy={creating} onsubmit={create} onclose={() => { createOpen = false; }} />
 
 <style>
@@ -116,4 +155,6 @@
   .tight { gap: 6px; }
   .url { max-width: 320px; }
   .cause { display: block; max-width: 320px; }
+  .panel-note { margin: 0; padding: 10px 16px 0; }
+  .actions { text-align: right; width: 1%; white-space: nowrap; }
 </style>

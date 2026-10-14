@@ -23,6 +23,8 @@ export class BackupClient extends ServiceClient {
   backup(id) { return this.json('GET', `/v1/backups/${BackupClient.seg(id)}`); }
   /** @param {string} id */
   verify(id) { return this.json('POST', `/v1/backups/${BackupClient.seg(id)}/verify`, { timeoutMs: BackupClient.LONG_MS }); }
+  /** @param {string} id */
+  drill(id) { return this.json('POST', `/v1/backups/${BackupClient.seg(id)}/drill`, { timeoutMs: BackupClient.LONG_MS }); }
   /** @param {string} id @param {object} body */
   restore(id, body) { return this.json('POST', `/v1/backups/${BackupClient.seg(id)}/restore`, { body, timeoutMs: BackupClient.LONG_MS }); }
   /** @param {string} id */
@@ -46,6 +48,6 @@ export class BackupClient extends ServiceClient {
   /** Overview card facts, from `/v1/stats`. */
   async summary() {
     const s = /** @type {any} */ (await this.stats());
-    return { sources: s.sources, backups: s.backups, bytes: s.bytes, failing: s.failing.length, stale: s.stale.length };
+    return { sources: s.sources, backups: s.backups, bytes: s.bytes, failing: s.failing.length, stale: s.stale.length, drillFailing: (s.drillFailing ?? []).length };
   }
 }

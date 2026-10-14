@@ -8873,14 +8873,14 @@ paths:
         file.
 
 
-        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`. An export can hold personal data.
 
 
         Recorded in console's own activity log (`GET /api/audit`).
       parameters:
         - $ref: "#/components/parameters/SidParam"
         - $ref: "#/components/parameters/IdParam"
-      x-required-role: session
+      x-required-role: admin
       x-stack-visibility: operator
       responses:
         "200":
@@ -8907,6 +8907,8 @@ paths:
           $ref: "#/components/responses/ValidationFailed"
         "401":
           $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/ProxyNotFound"
         "502":
@@ -8925,14 +8927,14 @@ paths:
         individually schema-validated and individually role-gated.
 
 
-        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`. An export can hold personal data.
 
 
         Recorded in console's own activity log (`GET /api/audit`).
       parameters:
         - $ref: "#/components/parameters/SidParam"
         - $ref: "#/components/parameters/IdParam"
-      x-required-role: session
+      x-required-role: admin
       x-stack-visibility: operator
       responses:
         "200":
@@ -8947,6 +8949,8 @@ paths:
           $ref: "#/components/responses/ValidationFailed"
         "401":
           $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/ProxyNotFound"
         "502":
@@ -10301,7 +10305,7 @@ paths:
         required: true
         content:
           application/json:
-            schema: {"type":"object","additionalProperties":false,"properties":{"name":{"type":"string","minLength":1,"maxLength":100},"description":{"type":"string","maxLength":500},"url":{"type":"string","minLength":8,"maxLength":2000,"pattern":"^https?://"},"method":{"type":"string","enum":["GET","HEAD"]},"intervalSec":{"type":"integer","minimum":10,"maximum":86400},"timeoutMs":{"type":"integer","minimum":500,"maximum":60000},"expectStatus":{"type":"array","minItems":1,"maxItems":20,"items":{"type":"integer","minimum":100,"maximum":599}},"failThreshold":{"type":"integer","minimum":1,"maximum":20},"public":{"type":"boolean"},"paused":{"type":"boolean"}}}
+            schema: {"type":"object","additionalProperties":false,"properties":{"kind":{"type":"string","enum":["http","tcp","tls","heartbeat"]},"expectText":{"type":["string","null"],"maxLength":200},"warnDays":{"type":"integer","minimum":1,"maximum":365},"graceSec":{"type":"integer","minimum":0,"maximum":86400},"rotateToken":{"type":"boolean"},"name":{"type":"string","minLength":1,"maxLength":100},"description":{"type":"string","maxLength":500},"url":{"type":"string","minLength":8,"maxLength":2000,"pattern":"^https?://"},"method":{"type":"string","enum":["GET","HEAD"]},"intervalSec":{"type":"integer","minimum":10,"maximum":86400},"timeoutMs":{"type":"integer","minimum":500,"maximum":60000},"expectStatus":{"type":"array","minItems":1,"maxItems":20,"items":{"type":"integer","minimum":100,"maximum":599}},"failThreshold":{"type":"integer","minimum":1,"maximum":20},"public":{"type":"boolean"},"paused":{"type":"boolean"}}}
       responses:
         "200":
           description: Pass-through of the status service's own `PUT /v1/monitors/{id}` response body, relayed
@@ -10788,6 +10792,140 @@ paths:
           $ref: "#/components/responses/ValidationFailed"
         "401":
           $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-status/alerts:
+    get:
+      operationId: atc-console.atc-status.alerts.list
+      tags:
+        - atc-status
+      summary: "Operational alerts, newest first."
+      description: >-
+        Typed pass-through to the **status** service instance named by `sid` — console relays this to its `GET
+        /v1/alerts`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - name: state
+          in: query
+          required: false
+          schema: {"type":"string","enum":["open","acked"]}
+        - name: limit
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^([1-9]|[1-9][0-9]|100)$"}
+        - name: cursor
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^[0-9]{1,15}~alr_[0-9a-z]{6,12}[0-9a-f]{16}$"}
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the status service's own `GET /v1/alerts` response body, relayed
+            unchanged. See the status service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-status/alerts/{id}/ack:
+    post:
+      operationId: atc-console.atc-status.alerts.ack
+      tags:
+        - atc-status
+      summary: "Acknowledge an operational alert."
+      description: >-
+        Typed pass-through to the **status** service instance named by `sid` — console relays this to its `POST
+        /v1/alerts/{id}/ack`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the status service's own `POST /v1/alerts/{id}/ack` response body, relayed
+            unchanged. See the status service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-backup/backups/{id}/drill:
+    post:
+      operationId: atc-console.atc-backup.backups.drill
+      tags:
+        - atc-backup
+      summary: "Restore drill of a backup."
+      description: >-
+        Typed pass-through to the **backup** service instance named by `sid` — console relays this to its `POST
+        /v1/backups/{id}/drill`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the backup service's own `POST /v1/backups/{id}/drill` response body, relayed
+            unchanged. See the backup service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/ProxyNotFound"
         "502":

@@ -5,9 +5,10 @@ import { SPECIAL_CONTENT_SECURITY_POLICY, specialRoute } from '#lib/server/m5.js
 const TYPES: Record<string, string> = { 'text/csv': 'text/csv; charset=utf-8', 'application/x-ndjson': 'application/x-ndjson' };
 
 // Streams the export file through the console (the browser never talks to media). Always an
-// attachment, never rendered: fixed content types only, sandboxed, not cached.
+// attachment, never rendered: fixed content types only, sandboxed, not cached. Admins only, like the
+// other downloads: an export can hold personal data.
 export const GET = specialRoute({
-  auth: 'session',
+  auth: 'admin',
   params: Schemas.exportParams,
   handler: async (context) => {
     const downstream = await context.runtime.clients.get(context.params.sid, ExportClient).file(context.params.id);

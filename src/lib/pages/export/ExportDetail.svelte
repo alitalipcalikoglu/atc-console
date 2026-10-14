@@ -46,7 +46,7 @@
 <Page title={x ? `${sourceLabel} · ${x.format.toUpperCase()}` : t('ex.export')} back="/atc-export/{sid}">
   {#snippet actions()}
     <!-- Streamed through the console's relay; the browser never talks to media. -->
-    {#if x?.status === 'succeeded' && x.file}<a class="btn primary" href="/api/services/{encodeURIComponent(sid)}/atc-export/exports/{encodeURIComponent(id)}/file" download={x.file.name}><Icon name="download" size={16} /><span class="hide-m"> {t('ex.download')}</span></a>{/if}
+    {#if x?.status === 'succeeded' && x.file && session.isAdmin}<a class="btn primary" href="/api/services/{encodeURIComponent(sid)}/atc-export/exports/{encodeURIComponent(id)}/file" download={x.file.name}><Icon name="download" size={16} /><span class="hide-m"> {t('ex.download')}</span></a>{/if}
     {#if x && session.isAdmin}
       {#if canRetry}<button class="btn" onclick={() => { confirm = 'retry'; }} disabled={busy}><Icon name="refresh" size={16} /><span class="hide-m"> {t('ex.retry')}</span></button>{/if}
       {#if canCancel || canDelete}<RowMenu label={t('common.actions')} items={[
