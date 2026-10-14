@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { Config } from '../src/config.js';
 import { ConsoleRuntime } from '../src/lib/server/runtime.js';
+import probeExpression from './overflow-probe.js';
 
 const PASSWORD = 'CorrectHorseBattery1!';
 const SECRETS_KEY = '47'.repeat(32);
@@ -337,6 +338,20 @@ try {
   assert.ok(overflow.body <= overflow.viewport + 1, JSON.stringify(overflow));
   await screenshot('06-docs-narrow-light-en');
   await cdp.send('Emulation.clearDeviceMetricsOverride');
+
+  // The layout probe (scripts/overflow-probe.js) on the main pages at desktop and phone width: no page overflow, no element leaving its parent box.
+  for (const [width, height, mobile] of [[1280, 800, false], [375, 812, true]]) {
+    await cdp.send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile });
+    for (const path of ['/', '/account', '/admins', '/atc-notify/atc-notify']) {
+      await navigate(path);
+      await waitJs(`document.querySelector('main') !== null && document.querySelectorAll('.skeleton').length === 0`, `probe ${path} at ${width}`, 15_000);
+      const report = await evaluate(probeExpression);
+      assert.equal(report.page, false, `${path} at ${width}px overflows the page: ${JSON.stringify(report)}`);
+      assert.deepEqual(report.nested, [], `${path} at ${width}px has elements outside their parent: ${JSON.stringify(report.nested)}`);
+    }
+  }
+  await cdp.send('Emulation.clearDeviceMetricsOverride');
+  console.log('M7 browser: overflow probe clean on the main pages at 1280 and 375 px');
 
   const storage = await evaluate(`(async () => ({
     local: Object.fromEntries(Object.entries(localStorage)),

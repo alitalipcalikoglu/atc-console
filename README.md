@@ -199,7 +199,7 @@ Installable (manifest, icons for iOS and Android, standalone display). The servi
 
 ## Visual checks
 
-Every UI change is checked in a browser at desktop and 375 px widths before it is committed. `npm run smoke:browser` exercises the canonical adapter-node application and captures the established responsive, navigation, theme, localization, toast, docs and PWA checks. For layout, evaluate `scripts/overflow-probe.js`'s `probe` in the page: it reports page overflow, every element that spills out of its parent box (`nested`), and whether scrolling tables show their fade hint. Any `nested` entry is a bug.
+Every UI change is checked in a browser at desktop and 375 px widths before it is committed. `npm run smoke:browser` exercises the canonical adapter-node application, runs the overflow probe on the main pages at 1280 and 375 px (it fails on page overflow or any `nested` entry) and captures the established responsive, navigation, theme, localization, toast, docs and PWA checks. For layout, evaluate `scripts/overflow-probe.js`'s `probe` in the page: it reports page overflow, every element that spills out of its parent box (`nested`), and whether scrolling tables show their fade hint. Any `nested` entry is a bug.
 
 ## Code layout
 
