@@ -32,6 +32,7 @@
       <div class="row wrap" style="margin-bottom:14px"><StatusBadge status={m.status} label={t(`notify.${m.status}`)} /><span class="mono small muted">{m.id}</span><CopyButton text={m.id} /></div>
       <dl class="kv">
         <dt>{t('notify.template')}</dt><dd><code>{m.template}</code></dd>
+        {#if m.keyId}<dt>{t('notify.sender')}</dt><dd><code>{m.keyId}</code></dd>{/if}
         <dt>{t('notify.to')}</dt><dd>{m.to.join(', ')}</dd>
         <dt>{t('notify.attempts')}</dt><dd>{m.attempts} / {m.maxAttempts}</dd>
         {#if m.nextAttemptAt}<dt>{t('notify.nextAttempt')}</dt><dd><Time value={m.nextAttemptAt} /></dd>{/if}

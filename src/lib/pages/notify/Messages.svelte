@@ -124,12 +124,13 @@
       {:else if !items.length}<Empty title={t('notify.emptyTitle')} desc={t('notify.emptyDesc')} />
       {:else}
         <div class="table-wrap"><table class="table">
-          <thead><tr><th>{t('common.status')}</th><th>{t('notify.template')}</th><th>{t('notify.to')}</th><th class="num">{t('notify.attempts')}</th><th class="hide-m">{t('common.created')}</th><th class="hide-m">{t('notify.lastError')}</th><th></th></tr></thead>
+          <thead><tr><th>{t('common.status')}</th><th>{t('notify.template')}</th><th class="hide-m">{t('notify.sender')}</th><th>{t('notify.to')}</th><th class="num">{t('notify.attempts')}</th><th class="hide-m">{t('common.created')}</th><th class="hide-m">{t('notify.lastError')}</th><th></th></tr></thead>
           <tbody>
             {#each items as msg (msg.id)}
               <tr class="clickable" onclick={() => goto(`/atc-notify/${sid}/messages/${msg.id}`)}>
                 <td><StatusBadge status={msg.status} label={t(`notify.${msg.status}`)} /></td>
                 <td><code>{msg.template}</code></td>
+                <td class="hide-m small"><code>{msg.keyId}</code></td>
                 <td class="truncate" style="max-width:220px">{msg.to.join(', ')}</td>
                 <td class="num">{msg.attempts}/{msg.maxAttempts}</td>
                 <td class="hide-m"><Time value={msg.createdAt} /></td>
