@@ -51,29 +51,37 @@
 </script>
 
 <Page title={t('overview.title')} desc={t('overview.desc')}>
-  <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(290px,1fr))">
+  <div class="grid services">
     {#each services.items as s (s.id)}
       {@const o = services.overview[s.id]}
       {@const p = poller.for(s.id)}
+      {@const rows = facts(s, o)}
       <div class="card service">
-        <div class="card-body">
-          <div class="row" style="margin-bottom:10px">
-            <a href="/{s.type}/{s.id}" class="icon-wrap" aria-label={t('overview.open')}><Icon name={ICONS[s.type]} size={20} /></a>
-            <div class="grow" style="min-width:90px"><a href="/{s.type}/{s.id}" style="font-weight:650;color:inherit">{s.label}</a><div class="xs faint truncate">{s.type} · <span class="mono">{s.url.replace(/^https?:\/\//, '')}</span></div></div>
-            <span class="badge {tone(o)}">{label(o)}</span>
-            {#if p.running}<span class="xs muted mono" title="{t('poll.label')}: {p.effectiveSec} s"><Icon name="clock" size={12} /> {p.inFlight ? '…' : `${p.countdown}s`}</span>{/if}
-            <button class="btn ghost icon sm" onclick={() => refresh(s.id)} disabled={p.inFlight} aria-label="{t('common.refresh')} {s.label}" title={t('common.refresh')}><Icon name="refresh" size={14} /></button>
+        <div class="head">
+          <a href="/{s.type}/{s.id}" class="icon-wrap" aria-label={t('overview.open')}><Icon name={ICONS[s.type]} size={20} /></a>
+          <div class="grow title">
+            <a href="/{s.type}/{s.id}" class="name truncate">{s.label}</a>
+            <div class="xs faint truncate">{s.type} · <span class="mono">{s.url.replace(/^https?:\/\//, '')}</span></div>
           </div>
+          <span class="badge {tone(o)}">{label(o)}</span>
+        </div>
+        <div class="body">
           {#if o?.summary?.error}
             <p class="small warn-text">{t('overview.noMetrics')}: {o.summary.error}</p>
-          {:else if facts(s, o).length}
-            <dl class="kv">{#each facts(s, o) as [k, v] (k)}<dt>{k}</dt><dd style="font-variant-numeric:tabular-nums;font-weight:600">{v}</dd>{/each}</dl>
+          {:else if rows.length}
+            <dl class="stats">{#each rows as [k, v] (k)}<div><dt class="truncate" title={k}>{k}</dt><dd>{v}</dd></div>{/each}</dl>
           {:else if o}
             <p class="small faint">{t('overview.noMetrics')}</p>
           {:else}
-            <div class="skeleton" style="height:48px"></div>
+            <div class="skeleton" style="height:96px"></div>
           {/if}
-          {#if o}<div class="xs faint row" style="margin-top:10px"><span class="grow">{t('overview.latency')} {fmt.ms(o.latencyMs)}{#if o.summary?.uptimeSec != null} · {t('overview.uptime')} {fmt.duration(o.summary.uptimeSec)}{/if}</span>{#if services.refreshedAt[s.id]}<Time value={services.refreshedAt[s.id]} />{/if}</div>{/if}
+        </div>
+        <div class="foot">
+          <span class="grow truncate xs faint">
+            {#if o}{t('overview.latency')} {fmt.ms(o.latencyMs)}{#if o.summary?.uptimeSec != null}{' · '}{t('overview.uptime')} {fmt.duration(o.summary.uptimeSec)}{/if}{#if services.refreshedAt[s.id]}{' · '}<Time value={services.refreshedAt[s.id]} />{/if}{/if}
+          </span>
+          {#if p.running}<span class="countdown" title="{t('poll.label')}: {p.effectiveSec} s"><Icon name="clock" size={12} />{p.inFlight ? '…' : `${p.countdown}s`}</span>{/if}
+          <button class="btn ghost icon sm" onclick={() => refresh(s.id)} disabled={p.inFlight} aria-label="{t('common.refresh')} {s.label}" title={t('common.refresh')}><Icon name="refresh" size={14} /></button>
         </div>
       </div>
     {/each}
@@ -81,6 +89,20 @@
 </Page>
 
 <style>
-  .icon-wrap { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); flex: none; }
+  .services { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); align-items: stretch; }
+  .service { display: flex; flex-direction: column; min-width: 0; }
+  .head { display: flex; align-items: center; gap: 12px; padding: 14px 16px 0; min-width: 0; }
+  .title { min-width: 0; }
+  .name { display: block; font-weight: 650; color: inherit; }
   .service a:hover { text-decoration: none; }
+  .icon-wrap { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); flex: none; }
+  .body { flex: 1; padding: 14px 16px; }
+  .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
+  .stats > div { min-width: 0; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--surface-2); }
+  .stats dt { font-size: .75rem; color: var(--text-3); }
+  .stats dt::first-letter { text-transform: uppercase; }
+  .stats dd { margin: 2px 0 0; font-size: 1.05rem; font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .foot { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 8px 0 16px; border-top: 1px solid var(--border); min-width: 0; }
+  /* Fixed width so the ticking number never moves the footer. */
+  .countdown { display: inline-flex; align-items: center; justify-content: flex-end; gap: 4px; width: 5ch; flex: none; font-family: var(--mono); font-size: .75rem; font-variant-numeric: tabular-nums; color: var(--text-3); }
 </style>
