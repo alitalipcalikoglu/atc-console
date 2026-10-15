@@ -48,12 +48,12 @@
 <Page title={u?.email ?? t('auth.users')} back="/atc-auth/{sid}">
   {#snippet actions()}
     {#if u && session.isAdmin}
-      <button class="btn" onclick={() => run(() => api.post(`${base}/resend-verification`, { email: u.email }), t('auth.sent'), false)} disabled={busy || u.emailVerified}><Icon name="mail" size={16} /> {t('auth.resend')}</button>
-      <button class="btn" onclick={() => run(() => api.post(`${base}/password-reset-email`, { email: u.email }), t('auth.sent'), false)} disabled={busy}><Icon name="key" size={16} /> {t('auth.resetEmail')}</button>
       {#if u.status === 'active'}<button class="btn danger" onclick={() => { confirm = 'disable'; }} disabled={busy}><Icon name="lock" size={16} /> {t('auth.disable')}</button>
       {:else}<button class="btn" onclick={() => run(() => api.patch(base, { status: 'active' }), t('auth.updated'))} disabled={busy}><Icon name="unlock" size={16} /> {t('auth.enable')}</button>{/if}
       <button class="btn danger" onclick={() => { confirm = 'delete'; }} disabled={busy}><Icon name="trash" size={16} /> {t('common.delete')}</button>
       <RowMenu label={t('common.actions')} items={[
+        ...(u.emailVerified ? [] : [{ label: t('auth.resend'), icon: 'mail', run: () => run(() => api.post(`${base}/resend-verification`, { email: u.email }), t('auth.sent'), false) }]),
+        { label: t('auth.resetEmail'), icon: 'key', run: () => run(() => api.post(`${base}/password-reset-email`, { email: u.email }), t('auth.sent'), false) },
         { label: t('auth.changeEmail'), icon: 'mail', run: () => { newEmail = ''; emailOpen = true; } },
         { label: t('auth.export'), icon: 'download', run: downloadExport },
         ...(u.mfaEnabled ? [{ label: t('auth.resetMfa'), icon: 'shield', danger: true, run: () => { confirm = 'resetMfa'; } }] : []),

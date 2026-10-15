@@ -74,6 +74,7 @@
   .page-desc { font-size: .78rem; color: var(--text-2); line-height: 1.2; }
   .page-actions { display: flex; align-items: center; gap: 8px; flex: none; max-width: 70%; overflow-x: auto; scrollbar-width: none; }
   .page-actions::-webkit-scrollbar { display: none; }
+  .page-actions > :global(*) { flex-shrink: 0; } /* an action is never squeezed narrower than its content */
   .divider { width: 1px; height: 22px; background: var(--border); margin: 0 2px; }
   @media (min-width: 901px) { .hide-desktop { display: none; } }
   @media (max-width: 900px) {
