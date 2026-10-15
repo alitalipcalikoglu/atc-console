@@ -104,6 +104,7 @@
 <Page title={svc?.label ?? t('notify.title')} desc={t('notify.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
+    <a class="btn" href="/atc-notify/{sid}/suppressions" aria-label={t('notify.suppressions')} title={t('notify.suppressions')}><Icon name="shield" size={16} /><span class="hide-m"> {t('notify.suppressions')}</span></a>
     {#if session.isAdmin}<button class="btn primary" onclick={openSend}><Icon name="mail" size={16} /> {t('notify.send')}</button>{/if}
     <button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}

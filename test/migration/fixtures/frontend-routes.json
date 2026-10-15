@@ -46,5 +46,6 @@
   "/admins",
   "/docs",
   "/account",
-  "/about"
+  "/about",
+  "/atc-notify/:sid/suppressions"
 ]

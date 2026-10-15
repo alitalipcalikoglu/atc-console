@@ -115,7 +115,7 @@
     <div class="stack">
       <div class="card"><div class="card-body">
         {#if x.description}<p style="margin-bottom:10px">{x.description}</p>{/if}
-        <p class="xs faint" style="margin:0">{fmt.int(x.documents)} {t('se.documents').toLowerCase()} · {t('se.lastIndexed').toLowerCase()} {#if x.lastIndexedAt}<Time value={x.lastIndexedAt} />{:else}{t('se.never').toLowerCase()}{/if} · {t('se.weights').toLowerCase()} <span class="mono">{x.weights.title}/{x.weights.body}/{x.weights.tags}</span> · {fmt.int(x.searchesSinceStart)} {t('se.searches').toLowerCase()}</p>
+        <p class="xs faint" style="margin:0">{fmt.int(x.documents)} {t('se.documents').toLowerCase()} · {t('se.lastIndexed').toLowerCase()} {#if x.lastIndexedAt}<Time value={x.lastIndexedAt} />{:else}{t('se.never').toLowerCase()}{/if} · {t('se.weights').toLowerCase()} <span class="mono">{x.weights.title}/{x.weights.body}/{x.weights.tags}</span> · {fmt.int(x.searchesSinceStart)} {t('se.searches').toLowerCase()} · {t(`se.language.${x.language ?? 'none'}`)}</p>
       </div></div>
 
       <div class="row" style="gap:10px;align-items:stretch">

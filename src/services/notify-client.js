@@ -30,6 +30,25 @@ export class NotifyClient extends ServiceClient {
     return this.json('POST', '/v1/messages', { body });
   }
 
+  /** @param {{ q?: string, limit?: number, cursor?: string }} q */
+  listSuppressions(q) {
+    const p = new URLSearchParams();
+    if (q.q) p.set('q', q.q);
+    if (q.limit) p.set('limit', String(q.limit));
+    if (q.cursor) p.set('cursor', q.cursor);
+    return this.json('GET', `/v1/suppressions?${p}`);
+  }
+
+  /** @param {{ email: string, reason?: string, note?: string }} body */
+  addSuppression(body) {
+    return this.json('POST', '/v1/suppressions', { body });
+  }
+
+  /** @param {string} email */
+  removeSuppression(email) {
+    return this.json('DELETE', `/v1/suppressions/${encodeURIComponent(email)}`);
+  }
+
   async summary() {
     const s = await this.metricsSamples();
     if (!s) return null;

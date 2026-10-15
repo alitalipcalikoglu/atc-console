@@ -10,14 +10,15 @@
   let wTitle = $state(5);
   let wBody = $state(1);
   let wTags = $state(3);
+  let language = $state('none');
   $effect(() => {
     if (!open) return;
     name = initial?.name ?? ''; description = initial?.description ?? ''; facets = (initial?.facets ?? []).join(', ');
-    wTitle = initial?.weights?.title ?? 5; wBody = initial?.weights?.body ?? 1; wTags = initial?.weights?.tags ?? 3;
+    wTitle = initial?.weights?.title ?? 5; wBody = initial?.weights?.body ?? 1; wTags = initial?.weights?.tags ?? 3; language = initial?.language ?? 'none';
   });
   const valid = $derived(Boolean(initial || name.trim()) && [wTitle, wBody, wTags].every((w) => Number.isFinite(Number(w)) && Number(w) >= 0 && Number(w) <= 100));
   function build() {
-    const full = { description: description.trim(), weights: { title: Number(wTitle), body: Number(wBody), tags: Number(wTags) }, facets: [...new Set(facets.split(',').map((s) => s.trim()).filter(Boolean))] };
+    const full = { description: description.trim(), weights: { title: Number(wTitle), body: Number(wBody), tags: Number(wTags) }, facets: [...new Set(facets.split(',').map((s) => s.trim()).filter(Boolean))], language };
     if (!initial) return { name: name.trim(), ...full };
     /** @type {Record<string, unknown>} */ const patch = {};
     for (const k of /** @type {(keyof typeof full)[]} */ (Object.keys(full))) if (JSON.stringify(full[k]) !== JSON.stringify(initial[k])) patch[k] = full[k];
@@ -37,6 +38,7 @@
         <div class="field"><label for="if-wg">{t('se.tags.w')}</label><input id="if-wg" class="input" type="number" min="0" max="100" bind:value={wTags} /></div>
       </div><span class="hint">{t('se.weightsHint')}</span></div>
     <div class="field"><label for="if-facets">{t('se.facetKeys')} <span class="faint">({t('common.optional')})</span></label><input id="if-facets" class="input mono" bind:value={facets} placeholder="brand, color, tags" /><span class="hint">{t('se.facetKeysHint')}</span></div>
+    <div class="field"><label for="if-lang">{t('se.language')}</label><select id="if-lang" class="select" bind:value={language}><option value="none">{t('se.language.none')}</option><option value="tr">{t('se.language.tr')}</option></select><span class="hint">{t('se.languageHint')}</span></div>
     <button type="submit" class="sr-only">ok</button>
   </form>
   {#snippet footer()}

@@ -24,6 +24,9 @@ export class Schemas {
   static setPassword = Schemas.body(['password'], { password: Schemas.password });
   static serviceParams = { type: 'object', properties: { sid: Schemas.sid }, required: ['sid'] };
   static serviceIdParams = { type: 'object', properties: { sid: Schemas.sid, id: Schemas.id }, required: ['sid', 'id'] };
+  static serviceEmailParams = { type: 'object', properties: { sid: Schemas.sid, email: { type: 'string', format: 'email', maxLength: 254 } }, required: ['sid', 'email'] };
+  static notifySuppressionQuery = { type: 'object', additionalProperties: false, properties: { limit: { type: 'string', pattern: '^([1-9]|[1-9][0-9]|1[0-9][0-9]|200)$' }, cursor: { type: 'string', maxLength: 512 }, q: { type: 'string', maxLength: 254 } } };
+  static notifySuppression = Schemas.body(['email'], { email: { type: 'string', format: 'email', maxLength: 254 }, reason: { type: 'string', enum: ['hard_bounce', 'complaint', 'soft_bounce', 'unsubscribe', 'manual'] }, note: { type: 'string', maxLength: 500 } });
   static serviceIdSubParams = { type: 'object', properties: { sid: Schemas.sid, id: Schemas.id, sub: Schemas.id }, required: ['sid', 'id', 'sub'] };
   static mediaUploadQuery = { type: 'object', additionalProperties: false, properties: { visibility: { type: 'string', enum: ['public', 'private'] }, name: { type: 'string', maxLength: 255 } } };
   static auditQuery = {
@@ -86,6 +89,7 @@ export class Schemas {
   static webhookReplay = Schemas.body(['from'], { from: { type: 'string', minLength: 20, maxLength: 40 }, to: { type: 'string', minLength: 20, maxLength: 40 } });
   static searchName = { type: 'string', pattern: '^[a-z0-9]+([.\\-_][a-z0-9]+)*$', maxLength: 80 };
   static searchIndexFields = { description: { type: 'string', maxLength: 500 }, weights: { type: 'object', additionalProperties: false, properties: { title: { type: 'number' }, body: { type: 'number' }, tags: { type: 'number' } } }, facets: { type: 'array', maxItems: 20, items: { type: 'string', minLength: 1, maxLength: 64 } } };
+  static { Schemas.searchIndexFields = { ...Schemas.searchIndexFields, language: { type: 'string', enum: ['none', 'tr'] } }; }
   static searchIndexCreate = Schemas.body(['name'], { name: Schemas.searchName, ...Schemas.searchIndexFields });
   static searchIndexPatch = { type: 'object', additionalProperties: false, minProperties: 1, properties: Schemas.searchIndexFields };
   static searchQuery = { type: 'object', additionalProperties: false, properties: { limit: { type: 'string', pattern: '^([1-9]|[1-9][0-9]|100)$' }, offset: { type: 'string', pattern: '^(0|[1-9][0-9]{0,4})$' } } };

@@ -5619,6 +5619,9 @@ paths:
                     type: string
                     minLength: 1
                     maxLength: 64
+                language:
+                  type: string
+                  enum: [none, tr]
       responses:
         "201":
           description: Created; the body is search's own create response. console declares no response schema for this
@@ -5729,6 +5732,9 @@ paths:
                     type: string
                     minLength: 1
                     maxLength: 64
+                language:
+                  type: string
+                  enum: [none, tr]
       responses:
         "200":
           description: Pass-through of the search service's own `PATCH /v1/indexes/{name}` response body, relayed
@@ -11191,6 +11197,137 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-notify/suppressions:
+    get:
+      operationId: atc-console.atc-notify.suppressions.list
+      tags:
+        - atc-notify
+      summary: "List suppressed addresses"
+      description: >-
+        Typed pass-through to the **notify** service instance named by `sid` — console relays this to its `GET
+        /v1/suppressions`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - name: limit
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^([1-9]|[1-9][0-9]|1[0-9][0-9]|200)$"}
+        - name: cursor
+          in: query
+          required: false
+          schema: {"type":"string","maxLength":512}
+        - name: q
+          in: query
+          required: false
+          schema: {"type":"string","maxLength":254}
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the notify service's own `GET /v1/suppressions` response body, relayed
+            unchanged. See the notify service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    post:
+      operationId: atc-console.atc-notify.suppressions.create
+      tags:
+        - atc-notify
+      summary: "Suppress an address"
+      description: >-
+        Typed pass-through to the **notify** service instance named by `sid` — console relays this to its `POST
+        /v1/suppressions`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["email"],"properties":{"email":{"type":"string","format":"email","maxLength":254},"reason":{"type":"string","enum":["hard_bounce","complaint","soft_bounce","unsubscribe","manual"]},"note":{"type":"string","maxLength":500}}}
+      responses:
+        "201":
+          description: Pass-through of the notify service's own `POST /v1/suppressions` response body, relayed
+            unchanged. See the notify service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-notify/suppressions/{email}:
+    delete:
+      operationId: atc-console.atc-notify.suppressions.delete
+      tags:
+        - atc-notify
+      summary: "Allow mail to an address again"
+      description: >-
+        Typed pass-through to the **notify** service instance named by `sid` — console relays this to its
+        `DELETE /v1/suppressions/{email}`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/EmailParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "204":
+          description: Done. console discards notify's response body.
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
 components:
   securitySchemes:
     SessionCookie:
@@ -11806,6 +11943,15 @@ components:
         minLength: 1
         maxLength: 128
         pattern: ^[A-Za-z0-9_.:-]+$
+    EmailParam:
+      name: email
+      in: path
+      required: true
+      description: An e-mail address, URL-encoded.
+      schema:
+        type: string
+        format: email
+        maxLength: 254
     SubParam:
       name: sub
       in: path
