@@ -20,7 +20,7 @@
   async function retry() { try { res.data = await api.post(`/services/${sid}/atc-notify/messages/${id}/retry`); toasts.ok(t('notify.retryDone')); } catch (e) { toasts.error(e); } }
 </script>
 
-<Page title={t('notify.message')} back="/atc-notify/{sid}">
+<Page help={t('help.page.notifyMessage')} docs={sid} title={t('notify.message')} back="/atc-notify/{sid}">
   {#snippet actions()}
     {#if m?.status === 'failed' && session.isAdmin}<button class="btn primary" onclick={retry}><Icon name="refresh" size={16} /> {t('notify.retry')}</button>{/if}
     <button class="btn icon" onclick={() => res.load()} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>

@@ -1,6 +1,7 @@
 <script>
   /** Index documents from pasted text or a file: a JSON array or one JSON document per line; sent in batches of 500. */
   import Dialog from '#lib/components/Dialog.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import { api } from '#lib/client/api.js';
   import { Fmt } from '#lib/client/format.js';
   import { t, i18n } from '#lib/client/i18n.svelte.js';
@@ -50,11 +51,11 @@
   }
 </script>
 
-<Dialog {open} title={t('se.addDocs')} {onclose} wide>
+<Dialog help={t('help.dialog.seAddDocs')} {open} title={t('se.addDocs')} {onclose} wide>
   <div class="stack">
     <p class="small muted" style="margin:0">{t('se.addDocsHint')}</p>
-    <div class="row wrap"><label class="btn sm"><input type="file" accept=".json,.jsonl,.ndjson,application/json" class="sr-only" onchange={pick} />{t('se.addDocsFile')}</label></div>
-    <textarea class="textarea mono" rows="12" bind:value={text} placeholder={'[\n  { "id": "p1", "title": "Red dress", "body": "…", "tags": ["summer"], "attrs": { "color": "red" } }\n]'} aria-label={t('se.addDocs')}></textarea>
+    <div class="row wrap"><label class="btn sm"><input id="se-docs-file" data-help-group="se-docs" type="file" accept=".json,.jsonl,.ndjson,application/json" class="sr-only" onchange={pick} />{t('se.addDocsFile')}</label></div>
+    <textarea id="se-docs" class="textarea mono" rows="12" bind:value={text} placeholder={'[\n  { "id": "p1", "title": "Red dress", "body": "…", "tags": ["summer"], "attrs": { "color": "red" } }\n]'} aria-label={t('se.addDocs')}></textarea><HelpTip text={t('help.se.docs')} for="se-docs" />
     {#if text.trim() && !valid}<span class="small danger-text">{t('se.docsInvalid')}</span>{:else if docs}<span class="small faint">{t('se.docsReady', { n: fmt.int(docs.length) })}</span>{/if}
   </div>
   {#snippet footer()}

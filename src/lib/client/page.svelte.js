@@ -10,10 +10,15 @@ export class PageState {
     this.back = $state(null);
     /** @type {import('svelte').Snippet|null} */
     this.actions = $state(null);
+    this.help = $state('');
+    /** @type {string|null} */
+    this.docs = $state(null);
   }
 
-  /** @param {{ title: string, desc?: string, back?: string|null, actions?: import('svelte').Snippet|null }} p */
+  /** @param {{ title: string, desc?: string, back?: string|null, actions?: import('svelte').Snippet|null, help?: string, docs?: string|null }} p */
   set(p) {
+    this.help = p.help ?? '';
+    this.docs = p.docs ?? null;
     this.title = p.title;
     this.desc = p.desc ?? '';
     this.back = p.back ?? null;
@@ -21,6 +26,8 @@ export class PageState {
   }
 
   clear() {
+    this.help = '';
+    this.docs = null;
     this.title = '';
     this.desc = '';
     this.back = null;

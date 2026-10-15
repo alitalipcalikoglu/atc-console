@@ -66,7 +66,7 @@
   }
 </script>
 
-<Page title={t('overview.title')} desc={t('overview.desc')}>
+<Page help={t('help.page.overview')} title={t('overview.title')} desc={t('overview.desc')}>
   <div class="summary">
     <span class="count">{services.items.length} {t('overview.services')}</span>
     {#if summary.ok}<span class="badge ok">{summary.ok} {t('overview.healthy')}</span>{/if}

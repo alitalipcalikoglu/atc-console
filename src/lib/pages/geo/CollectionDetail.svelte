@@ -1,6 +1,7 @@
 <script>
   /** One place collection: places, JSON upload, nearby test, clear and delete. */
   import Page from '#lib/components/Page.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Skeleton from '#lib/components/Skeleton.svelte';
@@ -82,7 +83,7 @@
   const attrText = (attrs) => Object.entries(attrs).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : String(v)}`);
 </script>
 
-<Page title={x ? x.name : t('ge.collection')} back="/atc-geo/{sid}">
+<Page help={t('help.page.geoCollection')} docs={sid} title={x ? x.name : t('ge.collection')} back="/atc-geo/{sid}">
   {#snippet actions()}
     {#if x && session.isAdmin}
       <button class="btn primary" onclick={() => { uploadOpen = true; }} disabled={busy}><Icon name="upload" size={16} /><span class="hide-m"> {t('ge.upload')}</span></button>
@@ -106,9 +107,9 @@
       <div class="layout two">
         <Panel title={t('ge.nearby')} bodyClass="stack">
           <form class="row wrap" style="gap:8px" onsubmit={(e) => { e.preventDefault(); nearby(); }}>
-            <input class="input grow mono" style="min-width:110px" bind:value={lat} placeholder="41.0082" aria-label="lat" />
-            <input class="input grow mono" style="min-width:110px" bind:value={lng} placeholder="28.9784" aria-label="lng" />
-            <input class="input mono" style="width:84px;flex:none" bind:value={radius} aria-label={t('ge.radius')} />
+            <input id="ge-lat" class="input grow mono" style="min-width:110px" bind:value={lat} placeholder="41.0082" aria-label="lat" /><HelpTip text={t('help.ge.lat')} for="ge-lat" />
+            <input id="ge-lng" class="input grow mono" style="min-width:110px" bind:value={lng} placeholder="28.9784" aria-label="lng" /><HelpTip text={t('help.ge.lng')} for="ge-lng" />
+            <input id="ge-radius" class="input mono" style="width:84px;flex:none" bind:value={radius} aria-label={t('ge.radius')} /><HelpTip text={t('help.ge.radius')} for="ge-radius" />
             <button type="submit" class="btn" disabled={!nearValid}><Icon name="search" size={16} /><span class="hide-m"> {t('ge.search')}</span></button>
           </form>
           <p class="xs faint" style="margin:0">{t('ge.nearbyHint')}</p>
@@ -146,10 +147,10 @@
 </Page>
 
 <CollectionForm open={editOpen} initial={x} busy={busy} onsubmit={save} onclose={() => { editOpen = false; }} />
-<Dialog open={uploadOpen} title={t('ge.upload')} onclose={() => { uploadOpen = false; }} wide>
+<Dialog help={t('help.dialog.geoUpload')} open={uploadOpen} title={t('ge.upload')} onclose={() => { uploadOpen = false; }} wide>
   <div class="stack">
     <p class="small muted" style="margin:0">{t('ge.uploadHint')}</p>
-    <textarea class="textarea mono" rows="12" bind:value={uploadText} placeholder={'[\n  { "id": "kadikoy", "name": "Kadıköy", "lat": 40.9903, "lng": 29.0252, "attrs": { "type": "store" } }\n]'} aria-label={t('ge.upload')}></textarea>
+    <textarea id="ge-upload" class="textarea mono" rows="12" bind:value={uploadText} placeholder={'[\n  { "id": "kadikoy", "name": "Kadıköy", "lat": 40.9903, "lng": 29.0252, "attrs": { "type": "store" } }\n]'} aria-label={t('ge.upload')}></textarea><HelpTip text={t('help.ge.upload')} for="ge-upload" />
     {#if uploadText.trim() && !parsed}<span class="small danger-text">{t('ge.uploadInvalid')}</span>{:else if parsed}<span class="small faint">{t('ge.uploadReady', { n: fmt.int(parsed.length) })}</span>{/if}
   </div>
   {#snippet footer()}

@@ -1,6 +1,7 @@
 <script>
   /** Create (name + description) or edit (description) a render template. */
   import { untrack } from 'svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import Dialog from '#lib/components/Dialog.svelte';
   import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ open: boolean, initial?: any, busy?: boolean, onsubmit: (body: { name?: string, description: string }) => void, onclose: () => void }} */
@@ -11,10 +12,10 @@
   const submit = () => onsubmit(initial ? { description: description.trim() } : { name: name.trim(), description: description.trim() });
 </script>
 
-<Dialog {open} title={initial ? t('rd.edit') : t('rd.create')} {onclose}>
+<Dialog help={t('help.dialog.rdTemplate')} {open} title={initial ? t('rd.edit') : t('rd.create')} {onclose}>
   <form class="stack" onsubmit={(e) => { e.preventDefault(); submit(); }}>
-    {#if !initial}<div class="field"><label for="rt-name">{t('rd.name')}</label><input id="rt-name" class="input mono" bind:value={name} required pattern={'[a-z][a-z0-9\\-]{0,63}'} placeholder="invoice" /><span class="hint">{t('rd.nameHint')}</span></div>{/if}
-    <div class="field"><label for="rt-desc">{t('rd.description')}</label><input id="rt-desc" class="input" bind:value={description} maxlength="500" /></div>
+    {#if !initial}<div class="field"><FieldLabel for="rt-name" help={t('help.rd.name')}>{t('rd.name')}</FieldLabel><input id="rt-name" class="input mono" bind:value={name} required pattern={'[a-z][a-z0-9\\-]{0,63}'} placeholder="invoice" /><span class="hint">{t('rd.nameHint')}</span></div>{/if}
+    <div class="field"><FieldLabel for="rt-desc" help={t('help.rd.description')}>{t('rd.description')}</FieldLabel><input id="rt-desc" class="input" bind:value={description} maxlength="500" /></div>
     <button type="submit" class="sr-only">ok</button>
   </form>
   {#snippet footer()}

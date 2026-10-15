@@ -1,6 +1,8 @@
 <script>
   /** Set or replace a subject override: custom windows or a block, optional note and expiry. PUT replaces, so the whole body is sent. */
   import Dialog from '#lib/components/Dialog.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import LimitsEditor from '#lib/components/LimitsEditor.svelte';
   import { LimitRows } from '#lib/client/limits.js';
   import { t } from '#lib/client/i18n.svelte.js';
@@ -29,16 +31,16 @@
   }
 </script>
 
-<Dialog {open} title={initial ? t('rl.editOverride') : t('rl.addOverride')} {onclose}>
+<Dialog help={t('help.dialog.rlOverride')} {open} title={initial ? t('rl.editOverride') : t('rl.addOverride')} {onclose}>
   <form class="stack" onsubmit={(e) => { e.preventDefault(); submit(); }}>
-    <div class="field"><label for="of-subject">{t('rl.subject')}</label><input id="of-subject" class="input mono" bind:value={subj} maxlength="200" required disabled={Boolean(initial)} placeholder="key_7f3a" /><span class="hint">{t('rl.subjectHint')}</span></div>
-    <div class="field"><span class="small" style="font-weight:550;color:var(--text-2)">{t('rl.overrideKind')}</span>
+    <div class="field"><FieldLabel for="of-subject" help={t('help.rl.subject')}>{t('rl.subject')}</FieldLabel><input id="of-subject" class="input mono" bind:value={subj} maxlength="200" required disabled={Boolean(initial)} placeholder="key_7f3a" /><span class="hint">{t('rl.subjectHint')}</span></div>
+    <div class="field"><span class="small" style="font-weight:550;color:var(--text-2)">{t('rl.overrideKind')}<HelpTip text={t('help.rl.overrideKind')} /></span>
       <div class="seg" role="group"><button type="button" aria-pressed={mode === 'limits'} onclick={() => { mode = 'limits'; }}>{t('rl.customLimits')}</button><button type="button" aria-pressed={mode === 'block'} onclick={() => { mode = 'block'; }}>{t('rl.block')}</button></div>
     </div>
     {#if mode === 'limits'}<div class="field"><LimitsEditor bind:rows /><span class="hint">{t('rl.overrideLimitsHint')}</span></div>
     {:else}<p class="small muted" style="margin:0">{t('rl.blockHint')}</p>{/if}
-    <div class="field"><label for="of-note">{t('rl.note')} <span class="faint">({t('common.optional')})</span></label><input id="of-note" class="input" bind:value={note} maxlength="500" /></div>
-    <div class="field"><label for="of-exp">{t('rl.expiresAt')} <span class="faint">({t('common.optional')})</span></label><input id="of-exp" class="input" type="datetime-local" bind:value={expiresAt} />{#if !expiryOk}<span class="error">{t('rl.expiryPast')}</span>{:else}<span class="hint">{t('rl.expiresHint')}</span>{/if}</div>
+    <div class="field"><FieldLabel for="of-note" help={t('help.rl.note')}>{t('rl.note')} <span class="faint">({t('common.optional')})</span></FieldLabel><input id="of-note" class="input" bind:value={note} maxlength="500" /></div>
+    <div class="field"><FieldLabel for="of-exp" help={t('help.rl.expires')}>{t('rl.expiresAt')} <span class="faint">({t('common.optional')})</span></FieldLabel><input id="of-exp" class="input" type="datetime-local" bind:value={expiresAt} />{#if !expiryOk}<span class="error">{t('rl.expiryPast')}</span>{:else}<span class="hint">{t('rl.expiresHint')}</span>{/if}</div>
     <button type="submit" class="sr-only">ok</button>
   </form>
   {#snippet footer()}

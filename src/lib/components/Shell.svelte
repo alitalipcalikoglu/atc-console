@@ -2,6 +2,8 @@
   /** Application frame: side navigation (an off-canvas drawer on narrow screens) and a header with page actions. */
   import Icon from './Icon.svelte';
   import Confirm from './Confirm.svelte';
+  import HelpTip from './HelpTip.svelte';
+  import ApiDocsButton from './ApiDocsButton.svelte';
   import { afterNavigate, goto } from '$app/navigation';
   import { page as route } from '$app/state';
   import { useSession } from '#lib/client/session.svelte.js';
@@ -52,7 +54,7 @@
       <button class="btn ghost icon sm hide-desktop" onclick={() => { menuOpen = true; }} aria-label={t('nav.menu')} title={t('nav.menu')} aria-controls="main-nav" aria-expanded={menuOpen}><Icon name="menu" /></button>
       {#if page.back}<a href={page.back} class="btn ghost icon sm" aria-label={t('common.back')} title={t('common.back')}><Icon name="back" /></a>{/if}
       <div class="grow" style="min-width:0">
-        <h1 class="page-title truncate">{page.title}</h1>
+        <div class="title-row"><h1 class="page-title truncate">{page.title}</h1>{#if page.help}<HelpTip text={page.help} />{/if}{#if page.docs}<ApiDocsButton sid={page.docs} />{/if}</div>
         {#if page.desc}<p class="page-desc truncate">{page.desc}</p>{/if}
       </div>
       {#if !pwa.online}<span class="badge warn"><Icon name="wifiOff" size={12} /> {t('common.offline')}</span>{/if}
@@ -70,6 +72,7 @@
 <Confirm open={session.logoutPending} title={t('account.logout')} message={t('account.logoutDesc')} confirmLabel={t('account.logout')} onconfirm={() => session.logout().then(() => goto('/login', { replace: true, refreshAll: true }))} oncancel={() => { session.logoutPending = false; }} />
 
 <style>
+  .title-row { display: flex; align-items: center; gap: 2px; min-width: 0; }
   .page-title { font-size: 1.05rem; font-weight: 650; line-height: 1.25; }
   .page-desc { font-size: .78rem; color: var(--text-2); line-height: 1.2; }
   .page-actions { display: flex; align-items: center; gap: 8px; flex: none; max-width: 70%; overflow-x: auto; scrollbar-width: none; }

@@ -1,6 +1,8 @@
 <script>
   /** Create/edit dialog body shared by the list and detail pages. Emits a plain patch/create object. */
   import Dialog from '#lib/components/Dialog.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ open: boolean, title: string, submitLabel: string, initial?: any, busy?: boolean, onsubmit: (body: any) => void, onclose: () => void }} */
   let { open, title, submitLabel, initial = null, busy = false, onsubmit, onclose } = $props();
@@ -33,18 +35,18 @@
   }
 </script>
 
-<Dialog {open} {title} {onclose}>
+<Dialog help={t('help.dialog.slLink')} {open} {title} {onclose}>
   {#if !initial}<p class="small muted" style="margin-bottom:12px">{t('sl.createDesc')}</p>{/if}
   <form class="stack" onsubmit={(e) => { e.preventDefault(); submit(); }}>
-    <div class="field"><label for="lf-url">{t('sl.url')}</label><input id="lf-url" class="input" type="url" placeholder="https://" bind:value={url} required /></div>
-    {#if !initial}<div class="field"><label for="lf-slug">{t('sl.slug')} <span class="faint">({t('common.optional')})</span></label><input id="lf-slug" class="input mono" bind:value={slug} pattern={'[A-Za-z0-9][A-Za-z0-9_-]{2,63}'} /><span class="hint">{t('sl.slugHint')}</span></div>{/if}
+    <div class="field"><FieldLabel for="lf-url" help={t('help.sl.url')}>{t('sl.url')}</FieldLabel><input id="lf-url" class="input" type="url" placeholder="https://" bind:value={url} required /></div>
+    {#if !initial}<div class="field"><FieldLabel for="lf-slug" help={t('help.sl.slug')}>{t('sl.slug')} <span class="faint">({t('common.optional')})</span></FieldLabel><input id="lf-slug" class="input mono" bind:value={slug} pattern={'[A-Za-z0-9][A-Za-z0-9_-]{2,63}'} /><span class="hint">{t('sl.slugHint')}</span></div>{/if}
     <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">
-      <div class="field"><label for="lf-exp">{t('sl.expiresAt')} <span class="faint">({t('common.optional')})</span></label><input id="lf-exp" class="input" type="datetime-local" bind:value={expires} aria-invalid={dateError ? 'true' : undefined} />{#if dateError}<span class="error">{dateError}</span>{/if}</div>
-      <div class="field"><label for="lf-max">{t('sl.maxClicks')} <span class="faint">({t('common.optional')})</span></label><input id="lf-max" class="input" type="number" min="1" step="1" bind:value={maxClicks} /></div>
+      <div class="field"><FieldLabel for="lf-exp" help={t('help.sl.expires')}>{t('sl.expiresAt')} <span class="faint">({t('common.optional')})</span></FieldLabel><input id="lf-exp" class="input" type="datetime-local" bind:value={expires} aria-invalid={dateError ? 'true' : undefined} />{#if dateError}<span class="error">{dateError}</span>{/if}</div>
+      <div class="field"><FieldLabel for="lf-max" help={t('help.sl.maxClicks')}>{t('sl.maxClicks')} <span class="faint">({t('common.optional')})</span></FieldLabel><input id="lf-max" class="input" type="number" min="1" step="1" bind:value={maxClicks} /></div>
     </div>
-    <div class="field"><label for="lf-tags">{t('sl.tags')} <span class="faint">({t('sl.tagsHint')})</span></label><input id="lf-tags" class="input" bind:value={tags} placeholder="poster, 2026" /></div>
-    <div class="field"><label for="lf-note">{t('sl.note')} <span class="faint">({t('common.optional')})</span></label><input id="lf-note" class="input" bind:value={note} maxlength="500" /></div>
-    <label class="row small" style="gap:10px;cursor:pointer"><input type="checkbox" bind:checked={permanent} /> <span>{t('sl.permanent')}<br><span class="faint xs">{t('sl.permanentHint')}</span></span></label>
+    <div class="field"><FieldLabel for="lf-tags" help={t('help.sl.tags')}>{t('sl.tags')} <span class="faint">({t('sl.tagsHint')})</span></FieldLabel><input id="lf-tags" class="input" bind:value={tags} placeholder="poster, 2026" /></div>
+    <div class="field"><FieldLabel for="lf-note" help={t('help.sl.note')}>{t('sl.note')} <span class="faint">({t('common.optional')})</span></FieldLabel><input id="lf-note" class="input" bind:value={note} maxlength="500" /></div>
+    <label class="row small" style="gap:10px;cursor:pointer"><input id="lf-permanent" type="checkbox" bind:checked={permanent} /> <span>{t('sl.permanent')}<br><span class="faint xs">{t('sl.permanentHint')}</span></span></label><HelpTip text={t('help.sl.permanent')} for="lf-permanent" />
     <button type="submit" class="sr-only">ok</button>
   </form>
   {#snippet footer()}

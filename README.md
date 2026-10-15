@@ -201,6 +201,10 @@ Installable (manifest, icons for iOS and Android, standalone display). The servi
 
 Every UI change is checked in a browser at desktop and 375 px widths before it is committed. `npm run smoke:browser` exercises the canonical adapter-node application, runs the overflow probe on the main pages at 1280 and 375 px (it fails on page overflow or any `nested` entry) and captures the established responsive, navigation, theme, localization, toast, docs and PWA checks. For layout, evaluate `scripts/overflow-probe.js`'s `probe` in the page: it reports page overflow, every element that spills out of its parent box (`nested`), and whether scrolling tables show their fade hint. Any `nested` entry is a bug.
 
+## Help tips and API links
+
+Every page title, form dialog and form field has a small "?" (`HelpTip`, `FieldLabel`) that explains it: what the page or form is for, and for a field its meaning, format, limits and default, taken from the service's README and OpenAPI document. Tips open on hover, keyboard focus and tap, close with Escape, and stay inside the viewport. The texts live in `src/lib/client/help.js` (English and Turkish). Every service page also has an app-bar link to that service's API reference (`ApiDocsButton`). `test/help-tips.test.js` fails when a form control in `src/lib/pages` has no tip, a page or dialog has no help text, a service page lacks the API link, or a help key is missing in either language: a new form field needs its tip in the same change.
+
 ## Code layout
 
 SvelteKit filesystem routes are the application boundary. `src/lib/server/runtime.js` owns process-scoped resources and `server.mjs` is only the adapter-node process wrapper.

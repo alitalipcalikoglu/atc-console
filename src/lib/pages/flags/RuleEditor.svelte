@@ -4,6 +4,8 @@
    * attributes as `name: a, b` lines; ids are derived from names when empty.
    */
   import Icon from '#lib/components/Icon.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import ValueInput from './ValueInput.svelte';
   import { t } from '#lib/client/i18n.svelte.js';
   /** @typedef {{ id: string, name?: string, match: { userIds?: string[], emails?: string[], attrs?: Record<string, string[]> }, value: unknown }} Rule */
@@ -37,7 +39,7 @@
     <div class="rule">
       <div class="head">
         <span class="badge plain">{i + 1}</span>
-        <input class="input name" placeholder={t('fl.ruleName')} value={r.name ?? ''} {disabled} oninput={(e) => { const name = /** @type {HTMLInputElement} */ (e.currentTarget).value; update(i, { name, id: idFor(r, name) }); }} />
+        <input id="r-{i}-name" class="input name" placeholder={t('fl.ruleName')} value={r.name ?? ''} {disabled} oninput={(e) => { const name = /** @type {HTMLInputElement} */ (e.currentTarget).value; update(i, { name, id: idFor(r, name) }); }} /><HelpTip text={t('help.fl.ruleName')} for="r-{i}-name" />
         <span class="tools">
           {#if rules.length > 1}
           <button class="btn ghost icon sm up" disabled={disabled || i === 0} onclick={() => move(i, -1)} aria-label={t('fl.moveUp')} title={t('fl.moveUp')}><Icon name="chevron" size={14} /></button>
@@ -48,10 +50,10 @@
         <span class="mono xs id {duplicate.has(r.id) ? 'danger-text' : 'faint'}">id: {r.id}{#if duplicate.has(r.id)} · {t('fl.duplicateId')}{/if}</span>
       </div>
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">
-        <div class="field"><label for="r-{i}-users">{t('fl.userIds')}</label><input id="r-{i}-users" class="input mono" value={list(r.match.userIds)} {disabled} onchange={(e) => updateMatch(i, { userIds: parse(/** @type {HTMLInputElement} */ (e.currentTarget).value) })} placeholder="u_1001, u_1002" /></div>
-        <div class="field"><label for="r-{i}-emails">{t('fl.emails')}</label><input id="r-{i}-emails" class="input mono" value={list(r.match.emails)} {disabled} onchange={(e) => updateMatch(i, { emails: parse(/** @type {HTMLInputElement} */ (e.currentTarget).value) })} placeholder="ada@example.com" /></div>
-        <div class="field"><label for="r-{i}-attrs">{t('fl.attrs')}</label><textarea id="r-{i}-attrs" class="textarea mono" rows="2" value={attrsText(r.match.attrs)} {disabled} onchange={(e) => updateMatch(i, { attrs: parseAttrs(/** @type {HTMLTextAreaElement} */ (e.currentTarget).value) })} placeholder="plan: pro, team"></textarea></div>
-        <div class="field"><label for="r-{i}-value">{t('fl.serves')}</label><ValueInput id="r-{i}-value" {kind} value={r.value} {disabled} onchange={(v) => update(i, { value: v })} /></div>
+        <div class="field"><FieldLabel for="r-{i}-users" help={t('help.fl.ruleUsers')}>{t('fl.userIds')}</FieldLabel><input id="r-{i}-users" class="input mono" value={list(r.match.userIds)} {disabled} onchange={(e) => updateMatch(i, { userIds: parse(/** @type {HTMLInputElement} */ (e.currentTarget).value) })} placeholder="u_1001, u_1002" /></div>
+        <div class="field"><FieldLabel for="r-{i}-emails" help={t('help.fl.ruleEmails')}>{t('fl.emails')}</FieldLabel><input id="r-{i}-emails" class="input mono" value={list(r.match.emails)} {disabled} onchange={(e) => updateMatch(i, { emails: parse(/** @type {HTMLInputElement} */ (e.currentTarget).value) })} placeholder="ada@example.com" /></div>
+        <div class="field"><FieldLabel for="r-{i}-attrs" help={t('help.fl.ruleAttrs')}>{t('fl.attrs')}</FieldLabel><textarea id="r-{i}-attrs" class="textarea mono" rows="2" value={attrsText(r.match.attrs)} {disabled} onchange={(e) => updateMatch(i, { attrs: parseAttrs(/** @type {HTMLTextAreaElement} */ (e.currentTarget).value) })} placeholder="plan: pro, team"></textarea></div>
+        <div class="field"><FieldLabel for="r-{i}-value" help={t('help.fl.ruleValue')}>{t('fl.serves')}</FieldLabel><ValueInput id="r-{i}-value" {kind} value={r.value} {disabled} onchange={(v) => update(i, { value: v })} /></div>
       </div>
     </div>
   {/each}

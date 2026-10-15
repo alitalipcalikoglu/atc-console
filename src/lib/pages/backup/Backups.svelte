@@ -70,7 +70,7 @@
   }
 </script>
 
-<Page title={svc?.label ?? t('bk.title')} desc={t('bk.desc')}>
+<Page help={t('help.page.backup')} docs={sid} title={svc?.label ?? t('bk.title')} desc={t('bk.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
     <button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>

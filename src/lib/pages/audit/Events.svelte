@@ -1,5 +1,7 @@
 <script>
   import Page from '#lib/components/Page.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import RankedList from '#lib/components/RankedList.svelte';
   import StatusBadge from '#lib/components/StatusBadge.svelte';
@@ -98,7 +100,7 @@
   const party = (p) => (p ? `${p.type}:${p.id}` : '');
 </script>
 
-<Page title={svc?.label ?? t('ev.title')} desc={t('ev.desc')}>
+<Page help={t('help.page.audit')} docs={sid} title={svc?.label ?? t('ev.title')} desc={t('ev.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
     <button class="btn" onclick={verify} disabled={verifying} aria-label={t('ev.verify')} title={t('ev.verify')}><Icon name="shield" size={16} /><span class="hide-m"> {verifying ? t('ev.verifying') : t('ev.verify')}</span></button>
@@ -143,20 +145,20 @@
   <Panel title={t('ev.events')} flush>
     {#snippet aside()}
       <div class="seg">{#each OUTCOMES as o (o)}<button aria-pressed={f.outcome === o} onclick={() => { f = { ...f, outcome: o }; }}>{o ? t(`ev.${o}`) : t('common.all')}</button>{/each}</div>
-      <input class="input" style="width:min(260px,100%)" type="search" placeholder={t('ev.actionPrefix')} bind:value={f.actionPrefix} />
+      <input id="f-action" class="input" style="width:min(260px,100%)" type="search" placeholder={t('ev.actionPrefix')} bind:value={f.actionPrefix} /><HelpTip text={t('help.audit.action')} for="f-action" />
       <button class="btn {showFilters ? 'primary' : ''}" onclick={() => { showFilters = !showFilters; }} aria-expanded={showFilters}><Icon name="filter" size={14} /> {t('ev.filters')}{#if active}<span class="count">{active}</span>{/if}</button>
     {/snippet}
     {#if showFilters}
       <div class="filters">
-        <div class="field"><label for="f-source">{t('ev.source')}</label><input id="f-source" class="input" bind:value={f.source} placeholder="atc-auth" /></div>
-        <div class="field"><label for="f-actorType">{t('ev.actor')} · {t('ev.type')}</label><input id="f-actorType" class="input" bind:value={f.actorType} placeholder="user" /></div>
-        <div class="field"><label for="f-actorId">{t('ev.actor')} · {t('common.id')}</label><input id="f-actorId" class="input" bind:value={f.actorId} /></div>
-        <div class="field"><label for="f-targetType">{t('ev.target')} · {t('ev.type')}</label><input id="f-targetType" class="input" bind:value={f.targetType} placeholder="order" /></div>
-        <div class="field"><label for="f-targetId">{t('ev.target')} · {t('common.id')}</label><input id="f-targetId" class="input" bind:value={f.targetId} /></div>
-        <div class="field"><label for="f-requestId">{t('ev.requestId')}</label><input id="f-requestId" class="input" bind:value={f.requestId} /></div>
-        <div class="field"><label for="f-ip">{t('common.ip')}</label><input id="f-ip" class="input" bind:value={f.ip} /></div>
-        <div class="field"><label for="f-from">{t('ev.from')}</label><input id="f-from" class="input" type="datetime-local" bind:value={f.from} /></div>
-        <div class="field"><label for="f-to">{t('ev.to')}</label><input id="f-to" class="input" type="datetime-local" bind:value={f.to} /></div>
+        <div class="field"><FieldLabel for="f-source" help={t('help.audit.source')}>{t('ev.source')}</FieldLabel><input id="f-source" class="input" bind:value={f.source} placeholder="atc-auth" /></div>
+        <div class="field"><FieldLabel for="f-actorType" help={t('help.audit.actorType')}>{t('ev.actor')} · {t('ev.type')}</FieldLabel><input id="f-actorType" class="input" bind:value={f.actorType} placeholder="user" /></div>
+        <div class="field"><FieldLabel for="f-actorId" help={t('help.audit.actorId')}>{t('ev.actor')} · {t('common.id')}</FieldLabel><input id="f-actorId" class="input" bind:value={f.actorId} /></div>
+        <div class="field"><FieldLabel for="f-targetType" help={t('help.audit.targetType')}>{t('ev.target')} · {t('ev.type')}</FieldLabel><input id="f-targetType" class="input" bind:value={f.targetType} placeholder="order" /></div>
+        <div class="field"><FieldLabel for="f-targetId" help={t('help.audit.targetId')}>{t('ev.target')} · {t('common.id')}</FieldLabel><input id="f-targetId" class="input" bind:value={f.targetId} /></div>
+        <div class="field"><FieldLabel for="f-requestId" help={t('help.audit.requestId')}>{t('ev.requestId')}</FieldLabel><input id="f-requestId" class="input" bind:value={f.requestId} /></div>
+        <div class="field"><FieldLabel for="f-ip" help={t('help.audit.ip')}>{t('common.ip')}</FieldLabel><input id="f-ip" class="input" bind:value={f.ip} /></div>
+        <div class="field"><FieldLabel for="f-from" help={t('help.audit.from')}>{t('ev.from')}</FieldLabel><input id="f-from" class="input" type="datetime-local" bind:value={f.from} /></div>
+        <div class="field"><FieldLabel for="f-to" help={t('help.audit.to')}>{t('ev.to')}</FieldLabel><input id="f-to" class="input" type="datetime-local" bind:value={f.to} /></div>
         <div class="field" style="justify-content:end"><button class="btn" onclick={clearFilters} disabled={!active}><Icon name="x" size={14} /> {t('ev.clear')}</button></div>
       </div>
     {/if}
@@ -185,10 +187,10 @@
   </Panel>
 </Page>
 
-<Dialog open={exportOpen} title={t('ev.exportTitle')} onclose={() => { exportOpen = false; }}>
+<Dialog help={t('help.dialog.auditExport')} open={exportOpen} title={t('ev.exportTitle')} onclose={() => { exportOpen = false; }}>
   <p class="small muted" style="margin-bottom:12px">{t('ev.exportDesc')}</p>
   <p class="small" style="margin-bottom:12px">{active ? t('ev.activeFilters', { n: active }) : t('ev.noFilters')}</p>
-  <div class="field"><label for="fmt">{t('ev.format')}</label>
+  <div class="field"><FieldLabel for="fmt" help={t('help.audit.format')}>{t('ev.format')}</FieldLabel>
     <select id="fmt" class="select" bind:value={format}><option value="ndjson">NDJSON</option><option value="csv">CSV</option></select></div>
   {#snippet footer()}
     <button class="btn" onclick={() => { exportOpen = false; }}>{t('common.cancel')}</button>

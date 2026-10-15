@@ -1,5 +1,6 @@
 <script>
   import Page from '#lib/components/Page.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Stat from '#lib/components/Stat.svelte';
@@ -106,7 +107,7 @@
   const svc = $derived(services.get(sid));
 </script>
 
-<Page title={svc?.label ?? t('wh.title')} desc={t('wh.desc')}>
+<Page help={t('help.page.webhooks')} docs={sid} title={svc?.label ?? t('wh.title')} desc={t('wh.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
     {#if session.isAdmin}<button class="btn primary" onclick={() => { createOpen = true; }} aria-label={t('wh.create')} title={t('wh.create')}><Icon name="plus" size={16} /><span class="hide-m"> {t('wh.create')}</span></button>{/if}
@@ -125,7 +126,7 @@
     <Panel title={t('wh.subscriptions')} flush>
       {#snippet aside()}
         <div class="seg"><button aria-pressed={status === ''} onclick={() => { status = ''; }}>{t('common.all')}</button>{#each ['active', 'paused', 'disabled'] as s (s)}<button aria-pressed={status === s} onclick={() => { status = s; }}>{t(`wh.status.${s}`)}</button>{/each}</div>
-        <input class="input" style="width:min(240px,100%)" type="search" placeholder={t('wh.search')} bind:value={q} />
+        <input id="wh-search" class="input" style="width:min(240px,100%)" type="search" placeholder={t('wh.search')} bind:value={q} /><HelpTip text={t('help.wh.search')} for="wh-search" />
       {/snippet}
       {#if list.error}<ErrorBox error={list.error} onretry={() => list.load()} />
       {:else if (list.loading || !list.loaded) && !items.length}<Skeleton rows={5} />
@@ -151,7 +152,7 @@
 
     <Panel title={t('wh.recentDeliveries')} flush>
       {#snippet aside()}
-        <select class="select" style="width:auto" bind:value={dstatus} aria-label={t('common.status')}><option value="">{t('common.status')}: {t('common.all')}</option>{#each DSTATUSES as s (s)}<option value={s}>{t(`wh.dstatus.${s}`)}</option>{/each}</select>
+        <select id="wh-dstatus" class="select" style="width:auto" bind:value={dstatus} aria-label={t('common.status')}><option value="">{t('common.status')}: {t('common.all')}</option>{#each DSTATUSES as s (s)}<option value={s}>{t(`wh.dstatus.${s}`)}</option>{/each}</select><HelpTip text={t('help.wh.deliveryStatus')} for="wh-dstatus" />
       {/snippet}
       {#if deliveries.error}<ErrorBox error={deliveries.error} onretry={() => deliveries.load()} />
       {:else if (deliveries.loading || !deliveries.loaded) && !dItems.length}<Skeleton rows={4} />
@@ -164,7 +165,7 @@
 
     <Panel title={t('wh.recentEvents')} flush>
       {#snippet aside()}
-        <select class="select" style="width:auto" bind:value={etype} aria-label={t('wh.eventType')}><option value="">{t('wh.eventType')}: {t('common.all')}</option>{#each /** @type {any[]} */ (types.data?.items ?? []) as x (x.type)}<option value={x.type}>{x.type} ({fmt.int(x.count)})</option>{/each}</select>
+        <select id="wh-etype" class="select" style="width:auto" bind:value={etype} aria-label={t('wh.eventType')}><option value="">{t('wh.eventType')}: {t('common.all')}</option>{#each /** @type {any[]} */ (types.data?.items ?? []) as x (x.type)}<option value={x.type}>{x.type} ({fmt.int(x.count)})</option>{/each}</select><HelpTip text={t('help.wh.eventType')} for="wh-etype" />
       {/snippet}
       {#if events.error}<ErrorBox error={events.error} onretry={() => events.load()} />
       {:else if (events.loading || !events.loaded) && !eItems.length}<Skeleton rows={4} />

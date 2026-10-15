@@ -1,5 +1,6 @@
 <script>
   import Page from '#lib/components/Page.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Stat from '#lib/components/Stat.svelte';
@@ -79,7 +80,7 @@
   const summary = (f, env) => { const s = f.environments?.[env]; if (!s) return ''; const parts = []; if (s.rules?.length) parts.push(`${s.rules.length} ${t('fl.rulesShort')}`); if (s.percentage < 100) parts.push(`${s.percentage}%`); return parts.join(' · '); };
 </script>
 
-<Page title={svc?.label ?? t('fl.title')} desc={t('fl.desc')}>
+<Page help={t('help.page.flags')} docs={sid} title={svc?.label ?? t('fl.title')} desc={t('fl.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
     {#if session.isAdmin}<button class="btn primary" onclick={() => { createOpen = true; }} aria-label={t('fl.create')} title={t('fl.create')}><Icon name="plus" size={16} /><span class="hide-m"> {t('fl.create')}</span></button>{/if}
@@ -95,9 +96,9 @@
   <Panel title={t('fl.flags')} flush>
     {#snippet aside()}
       <div class="seg"><button aria-pressed={!archived} onclick={() => { archived = false; }}>{t('fl.active')}</button><button aria-pressed={archived} onclick={() => { archived = true; }}>{t('fl.archived')}</button></div>
-      <select class="select" style="width:auto" bind:value={kind} aria-label={t('fl.kind')}><option value="">{t('fl.kind')}: {t('common.all')}</option>{#each ['boolean', 'string', 'number', 'json'] as k (k)}<option value={k}>{k}</option>{/each}</select>
-      <input class="input" style="width:min(220px,100%)" type="search" placeholder={t('fl.search')} bind:value={q} />
-      <input class="input" style="width:min(130px,100%)" type="search" placeholder={t('sl.tag')} bind:value={tag} />
+      <select id="fl-kind-filter" class="select" style="width:auto" bind:value={kind} aria-label={t('fl.kind')}><option value="">{t('fl.kind')}: {t('common.all')}</option>{#each ['boolean', 'string', 'number', 'json'] as k (k)}<option value={k}>{k}</option>{/each}</select><HelpTip text={t('help.fl.kindFilter')} for="fl-kind-filter" />
+      <input id="fl-search" class="input" style="width:min(220px,100%)" type="search" placeholder={t('fl.search')} bind:value={q} /><HelpTip text={t('help.fl.search')} for="fl-search" />
+      <input id="fl-tag" class="input" style="width:min(130px,100%)" type="search" placeholder={t('sl.tag')} bind:value={tag} /><HelpTip text={t('help.fl.tagFilter')} for="fl-tag" />
     {/snippet}
     {#if list.error}<ErrorBox error={list.error} onretry={() => list.load()} />
     {:else if list.loading && !items.length}<Skeleton rows={6} />

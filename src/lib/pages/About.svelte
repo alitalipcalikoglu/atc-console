@@ -19,7 +19,7 @@
   const cell = (v) => (v === undefined || v === null || v === '' ? '–' : v);
 </script>
 
-<Page title={t('about.title')} desc={t('about.desc')}>
+<Page help={t('help.page.about')} title={t('about.title')} desc={t('about.desc')}>
   {#snippet actions()}<button class="btn ghost icon sm" onclick={() => list.load()} disabled={list.loading} aria-label={t('common.refresh')} title={t('common.refresh')}><Icon name="refresh" size={14} /></button>{/snippet}
   <Panel title={t('about.title')} flush>
     {#if list.error}<ErrorBox error={list.error} onretry={() => list.load()} />

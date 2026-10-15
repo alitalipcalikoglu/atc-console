@@ -1,6 +1,7 @@
 <script>
   /** One queue: depth, settings, messages by state, dead letters with redrive, send, purge, delete. */
   import Page from '#lib/components/Page.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Skeleton from '#lib/components/Skeleton.svelte';
@@ -94,7 +95,7 @@
   const purgeLabel = $derived(t(`qu.purgeWhat.${purgeWhat}`));
 </script>
 
-<Page title={q ? q.name : t('qu.queue')} back="/atc-queue/{sid}">
+<Page help={t('help.page.queueDetail')} docs={sid} title={q ? q.name : t('qu.queue')} back="/atc-queue/{sid}">
   {#snippet actions()}
     {#if q && session.isAdmin}
       <button class="btn primary" onclick={() => { sendOpen = true; }} disabled={busy}><Icon name="plus" size={16} /><span class="hide-m"> {t('qu.send')}</span></button>
@@ -163,7 +164,7 @@
   {/if}
 </Page>
 
-<Dialog open={shown !== null} title={shown?.id ?? ''} onclose={() => { shown = null; }} wide>
+<Dialog help={t('help.dialog.quMessage')} open={shown !== null} title={shown?.id ?? ''} onclose={() => { shown = null; }} wide>
   {#if shown}
     <div class="stack">
       <div class="row wrap tight"><StatusBadge status={shown.state} label={t(`qu.${shown.state}`)} /><span class="small">{t('qu.attempts')}: {shown.attempts}</span>{#if shown.dedupeKey}<span class="small">{t('qu.dedupe')}: <code>{shown.dedupeKey}</code></span>{/if}</div>
@@ -180,14 +181,14 @@
   {#snippet footer()}<button class="btn" onclick={() => { shown = null; }}>{t('common.close')}</button>{/snippet}
 </Dialog>
 
-<Dialog open={sendOpen} title={t('qu.send')} onclose={() => { sendOpen = false; }} wide>
+<Dialog help={t('help.dialog.quSend')} open={sendOpen} title={t('qu.send')} onclose={() => { sendOpen = false; }} wide>
   <div class="stack">
     <p class="small muted no-margin">{t('qu.sendHint')}</p>
-    <div class="field"><label for="qs-body">{t('qu.body')}</label><textarea id="qs-body" class="textarea mono" rows="8" bind:value={sendBody} aria-invalid={parsed.error ? 'true' : undefined}></textarea>{#if parsed.error}<span class="error">{t('qu.invalidJson', { msg: parsed.error })}</span>{/if}</div>
+    <div class="field"><FieldLabel for="qs-body" help={t('help.qu.body')}>{t('qu.body')}</FieldLabel><textarea id="qs-body" class="textarea mono" rows="8" bind:value={sendBody} aria-invalid={parsed.error ? 'true' : undefined}></textarea>{#if parsed.error}<span class="error">{t('qu.invalidJson', { msg: parsed.error })}</span>{/if}</div>
     <div class="grid three-cols">
-      <div class="field"><label for="qs-delay">{t('qu.delay')}</label><input id="qs-delay" class="input" type="number" min="0" bind:value={sendDelay} /></div>
-      <div class="field"><label for="qs-prio">{t('qu.priority')}</label><input id="qs-prio" class="input" type="number" min="-100" max="100" bind:value={sendPriority} /></div>
-      <div class="field"><label for="qs-key">{t('qu.dedupe')}</label><input id="qs-key" class="input mono" bind:value={sendKey} maxlength="200" /></div>
+      <div class="field"><FieldLabel for="qs-delay" help={t('help.qu.delay')}>{t('qu.delay')}</FieldLabel><input id="qs-delay" class="input" type="number" min="0" bind:value={sendDelay} /></div>
+      <div class="field"><FieldLabel for="qs-prio" help={t('help.qu.priority')}>{t('qu.priority')}</FieldLabel><input id="qs-prio" class="input" type="number" min="-100" max="100" bind:value={sendPriority} /></div>
+      <div class="field"><FieldLabel for="qs-key" help={t('help.qu.dedupe')}>{t('qu.dedupe')}</FieldLabel><input id="qs-key" class="input mono" bind:value={sendKey} maxlength="200" /></div>
     </div>
   </div>
   {#snippet footer()}

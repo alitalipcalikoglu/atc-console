@@ -1,6 +1,8 @@
 <script>
   /** One backup: file facts and checksum, download, verify, restore to a file or over the live database, delete. */
   import Page from '#lib/components/Page.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Skeleton from '#lib/components/Skeleton.svelte';
@@ -78,7 +80,7 @@
   }
 </script>
 
-<Page title={b ? b.file ?? b.id : t('bk.backup')} back="/atc-backup/{sid}">
+<Page help={t('help.page.backupDetail')} docs={sid} title={b ? b.file ?? b.id : t('bk.backup')} back="/atc-backup/{sid}">
   {#snippet actions()}
     {#if b && usable && session.isAdmin}
       <a class="btn primary" href="/api{base}/file" download={b.file} aria-label={t('bk.download')} title={t('bk.download')}><Icon name="download" size={16} /><span class="hide-m"> {t('bk.download')}</span></a>
@@ -119,7 +121,7 @@
   {/if}
 </Page>
 
-<Dialog open={restoreOpen} title={t('bk.restore')} onclose={() => { restoreOpen = false; }}>
+<Dialog help={t('help.dialog.bkRestore')} open={restoreOpen} title={t('bk.restore')} onclose={() => { restoreOpen = false; }}>
   <div class="stack">
     {#if b?.format !== 'tar.gz'}
       <div class="seg">
@@ -129,8 +131,8 @@
     {/if}
     {#if mode === 'file'}
       <p class="small muted no-margin">{t('bk.toFileHint')}</p>
-      <div class="field"><label for="bk-target">{t('bk.target')}</label><input id="bk-target" class="input mono" bind:value={target} maxlength="128" aria-invalid={target && !targetOk ? 'true' : undefined} />{#if target && !targetOk}<span class="error">{t('bk.targetInvalid')}</span>{/if}</div>
-      <label class="checkbox small"><input type="checkbox" bind:checked={overwrite} /> {t('bk.overwrite')}</label>
+      <div class="field"><FieldLabel for="bk-target" help={t('help.bk.target')}>{t('bk.target')}</FieldLabel><input id="bk-target" class="input mono" bind:value={target} maxlength="128" aria-invalid={target && !targetOk ? 'true' : undefined} />{#if target && !targetOk}<span class="error">{t('bk.targetInvalid')}</span>{/if}</div>
+      <label class="checkbox small"><input id="bk-overwrite" type="checkbox" bind:checked={overwrite} /> {t('bk.overwrite')}</label><HelpTip text={t('help.bk.overwrite')} for="bk-overwrite" />
     {:else}
       <p class="small danger-text no-margin">{t('bk.toLiveHint', { source: b?.source ?? '' })}</p>
     {/if}

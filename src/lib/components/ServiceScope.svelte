@@ -1,6 +1,7 @@
 <script>
   /** Which services an account may use: all (nothing ticked) or the ticked ones. Bind `value`. */
   import { services } from '#lib/client/services.svelte.js';
+  import HelpTip from './HelpTip.svelte';
   import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ value: string[], idPrefix?: string }} */
   let { value = $bindable([]), idPrefix = 'scope' } = $props();
@@ -9,11 +10,11 @@
 </script>
 
 <div class="field">
-  <span class="small" style="font-weight:550;color:var(--text-2)">{t('admins.services')}</span>
+  <span class="small" style="font-weight:550;color:var(--text-2)">{t('admins.services')}<HelpTip text={t('help.admins.services')} for="{idPrefix}-services" /></span>
   <span class="hint">{value.length ? t('admins.servicesSome', { n: value.length }) : t('admins.servicesAll')}</span>
   <div class="scope-grid">
     {#each services.items as s (s.id)}
-      <label class="checkbox small" for="{idPrefix}-{s.id}"><input id="{idPrefix}-{s.id}" type="checkbox" checked={value.includes(s.id)} onchange={(e) => toggle(s.id, e.currentTarget.checked)} /> {s.label}</label>
+      <label class="checkbox small" for="{idPrefix}-{s.id}"><input id="{idPrefix}-{s.id}" data-help-group="{idPrefix}-services" type="checkbox" checked={value.includes(s.id)} onchange={(e) => toggle(s.id, e.currentTarget.checked)} /> {s.label}</label>
     {/each}
   </div>
 </div>

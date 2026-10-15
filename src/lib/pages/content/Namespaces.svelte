@@ -46,7 +46,7 @@
   }
 </script>
 
-<Page title={svc?.label ?? t('ct.title')} desc={t('ct.desc')}>
+<Page help={t('help.page.content')} docs={sid} title={svc?.label ?? t('ct.title')} desc={t('ct.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
     {#if session.isAdmin}<button class="btn primary" onclick={() => { createOpen = true; }} aria-label={t('ct.create')} title={t('ct.create')}><Icon name="plus" size={16} /><span class="hide-m"> {t('ct.create')}</span></button>{/if}

@@ -44,7 +44,7 @@
   const svc = $derived(services.get(sid));
 </script>
 
-<Page title={svc?.label ?? t('se.title')} desc={t('se.desc')}>
+<Page help={t('help.page.search')} docs={sid} title={svc?.label ?? t('se.title')} desc={t('se.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
     {#if session.isAdmin}<button class="btn primary" onclick={() => { createOpen = true; }} aria-label={t('se.create')} title={t('se.create')}><Icon name="plus" size={16} /><span class="hide-m"> {t('se.create')}</span></button>{/if}

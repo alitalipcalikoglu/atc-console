@@ -1,6 +1,8 @@
 <script>
   /** Payments service home: provider state, totals, ledger balance, payments by status and recent webhook events. */
   import Page from '#lib/components/Page.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Stat from '#lib/components/Stat.svelte';
@@ -81,7 +83,7 @@
   const volume = $derived(st ? st.volume24h.map((/** @type {any} */ v) => fmt.money(v.amount, v.currency)).join(' · ') : '');
 </script>
 
-<Page title={svc?.label ?? t('pm.title')} desc={t('pm.desc')}>
+<Page help={t('help.page.payments')} docs={sid} title={svc?.label ?? t('pm.title')} desc={t('pm.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
     {#if session.isAdmin}<button class="btn" onclick={() => { rcResult = null; rcOpen = true; }} aria-label={t('pm.reconcile')} title={t('pm.reconcile')}><Icon name="check" size={16} /><span class="hide-m"> {t('pm.reconcile')}</span></button>{/if}
@@ -99,7 +101,7 @@
   <div class="stack">
     <Panel title={t('pm.payments')} flush>
       {#snippet aside()}
-        <input class="input search" type="search" bind:value={search} placeholder={t('pm.search')} aria-label={t('pm.search')} title={t('pm.searchHint')} maxlength="254" />
+        <input id="pm-search" class="input search" type="search" bind:value={search} placeholder={t('pm.search')} aria-label={t('pm.search')} title={t('pm.searchHint')} maxlength="254" /><HelpTip text={t('help.pm.search')} for="pm-search" />
         <div class="seg">{#each STATUSES as s (s)}<button aria-pressed={status === s} onclick={() => { status = s; }}>{s ? t(`pm.s.${s}`) : t('pm.all')}</button>{/each}</div>
       {/snippet}
       {#if listError}<ErrorBox error={listError} onretry={() => loadPayments(null)} />
@@ -149,14 +151,14 @@
   </div>
 </Page>
 
-<Dialog open={rcOpen} title={t('pm.reconcileTitle')} onclose={() => { rcOpen = false; }}>
+<Dialog help={t('help.dialog.pmReconcile')} open={rcOpen} title={t('pm.reconcileTitle')} onclose={() => { rcOpen = false; }}>
   <div class="stack">
     <p class="small muted no-margin">{t('pm.reconcileDesc')}</p>
     <div class="grid two-dates">
-      <div class="field"><label for="rc-from">{t('pm.from')}</label><input id="rc-from" class="input" type="date" bind:value={rcFrom} /></div>
-      <div class="field"><label for="rc-to">{t('pm.to')}</label><input id="rc-to" class="input" type="date" bind:value={rcTo} /></div>
+      <div class="field"><FieldLabel for="rc-from" help={t('help.pm.from')}>{t('pm.from')}</FieldLabel><input id="rc-from" class="input" type="date" bind:value={rcFrom} /></div>
+      <div class="field"><FieldLabel for="rc-to" help={t('help.pm.to')}>{t('pm.to')}</FieldLabel><input id="rc-to" class="input" type="date" bind:value={rcTo} /></div>
     </div>
-    <label class="checkbox small"><input type="checkbox" bind:checked={rcRepair} /> {t('pm.repair')}</label>
+    <label class="checkbox small"><input id="rc-repair" type="checkbox" bind:checked={rcRepair} /> {t('pm.repair')}</label><HelpTip text={t('help.pm.repair')} for="rc-repair" />
     {#if rcResult}
       <p class="small no-margin">{t('pm.reconcileDone', { n: rcResult.checked, m: rcResult.mismatches.length })}{rcResult.repaired ? ` · ${t('pm.reconcileRepaired', { n: rcResult.repaired })}` : ''}</p>
       {#if rcResult.truncated}<p class="small warn-text no-margin">{t('pm.reconcileMore')}</p>{/if}

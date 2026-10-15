@@ -1,5 +1,7 @@
 <script>
   import Page from '#lib/components/Page.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Skeleton from '#lib/components/Skeleton.svelte';
@@ -85,7 +87,7 @@
   const diff = (h) => { if (!h.before || !h.after) return ''; const keys = Object.keys(h.after).filter((k) => JSON.stringify(h.after[k]) !== JSON.stringify(h.before[k]) && k !== 'from'); return keys.join(', '); };
 </script>
 
-<Page title={f ? f.key : t('fl.flag')} back="/atc-flags/{sid}">
+<Page help={t('help.page.flag')} docs={sid} title={f ? f.key : t('fl.flag')} back="/atc-flags/{sid}">
   {#snippet actions()}
     {#if f && session.isAdmin}
       <button class="btn" onclick={() => { editOpen = true; }} disabled={busy.flag}><Icon name="settings" size={16} /><span class="hide-m"> {t('fl.edit')}</span></button>
@@ -116,19 +118,19 @@
                 <Switch checked={live.enabled} disabled={!canEdit} busy={busy[e]} label="{e} {t('fl.enabledShort')}" onchange={(next) => toggle(e, next)} />
               {/snippet}
               <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px">
-                <div class="field"><label for="{e}-value">{t('fl.value')}</label><ValueInput id="{e}-value" kind={f.kind} value={s.value} disabled={!canEdit} onchange={(v) => { drafts[e].value = v; }} /></div>
-                <div class="field"><label for="{e}-off">{t('fl.offValue')}</label><ValueInput id="{e}-off" kind={f.kind} value={s.offValue} disabled={!canEdit} onchange={(v) => { drafts[e].offValue = v; }} /></div>
+                <div class="field"><FieldLabel for="{e}-value" help={t('help.fl.value')}>{t('fl.value')}</FieldLabel><ValueInput id="{e}-value" kind={f.kind} value={s.value} disabled={!canEdit} onchange={(v) => { drafts[e].value = v; }} /></div>
+                <div class="field"><FieldLabel for="{e}-off" help={t('help.fl.offValue')}>{t('fl.offValue')}</FieldLabel><ValueInput id="{e}-off" kind={f.kind} value={s.offValue} disabled={!canEdit} onchange={(v) => { drafts[e].offValue = v; }} /></div>
               </div>
-              <div class="field"><label for="{e}-pct">{t('fl.percentage')}: <strong>{s.percentage}%</strong></label>
-                <div class="row"><input id="{e}-pct" type="range" min="0" max="100" step="1" style="flex:1" bind:value={s.percentage} disabled={!canEdit} /><input class="input" style="width:72px" type="number" min="0" max="100" bind:value={s.percentage} disabled={!canEdit} aria-label={t('fl.percentage')} /></div>
+              <div class="field"><FieldLabel for="{e}-pct" help={t('help.fl.percentage')}>{t('fl.percentage')}: <strong>{s.percentage}%</strong></FieldLabel>
+                <div class="row"><input id="{e}-pct" type="range" min="0" max="100" step="1" style="flex:1" bind:value={s.percentage} disabled={!canEdit} /><input id="{e}-pct-n" class="input" style="width:72px" type="number" min="0" max="100" bind:value={s.percentage} disabled={!canEdit} aria-label={t('fl.percentage')} /><HelpTip text={t('help.fl.percentageNumber')} for="{e}-pct-n" /></div>
                 <span class="hint">{t('fl.percentageHint')}</span></div>
-              <div class="field"><span class="small" style="font-weight:550;color:var(--text-2)">{t('fl.rules')}</span><RuleEditor kind={f.kind} rules={s.rules} disabled={!canEdit} defaultValue={s.value} onchange={(rules) => { drafts[e].rules = rules; }} /></div>
+              <div class="field"><span class="small" style="font-weight:550;color:var(--text-2)">{t('fl.rules')}<HelpTip text={t('help.fl.rules')} /></span><RuleEditor kind={f.kind} rules={s.rules} disabled={!canEdit} defaultValue={s.value} onchange={(rules) => { drafts[e].rules = rules; }} /></div>
               {#if canEdit}
                 <div class="row wrap">
                   <button class="btn primary" onclick={() => save(e)} disabled={busy[e] || !dirty(e) || s.rules.some((/** @type {any} */ r, /** @type {number} */ i) => s.rules.findIndex((/** @type {any} */ x) => x.id === r.id) !== i)}><Icon name="check" size={14} /> {t('common.save')}</button>
                   {#if dirty(e)}<button class="btn ghost" onclick={() => { drafts[e] = { version: live.version, ...structuredClone(/** @type {any} */ ($state.snapshot(pick(live)))) }; }}>{t('fl.discard')}</button>{/if}
                   <span class="grow"></span>
-                  {#if envNames.length > 1}<select class="select" style="width:auto" aria-label={t('fl.copyTo')} disabled={busy[e]} onchange={(ev) => { const to = /** @type {HTMLSelectElement} */ (ev.currentTarget).value; if (to) copy(e, to); /** @type {HTMLSelectElement} */ (ev.currentTarget).value = ''; }}><option value="">{t('fl.copyTo')}…</option>{#each envNames.filter((x) => x !== e) as x (x)}<option value={x}>{x}</option>{/each}</select>{/if}
+                  {#if envNames.length > 1}<select id="{e}-copy" class="select" style="width:auto" aria-label={t('fl.copyTo')} disabled={busy[e]} onchange={(ev) => { const to = /** @type {HTMLSelectElement} */ (ev.currentTarget).value; if (to) copy(e, to); /** @type {HTMLSelectElement} */ (ev.currentTarget).value = ''; }}><option value="">{t('fl.copyTo')}…</option>{#each envNames.filter((x) => x !== e) as x (x)}<option value={x}>{x}</option>{/each}</select><HelpTip text={t('help.fl.copyTo')} for="{e}-copy" />{/if}
                 </div>
               {/if}
               <p class="xs faint" style="margin:0">{t('common.updated')} <Time value={live.updatedAt} /> · <span class="mono">{live.updatedBy}</span></p>
@@ -141,11 +143,11 @@
         <Panel title={t('fl.evaluate')} bodyClass="stack">
           <p class="small muted" style="margin:0">{t('fl.evaluateDesc')}</p>
           <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px">
-            <div class="field"><label for="ev-env">{t('fl.environment')}</label><select id="ev-env" class="select" bind:value={evEnv}>{#each envNames as e (e)}<option value={e}>{e}</option>{/each}</select></div>
-            <div class="field"><label for="ev-user">{t('fl.userId')}</label><input id="ev-user" class="input mono" bind:value={evUser} placeholder="u_1001" /></div>
-            <div class="field"><label for="ev-email">{t('common.email')}</label><input id="ev-email" class="input mono" bind:value={evEmail} placeholder="ada@example.com" /></div>
+            <div class="field"><FieldLabel for="ev-env" help={t('help.fl.evalEnv')}>{t('fl.environment')}</FieldLabel><select id="ev-env" class="select" bind:value={evEnv}>{#each envNames as e (e)}<option value={e}>{e}</option>{/each}</select></div>
+            <div class="field"><FieldLabel for="ev-user" help={t('help.fl.evalUser')}>{t('fl.userId')}</FieldLabel><input id="ev-user" class="input mono" bind:value={evUser} placeholder="u_1001" /></div>
+            <div class="field"><FieldLabel for="ev-email" help={t('help.fl.evalEmail')}>{t('common.email')}</FieldLabel><input id="ev-email" class="input mono" bind:value={evEmail} placeholder="ada@example.com" /></div>
           </div>
-          <div class="field"><label for="ev-attrs">{t('fl.attrs')} <span class="faint">(key=value)</span></label><textarea id="ev-attrs" class="textarea mono" rows="2" bind:value={evAttrs} placeholder="plan=pro"></textarea></div>
+          <div class="field"><FieldLabel for="ev-attrs" help={t('help.fl.evalAttrs')}>{t('fl.attrs')} <span class="faint">(key=value)</span></FieldLabel><textarea id="ev-attrs" class="textarea mono" rows="2" bind:value={evAttrs} placeholder="plan=pro"></textarea></div>
           <div><button class="btn primary" onclick={evaluate} disabled={evBusy || !evEnv}><Icon name="check" size={14} /> {t('fl.evaluate')}</button></div>
           {#if evResult}
             {@const r = evResult.flags[id]}

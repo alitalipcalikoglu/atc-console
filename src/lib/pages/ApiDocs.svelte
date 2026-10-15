@@ -1,5 +1,6 @@
 <script>
   import { onMount } from 'svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import Page from '#lib/components/Page.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Skeleton from '#lib/components/Skeleton.svelte';
@@ -61,11 +62,11 @@
   onMount(loadServices);
 </script>
 
-<Page title={t('docs.title')} desc={t('docs.desc')}>
+<Page help={t('help.page.docs')} title={t('docs.title')} desc={t('docs.desc')}>
   <Panel flush>
     {#snippet head()}
       <div class="docs-head">
-        <label for="docs-service">{t('docs.service')}</label>
+        <FieldLabel for="docs-service" help={t('help.docs.service')}>{t('docs.service')}</FieldLabel>
         <select id="docs-service" class="select" value={selected} onchange={choose} disabled={listLoading || !items.length}>
           {#each items as service (service.id)}<option value={service.id}>{service.label} · {service.type}</option>{/each}
         </select>
@@ -80,7 +81,7 @@
 
 <style>
   .docs-head { display:flex; align-items:center; gap:12px; width:100%; }
-  .docs-head label { font-size:.82rem; color:var(--text-2); white-space:nowrap; }
+  .docs-head :global(label) { font-size:.82rem; color:var(--text-2); white-space:nowrap; }
   .docs-head .select { width:min(360px, 100%); }
   .state { padding:20px; }
   @media (max-width:600px) {

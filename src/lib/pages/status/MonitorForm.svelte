@@ -1,6 +1,8 @@
 <script>
   /** Create a monitor (kind, id + settings) or edit one. A seeded monitor's URL is fixed by MONITOR_SEEDS; the kind is fixed once created. */
   import { untrack } from 'svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import Dialog from '#lib/components/Dialog.svelte';
   import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ open: boolean, initial?: any, busy?: boolean, onsubmit: (id: string, body: Record<string, unknown>) => void, onclose: () => void }} */
@@ -51,33 +53,33 @@
   }
 </script>
 
-<Dialog {open} title={initial ? t('stx.edit') : t('stx.create')} {onclose} wide>
+<Dialog help={t('help.dialog.stMonitor')} {open} title={initial ? t('stx.edit') : t('stx.create')} {onclose} wide>
   <form class="stack" onsubmit={(e) => { e.preventDefault(); if (valid) submit(); }}>
     <div class="grid two-cols">
-      {#if !initial}<div class="field"><label for="mf-id">{t('stx.id')}</label><input id="mf-id" class="input mono" bind:value={id} required placeholder="shop-api" /><span class="hint">{t('stx.idHint')}</span></div>{/if}
-      {#if !initial}<div class="field"><label for="mf-kind">{t('stx.kind')}</label><select id="mf-kind" class="select" bind:value={kind}>{#each ['http', 'tcp', 'tls', 'heartbeat'] as k (k)}<option value={k}>{t(`stx.k.${k}`)}</option>{/each}</select><span class="hint">{t('stx.kindHint')}</span></div>{/if}
-      <div class="field"><label for="mf-name">{t('stx.name')}</label><input id="mf-name" class="input" bind:value={name} maxlength="100" placeholder={initial?.name ?? t('stx.namePlaceholder')} /><span class="hint">{t('stx.nameHint')}</span></div>
+      {#if !initial}<div class="field"><FieldLabel for="mf-id" help={t('help.st.id')}>{t('stx.id')}</FieldLabel><input id="mf-id" class="input mono" bind:value={id} required placeholder="shop-api" /><span class="hint">{t('stx.idHint')}</span></div>{/if}
+      {#if !initial}<div class="field"><FieldLabel for="mf-kind" help={t('help.st.kind')}>{t('stx.kind')}</FieldLabel><select id="mf-kind" class="select" bind:value={kind}>{#each ['http', 'tcp', 'tls', 'heartbeat'] as k (k)}<option value={k}>{t(`stx.k.${k}`)}</option>{/each}</select><span class="hint">{t('stx.kindHint')}</span></div>{/if}
+      <div class="field"><FieldLabel for="mf-name" help={t('help.st.name')}>{t('stx.name')}</FieldLabel><input id="mf-name" class="input" bind:value={name} maxlength="100" placeholder={initial?.name ?? t('stx.namePlaceholder')} /><span class="hint">{t('stx.nameHint')}</span></div>
     </div>
     {#if !heartbeat}
-      <div class="field"><label for="mf-url">{kind === 'http' ? t('stx.url') : t('stx.targetHost')}</label><input id="mf-url" class="input mono" bind:value={url} maxlength="2000" disabled={seeded} aria-invalid={!seeded && url && !urlOk ? 'true' : undefined} />{#if seeded}<span class="hint">{t('stx.urlSeeded')}</span>{:else if kind !== 'http'}<span class="hint">{t('stx.targetHostHint')}</span>{/if}</div>
+      <div class="field"><FieldLabel for="mf-url" help={t('help.st.target')}>{kind === 'http' ? t('stx.url') : t('stx.targetHost')}</FieldLabel><input id="mf-url" class="input mono" bind:value={url} maxlength="2000" disabled={seeded} aria-invalid={!seeded && url && !urlOk ? 'true' : undefined} />{#if seeded}<span class="hint">{t('stx.urlSeeded')}</span>{:else if kind !== 'http'}<span class="hint">{t('stx.targetHostHint')}</span>{/if}</div>
     {/if}
-    <div class="field"><label for="mf-desc">{t('stx.description')}</label><input id="mf-desc" class="input" bind:value={description} maxlength="500" /></div>
+    <div class="field"><FieldLabel for="mf-desc" help={t('help.st.description')}>{t('stx.description')}</FieldLabel><input id="mf-desc" class="input" bind:value={description} maxlength="500" /></div>
     <div class="grid three-cols">
-      {#if kind === 'http'}<div class="field"><label for="mf-method">{t('stx.method')}</label><select id="mf-method" class="select" bind:value={method}><option value="GET">GET</option><option value="HEAD">HEAD</option></select></div>{/if}
-      <div class="field"><label for="mf-int">{heartbeat ? t('stx.heartbeatInterval') : t('stx.interval')}</label><input id="mf-int" class="input" type="number" min="10" max="86400" bind:value={intervalSec} /></div>
+      {#if kind === 'http'}<div class="field"><FieldLabel for="mf-method" help={t('help.st.method')}>{t('stx.method')}</FieldLabel><select id="mf-method" class="select" bind:value={method}><option value="GET">GET</option><option value="HEAD">HEAD</option></select></div>{/if}
+      <div class="field"><FieldLabel for="mf-int" help={t('help.st.interval')}>{heartbeat ? t('stx.heartbeatInterval') : t('stx.interval')}</FieldLabel><input id="mf-int" class="input" type="number" min="10" max="86400" bind:value={intervalSec} /></div>
       {#if heartbeat}
-        <div class="field"><label for="mf-grace">{t('stx.graceSec')}</label><input id="mf-grace" class="input" type="number" min="0" max="86400" bind:value={graceSec} /><span class="hint">{t('stx.graceHint')}</span></div>
+        <div class="field"><FieldLabel for="mf-grace" help={t('help.st.grace')}>{t('stx.graceSec')}</FieldLabel><input id="mf-grace" class="input" type="number" min="0" max="86400" bind:value={graceSec} /><span class="hint">{t('stx.graceHint')}</span></div>
       {:else}
-        <div class="field"><label for="mf-to">{t('stx.timeout')}</label><input id="mf-to" class="input" type="number" min="500" max="60000" step="100" bind:value={timeoutMs} aria-invalid={timeoutMs > intervalSec * 1000 ? 'true' : undefined} /></div>
+        <div class="field"><FieldLabel for="mf-to" help={t('help.st.timeout')}>{t('stx.timeout')}</FieldLabel><input id="mf-to" class="input" type="number" min="500" max="60000" step="100" bind:value={timeoutMs} aria-invalid={timeoutMs > intervalSec * 1000 ? 'true' : undefined} /></div>
       {/if}
-      {#if kind === 'http'}<div class="field"><label for="mf-exp">{t('stx.expect')}</label><input id="mf-exp" class="input mono" bind:value={expect} aria-invalid={!statusesOk ? 'true' : undefined} /><span class="hint">{t('stx.expectHint')}</span></div>{/if}
-      {#if kind === 'tls'}<div class="field"><label for="mf-warn">{t('stx.warnDays')}</label><input id="mf-warn" class="input" type="number" min="1" max="365" bind:value={warnDays} /></div>{/if}
-      <div class="field"><label for="mf-th">{t('stx.threshold')}</label><input id="mf-th" class="input" type="number" min="1" max="20" bind:value={failThreshold} /><span class="hint">{t('stx.thresholdHint')}</span></div>
+      {#if kind === 'http'}<div class="field"><FieldLabel for="mf-exp" help={t('help.st.expect')}>{t('stx.expect')}</FieldLabel><input id="mf-exp" class="input mono" bind:value={expect} aria-invalid={!statusesOk ? 'true' : undefined} /><span class="hint">{t('stx.expectHint')}</span></div>{/if}
+      {#if kind === 'tls'}<div class="field"><FieldLabel for="mf-warn" help={t('help.st.warnDays')}>{t('stx.warnDays')}</FieldLabel><input id="mf-warn" class="input" type="number" min="1" max="365" bind:value={warnDays} /></div>{/if}
+      <div class="field"><FieldLabel for="mf-th" help={t('help.st.threshold')}>{t('stx.threshold')}</FieldLabel><input id="mf-th" class="input" type="number" min="1" max="20" bind:value={failThreshold} /><span class="hint">{t('stx.thresholdHint')}</span></div>
     </div>
     {#if kind === 'http'}
-      <div class="field"><label for="mf-text">{t('stx.expectText')}</label><input id="mf-text" class="input" bind:value={expectText} maxlength="200" aria-invalid={!textOk ? 'true' : undefined} /><span class="hint">{t('stx.expectTextHint')}</span></div>
+      <div class="field"><FieldLabel for="mf-text" help={t('help.st.expectText')}>{t('stx.expectText')}</FieldLabel><input id="mf-text" class="input" bind:value={expectText} maxlength="200" aria-invalid={!textOk ? 'true' : undefined} /><span class="hint">{t('stx.expectTextHint')}</span></div>
     {/if}
-    <label class="checkbox small"><input type="checkbox" bind:checked={isPublic} /> {t('stx.publicHint')}</label>
+    <label class="checkbox small"><input id="mf-public" type="checkbox" bind:checked={isPublic} /> {t('stx.publicHint')}</label><HelpTip text={t('help.st.public')} for="mf-public" />
     <button type="submit" class="sr-only">ok</button>
   </form>
   {#snippet footer()}

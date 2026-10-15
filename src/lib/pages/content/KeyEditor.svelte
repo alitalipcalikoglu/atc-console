@@ -1,6 +1,7 @@
 <script>
   /** Create a key or edit one key's description and per-locale values; only changed locales are sent. */
   import Dialog from '#lib/components/Dialog.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ open: boolean, ns: any, entry?: any, busy?: boolean, onsubmit: (key: string, body: { description?: string, values?: Record<string, string|null> }) => void, ondelete?: () => void, onclose: () => void }} */
   let { open, ns, entry = null, busy = false, onsubmit, ondelete, onclose } = $props();
@@ -28,15 +29,15 @@
   }
 </script>
 
-<Dialog {open} title={entry ? entry.key : t('ct.addKey')} {onclose} wide>
+<Dialog help={t('help.dialog.ctKey')} {open} title={entry ? entry.key : t('ct.addKey')} {onclose} wide>
   <form class="stack" onsubmit={(e) => { e.preventDefault(); submit(); }}>
     {#if !entry}
-      <div class="field"><label for="ck-key">{t('ct.key')}</label><input id="ck-key" class="input mono" bind:value={key} required maxlength="128" pattern={'[a-z0-9][a-z0-9._\\-]{0,127}'} placeholder="cart.items" /><span class="hint">{t('ct.keyHint')}</span></div>
+      <div class="field"><FieldLabel for="ck-key" help={t('help.ct.key')}>{t('ct.key')}</FieldLabel><input id="ck-key" class="input mono" bind:value={key} required maxlength="128" pattern={'[a-z0-9][a-z0-9._\\-]{0,127}'} placeholder="cart.items" /><span class="hint">{t('ct.keyHint')}</span></div>
     {/if}
-    <div class="field"><label for="ck-desc">{t('ct.description')}</label><input id="ck-desc" class="input" bind:value={description} maxlength="500" /></div>
+    <div class="field"><FieldLabel for="ck-desc" help={t('help.ct.keyDescription')}>{t('ct.description')}</FieldLabel><input id="ck-desc" class="input" bind:value={description} maxlength="500" /></div>
     <p class="xs faint" style="margin:0">{t('ct.placeholdersHint', { p: placeholders.length ? placeholders.map((p) => `{${p}}`).join(' ') : t('ct.noPlaceholders') })} {t('ct.emptyMeansNone')}</p>
     {#each locales as l (l)}
-      <div class="field"><label for="ck-{l}">{l}{#if l === ns.defaultLocale}<span class="faint note">({t('ct.default')})</span>{/if}{#if entry?.mismatched?.includes(l)}<span class="danger-text xs note">· {t('ct.mismatch')}</span>{/if}</label>
+      <div class="field"><FieldLabel for="ck-{l}" help={t('help.ct.value')}>{l}{#if l === ns.defaultLocale}<span class="faint note">({t('ct.default')})</span>{/if}{#if entry?.mismatched?.includes(l)}<span class="danger-text xs note">· {t('ct.mismatch')}</span>{/if}</FieldLabel>
         <textarea id="ck-{l}" class="textarea" rows="2" bind:value={values[l]} maxlength="100000"></textarea></div>
     {/each}
     <button type="submit" class="sr-only">ok</button>

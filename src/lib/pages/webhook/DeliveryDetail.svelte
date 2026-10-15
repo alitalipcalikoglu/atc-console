@@ -36,7 +36,7 @@
   }
 </script>
 
-<Page title="{t('wh.delivery')} #{id}" back="/atc-webhook-out/{sid}/subscriptions/{r?.subscriptionId ?? ''}">
+<Page help={t('help.page.webhookDelivery')} docs={sid} title="{t('wh.delivery')} #{id}" back="/atc-webhook-out/{sid}/subscriptions/{r?.subscriptionId ?? ''}">
   {#snippet actions()}
     {#if session.isAdmin && redeliverable}<button class="btn primary" onclick={() => { confirm = 'redeliver'; }} disabled={busy}><Icon name="refresh" size={16} /><span class="hide-m"> {t('wh.redeliver')}</span></button>{/if}
     {#if session.isAdmin && cancellable}<button class="btn danger" onclick={() => { confirm = 'cancel'; }} disabled={busy}><Icon name="x" size={16} /><span class="hide-m"> {t('wh.cancel')}</span></button>{/if}

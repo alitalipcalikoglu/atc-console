@@ -1,5 +1,6 @@
 <script>
   import Page from '#lib/components/Page.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Empty from '#lib/components/Empty.svelte';
@@ -25,12 +26,12 @@
   const QUICK = ['', 'login', 'admin.', 'atc-notify.', 'atc-auth.', 'atc-media.'];
 </script>
 
-<Page title={t('audit.title')} desc={t('audit.desc')}>
+<Page help={t('help.page.consoleLog')} title={t('audit.title')} desc={t('audit.desc')}>
   {#snippet actions()}<button class="btn icon" onclick={() => list.load()} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>{/snippet}
   <Panel flush>
     {#snippet head()}
       <div class="seg">{#each QUICK as q (q)}<button aria-pressed={action === q} onclick={() => { action = q; }}>{q || t('common.all')}</button>{/each}</div>
-      <input class="input" style="width:min(280px,100%)" type="search" placeholder={t('audit.filter')} bind:value={action} />
+      <input id="audit-filter" class="input" style="width:min(280px,100%)" type="search" placeholder={t('audit.filter')} bind:value={action} /><HelpTip text={t('help.consoleLog.filter')} for="audit-filter" />
     {/snippet}
       {#if list.error}<ErrorBox error={list.error} onretry={() => list.load()} />
       {:else if list.loading && !items.length}<Skeleton rows={8} />

@@ -21,7 +21,7 @@
   const redacted = $derived(metaText.includes('"[REDACTED]"'));
 </script>
 
-<Page title={t('ev.event')} back="/atc-audit/{sid}">
+<Page help={t('help.page.auditEvent')} docs={sid} title={t('ev.event')} back="/atc-audit/{sid}">
   {#snippet actions()}<button class="btn icon" onclick={() => res.load()} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>{/snippet}
   {#if res.error}<ErrorBox error={res.error} onretry={() => res.load()} boxed />
   {:else if !e}<Skeleton rows={10} />

@@ -43,7 +43,7 @@
   const filters = $derived(/** @type {[string, string][]} */ (x ? Object.entries(x.filters) : []));
 </script>
 
-<Page title={x ? `${sourceLabel} · ${x.format.toUpperCase()}` : t('ex.export')} back="/atc-export/{sid}">
+<Page help={t('help.page.exportJob')} docs={sid} title={x ? `${sourceLabel} · ${x.format.toUpperCase()}` : t('ex.export')} back="/atc-export/{sid}">
   {#snippet actions()}
     <!-- Streamed through the console's relay; the browser never talks to media. -->
     {#if x?.status === 'succeeded' && x.file && session.isAdmin}<a class="btn primary" href="/api/services/{encodeURIComponent(sid)}/atc-export/exports/{encodeURIComponent(id)}/file" download={x.file.name}><Icon name="download" size={16} /><span class="hide-m"> {t('ex.download')}</span></a>{/if}

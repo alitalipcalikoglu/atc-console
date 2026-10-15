@@ -72,7 +72,7 @@
   const headerCount = $derived(j ? Object.keys(j.target.headers ?? {}).length : 0);
 </script>
 
-<Page title={j ? j.name : t('sc.job')} back="/atc-scheduler/{sid}">
+<Page help={t('help.page.schedulerJob')} docs={sid} title={j ? j.name : t('sc.job')} back="/atc-scheduler/{sid}">
   {#snippet actions()}
     {#if j && session.isAdmin}
       <button class="btn primary" onclick={runNow} disabled={busy}><Icon name="play" size={16} /><span class="hide-m"> {t('sc.runNow')}</span></button>

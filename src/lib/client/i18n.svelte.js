@@ -1,3 +1,5 @@
+import { HELP } from './help.js';
+
 /**
  * Two-language UI strings. `t('key', { n: 3 })` interpolates `{n}`. Language is remembered
  * per browser; the default follows the browser language (Turkish or English).
@@ -10,6 +12,7 @@ export class I18n {
       'app.name': 'Console',
       'nav.menu': 'Menü', 'nav.overview': 'Genel bakış', 'nav.audit': 'Konsol günlüğü', 'nav.admins': 'Yöneticiler', 'nav.account': 'Hesabım', 'nav.services': 'Servisler', 'nav.console': 'Konsol', 'nav.about': 'Hakkında', 'nav.docs': 'API Dokümanları',
       'docs.title': 'API Dokümanları', 'docs.desc': 'Çalışan servislerin kanonik OpenAPI 3.1 sözleşmeleri.', 'docs.service': 'Servis', 'docs.empty': 'Görüntülenecek API dokümanı yok.',
+      'docs.open': "Bu servisin API başvurusu",
       'about.title': 'Hakkında', 'about.desc': 'Her servisin sürümü, API sözleşmesi ve yetenekleri.', 'about.service': 'Servis', 'about.version': 'Sürüm', 'about.apiVersion': 'API', 'about.capabilities': 'Yetenekler', 'about.schemaVersion': 'Şema', 'about.serviceCore': 'service-core', 'about.ok': 'Tamam', 'about.unavailable': 'Erişilemiyor',
       'common.search': 'Ara', 'common.refresh': 'Yenile', 'common.cancel': 'Vazgeç', 'common.save': 'Kaydet', 'common.close': 'Kapat', 'common.confirm': 'Onayla', 'common.delete': 'Sil', 'common.copy': 'Kopyala', 'common.copied': 'Kopyalandı', 'common.loadMore': 'Daha fazla yükle', 'common.retry': 'Tekrar dene', 'common.back': 'Geri', 'common.no': 'Hayır', 'common.all': 'Hepsi', 'common.loading': 'Yükleniyor…', 'common.actions': 'İşlemler', 'common.details': 'Ayrıntılar', 'common.status': 'Durum', 'common.created': 'Oluşturuldu', 'common.updated': 'Güncellendi', 'common.name': 'Ad', 'common.email': 'E-posta', 'common.username': 'Kullanıcı adı', 'common.password': 'Şifre', 'common.role': 'Rol', 'common.type': 'Tür', 'common.size': 'Boyut', 'common.id': 'Kimlik', 'common.viewerNote': 'Salt okunur hesap: değişiklik yapamazsınız.', 'common.offline': 'Çevrimdışısınız. Veriler güncel olmayabilir.', 'common.updateAvailable': 'Yeni sürüm hazır.', 'common.reload': 'Yenile', 'common.install': 'Uygulama olarak yükle', 'common.error': 'Bir sorun oluştu', 'common.notFound': 'Sayfa bulunamadı', 'common.notFoundDesc': 'Bu adres konsolda yok.', 'common.goHome': 'Genel bakışa dön', 'common.typeToConfirm': 'Onaylamak için {word} yazın', 'common.optional': 'isteğe bağlı', 'common.at': 'Zaman', 'common.ip': 'IP',
       'login.title': 'Konsola giriş', 'login.subtitle': 'Yönetici hesabınızla oturum açın.', 'login.submit': 'Giriş yap', 'login.totpTitle': 'İkinci adım', 'login.totpSubtitle': 'Doğrulama uygulamanızdaki 6 haneli kodu girin.', 'login.totpSubmit': 'Doğrula', 'login.code': 'Kod', 'login.locked': 'Hesap kilitli. {s} saniye sonra tekrar deneyin.', 'login.backToLogin': 'Başka hesapla giriş',
@@ -55,6 +58,7 @@ export class I18n {
       'app.name': 'Console',
       'nav.menu': 'Menu', 'nav.overview': 'Overview', 'nav.audit': 'Console log', 'nav.admins': 'Admins', 'nav.account': 'Account', 'nav.services': 'Services', 'nav.console': 'Console', 'nav.about': 'About', 'nav.docs': 'API Docs',
       'docs.title': 'API Docs', 'docs.desc': 'Canonical OpenAPI 3.1 contracts from the running services.', 'docs.service': 'Service', 'docs.empty': 'There is no API document to display.',
+      'docs.open': "API reference of this service",
       'about.title': 'About', 'about.desc': 'Version, API contract and capabilities for every service.', 'about.service': 'Service', 'about.version': 'Version', 'about.apiVersion': 'API', 'about.capabilities': 'Capabilities', 'about.schemaVersion': 'Schema', 'about.serviceCore': 'service-core', 'about.ok': 'OK', 'about.unavailable': 'Unavailable',
       'common.search': 'Search', 'common.refresh': 'Refresh', 'common.cancel': 'Cancel', 'common.save': 'Save', 'common.close': 'Close', 'common.confirm': 'Confirm', 'common.delete': 'Delete', 'common.copy': 'Copy', 'common.copied': 'Copied', 'common.loadMore': 'Load more', 'common.retry': 'Retry', 'common.back': 'Back', 'common.no': 'No', 'common.all': 'All', 'common.loading': 'Loading…', 'common.actions': 'Actions', 'common.details': 'Details', 'common.status': 'Status', 'common.created': 'Created', 'common.updated': 'Updated', 'common.name': 'Name', 'common.email': 'Email', 'common.username': 'Username', 'common.password': 'Password', 'common.role': 'Role', 'common.type': 'Type', 'common.size': 'Size', 'common.id': 'ID', 'common.viewerNote': 'Read-only account: you cannot make changes.', 'common.offline': 'You are offline. Data may be stale.', 'common.updateAvailable': 'A new version is ready.', 'common.reload': 'Reload', 'common.install': 'Install as app', 'common.error': 'Something went wrong', 'common.notFound': 'Page not found', 'common.notFoundDesc': 'This address does not exist in the console.', 'common.goHome': 'Back to overview', 'common.typeToConfirm': 'Type {word} to confirm', 'common.optional': 'optional', 'common.at': 'Time', 'common.ip': 'IP',
       'login.title': 'Sign in to Console', 'login.subtitle': 'Use your administrator account.', 'login.submit': 'Sign in', 'login.totpTitle': 'Second step', 'login.totpSubtitle': 'Enter the 6-digit code from your authenticator app.', 'login.totpSubmit': 'Verify', 'login.code': 'Code', 'login.locked': 'Account locked. Try again in {s} seconds.', 'login.backToLogin': 'Use another account',
@@ -130,6 +134,9 @@ export class I18n {
     return s;
   };
 }
+
+Object.assign(I18n.DICT.tr, HELP.tr);
+Object.assign(I18n.DICT.en, HELP.en);
 
 export const i18n = new I18n();
 export const t = i18n.t;

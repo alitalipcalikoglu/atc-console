@@ -1,6 +1,7 @@
 <script>
   /** Export one locale's own values (draft or published, flat or nested) to copy or download. */
   import Dialog from '#lib/components/Dialog.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import ErrorBox from '#lib/components/ErrorBox.svelte';
   import CopyButton from '#lib/components/CopyButton.svelte';
   import Icon from '#lib/components/Icon.svelte';
@@ -29,10 +30,10 @@
   }
 </script>
 
-<Dialog {open} title={t('ct.export')} {onclose} wide>
+<Dialog help={t('help.dialog.ctExport')} {open} title={t('ct.export')} {onclose} wide>
   <div class="stack">
     <div class="row wrap">
-      <select class="select" style="width:auto" bind:value={locale} aria-label={t('ct.locale')} onchange={() => { output = null; }}>{#each ns?.locales ?? [] as l (l.locale)}<option value={l.locale}>{l.locale}</option>{/each}</select>
+      <select id="ct-export-locale" class="select" style="width:auto" bind:value={locale} aria-label={t('ct.locale')} onchange={() => { output = null; }}>{#each ns?.locales ?? [] as l (l.locale)}<option value={l.locale}>{l.locale}</option>{/each}</select><HelpTip text={t('help.ct.exportLocale')} for="ct-export-locale" />
       <div class="seg" role="group" aria-label={t('ct.source')}><button aria-pressed={source === 'draft'} onclick={() => { source = 'draft'; output = null; }}>{t('ct.draft')}</button><button aria-pressed={source === 'published'} onclick={() => { source = 'published'; output = null; }}>{t('ct.published')}</button></div>
       <div class="seg" role="group" aria-label={t('ct.format')}><button aria-pressed={format === 'flat'} onclick={() => { format = 'flat'; output = null; }}>{t('ct.flat')}</button><button aria-pressed={format === 'nested'} onclick={() => { format = 'nested'; output = null; }}>{t('ct.nested')}</button></div>
     </div>

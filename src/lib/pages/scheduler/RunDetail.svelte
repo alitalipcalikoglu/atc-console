@@ -30,7 +30,7 @@
   }
 </script>
 
-<Page title="{t('sc.run')} #{id}" back="/atc-scheduler/{sid}/jobs/{r?.job ?? ''}">
+<Page help={t('help.page.schedulerRun')} docs={sid} title="{t('sc.run')} #{id}" back="/atc-scheduler/{sid}/jobs/{r?.job ?? ''}">
   {#snippet actions()}
     {#if session.isAdmin && cancellable}<button class="btn danger" onclick={() => { confirm = true; }} disabled={busy}><Icon name="x" size={16} /><span class="hide-m"> {t('sc.cancel')}</span></button>{/if}
     <button class="btn icon" onclick={() => res.load()} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>

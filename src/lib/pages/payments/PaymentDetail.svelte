@@ -1,6 +1,7 @@
 <script>
   /** One payment: amounts, provider state, refunds and ledger entries; refund, sync and cancel through Confirm. */
   import Page from '#lib/components/Page.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Stat from '#lib/components/Stat.svelte';
@@ -66,7 +67,7 @@
   }
 </script>
 
-<Page title={p ? fmt.money(p.amount, p.currency) : t('pm.payment')} back="/atc-payments/{sid}">
+<Page help={t('help.page.paymentDetail')} docs={sid} title={p ? fmt.money(p.amount, p.currency) : t('pm.payment')} back="/atc-payments/{sid}">
   {#snippet actions()}
     {#if p && session.isAdmin}
       {#if d.refundable > 0}<button class="btn primary" onclick={openRefund} disabled={busy} aria-label={t('pm.refund')} title={t('pm.refund')}><Icon name="undo" size={16} /><span class="hide-m"> {t('pm.refund')}</span></button>{/if}
@@ -124,12 +125,12 @@
   {/if}
 </Page>
 
-<Dialog open={refundOpen} title={t('pm.refund')} onclose={() => { refundOpen = false; }}>
+<Dialog help={t('help.dialog.pmRefund')} open={refundOpen} title={t('pm.refund')} onclose={() => { refundOpen = false; }}>
   <div class="stack">
     <p class="small muted no-margin">{t('pm.refundHint', { amount: p ? fmt.money(d.refundable, p.currency) : '' })}</p>
     <div class="grid two-fields">
-      <div class="field"><label for="pm-amount">{t('pm.refundAmount', { currency: p?.currency.toUpperCase() ?? '' })}</label><input id="pm-amount" class="input" inputmode="decimal" bind:value={refundAmount} placeholder={t('pm.allRemaining')} aria-invalid={!refundOk ? 'true' : undefined} />{#if !refundOk}<span class="error">{t('pm.refundInvalid')}</span>{/if}</div>
-      <div class="field"><label for="pm-reason">{t('pm.reason')}</label><select id="pm-reason" class="select" bind:value={reason}><option value="">–</option><option value="requested_by_customer">{t('pm.reason.requested_by_customer')}</option><option value="duplicate">{t('pm.reason.duplicate')}</option><option value="fraudulent">{t('pm.reason.fraudulent')}</option></select></div>
+      <div class="field"><FieldLabel for="pm-amount" help={t('help.pm.amount')}>{t('pm.refundAmount', { currency: p?.currency.toUpperCase() ?? '' })}</FieldLabel><input id="pm-amount" class="input" inputmode="decimal" bind:value={refundAmount} placeholder={t('pm.allRemaining')} aria-invalid={!refundOk ? 'true' : undefined} />{#if !refundOk}<span class="error">{t('pm.refundInvalid')}</span>{/if}</div>
+      <div class="field"><FieldLabel for="pm-reason" help={t('help.pm.reason')}>{t('pm.reason')}</FieldLabel><select id="pm-reason" class="select" bind:value={reason}><option value="">–</option><option value="requested_by_customer">{t('pm.reason.requested_by_customer')}</option><option value="duplicate">{t('pm.reason.duplicate')}</option><option value="fraudulent">{t('pm.reason.fraudulent')}</option></select></div>
     </div>
   </div>
   {#snippet footer()}

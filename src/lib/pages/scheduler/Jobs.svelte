@@ -1,5 +1,6 @@
 <script>
   import Page from '#lib/components/Page.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Stat from '#lib/components/Stat.svelte';
@@ -103,7 +104,7 @@
   const svc = $derived(services.get(sid));
 </script>
 
-<Page title={svc?.label ?? t('sc.title')} desc={t('sc.desc')}>
+<Page help={t('help.page.scheduler')} docs={sid} title={svc?.label ?? t('sc.title')} desc={t('sc.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
     {#if session.isAdmin}<button class="btn primary" onclick={openCreate} aria-label={t('sc.create')} title={t('sc.create')}><Icon name="plus" size={16} /><span class="hide-m"> {t('sc.create')}</span></button>{/if}
@@ -122,8 +123,8 @@
     <Panel title={t('sc.jobs')} flush>
       {#snippet aside()}
         <div class="seg"><button aria-pressed={enabled === ''} onclick={() => { enabled = ''; }}>{t('common.all')}</button><button aria-pressed={enabled === 'true'} onclick={() => { enabled = 'true'; }}>{t('sc.enabled')}</button><button aria-pressed={enabled === 'false'} onclick={() => { enabled = 'false'; }}>{t('sc.paused')}</button></div>
-        <input class="input" style="width:min(220px,100%)" type="search" placeholder={t('sc.search')} bind:value={q} />
-        <input class="input" style="width:min(130px,100%)" type="search" placeholder={t('sl.tag')} bind:value={tag} />
+        <input id="sc-search" class="input" style="width:min(220px,100%)" type="search" placeholder={t('sc.search')} bind:value={q} /><HelpTip text={t('help.sc.search')} for="sc-search" />
+        <input id="sc-tag" class="input" style="width:min(130px,100%)" type="search" placeholder={t('sl.tag')} bind:value={tag} /><HelpTip text={t('help.sc.tagFilter')} for="sc-tag" />
       {/snippet}
       {#if list.error}<ErrorBox error={list.error} onretry={() => list.load()} />
       {:else if (list.loading || !list.loaded) && !items.length}<Skeleton rows={6} />
@@ -150,7 +151,7 @@
 
     <Panel title={t('sc.recentRuns')} flush>
       {#snippet aside()}
-        <select class="select" style="width:auto" bind:value={runStatus} aria-label={t('common.status')}><option value="">{t('common.status')}: {t('common.all')}</option>{#each STATUSES as s (s)}<option value={s}>{t(`sc.status.${s}`)}</option>{/each}</select>
+        <select id="sc-run-status" class="select" style="width:auto" bind:value={runStatus} aria-label={t('common.status')}><option value="">{t('common.status')}: {t('common.all')}</option>{#each STATUSES as s (s)}<option value={s}>{t(`sc.status.${s}`)}</option>{/each}</select><HelpTip text={t('help.sc.runStatus')} for="sc-run-status" />
       {/snippet}
       {#if runs.error}<ErrorBox error={runs.error} onretry={() => runs.load()} />
       {:else if (runs.loading || !runs.loaded) && !runItems.length}<Skeleton rows={4} />

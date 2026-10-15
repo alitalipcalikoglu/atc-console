@@ -1,5 +1,7 @@
 <script>
   import Page from '#lib/components/Page.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Stat from '#lib/components/Stat.svelte';
@@ -67,7 +69,7 @@
 
 <svelte:window onkeydown={hotkey} />
 
-<Page title={svc?.label ?? t('auth.title')} desc={t('auth.desc')}>
+<Page help={t('help.page.authUsers')} docs={sid} title={svc?.label ?? t('auth.title')} desc={t('auth.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
     {#if session.isAdmin}<button class="btn primary" onclick={() => { createOpen = true; }}><Icon name="plus" size={16} /> {t('auth.createUser')}</button>{/if}
@@ -81,7 +83,7 @@
     <Stat label={t('auth.activeSessions')} value={fmt.int(m?.activeSessions)} />
   </div>
   <Panel title={t('auth.users')} flush>
-    {#snippet aside()}<div class="row" style="position:relative"><span style="position:absolute;left:10px;color:var(--text-3)"><Icon name="search" size={16} /></span><input id="user-search" class="input" style="padding-left:34px;width:min(320px,60vw)" type="search" placeholder="{t('auth.searchEmail')} (/)" bind:value={q} /></div>{/snippet}
+    {#snippet aside()}<div class="row" style="position:relative"><span style="position:absolute;left:10px;color:var(--text-3)"><Icon name="search" size={16} /></span><input id="user-search" class="input" style="padding-left:34px;width:min(320px,60vw)" type="search" placeholder="{t('auth.searchEmail')} (/)" bind:value={q} /><HelpTip text={t('help.auth.search')} for="user-search" /></div>{/snippet}
       {#if list.error}<ErrorBox error={list.error} onretry={() => list.load()} />
       {:else if list.loading && !items.length}<Skeleton rows={6} />
       {:else if !items.length}<Empty icon="users" title={t('auth.emptyTitle')} desc={t('auth.emptyDesc')} />
@@ -104,12 +106,12 @@
   </Panel>
 </Page>
 
-<Dialog open={createOpen} title={t('auth.createUser')} onclose={() => { createOpen = false; }}>
+<Dialog help={t('help.dialog.authCreate')} open={createOpen} title={t('auth.createUser')} onclose={() => { createOpen = false; }}>
   <p class="small muted" style="margin-bottom:12px">{t('auth.createDesc')}</p>
   <form class="stack" onsubmit={(e) => { e.preventDefault(); create(); }}>
-    <div class="field"><label for="ne">{t('common.email')}</label><input id="ne" class="input" type="email" bind:value={nEmail} required /></div>
-    <div class="field"><label for="nn">{t('common.name')} <span class="faint">({t('common.optional')})</span></label><input id="nn" class="input" bind:value={nName} /></div>
-    <div class="field"><label for="np">{t('common.password')}</label><input id="np" class="input" type="password" autocomplete="new-password" bind:value={nPassword} required minlength="10" /></div>
+    <div class="field"><FieldLabel for="ne" help={t('help.auth.email')}>{t('common.email')}</FieldLabel><input id="ne" class="input" type="email" bind:value={nEmail} required /></div>
+    <div class="field"><FieldLabel for="nn" help={t('help.auth.name')}>{t('common.name')} <span class="faint">({t('common.optional')})</span></FieldLabel><input id="nn" class="input" bind:value={nName} /></div>
+    <div class="field"><FieldLabel for="np" help={t('help.auth.password')}>{t('common.password')}</FieldLabel><input id="np" class="input" type="password" autocomplete="new-password" bind:value={nPassword} required minlength="10" /></div>
     <button type="submit" class="sr-only">ok</button>
   </form>
   {#snippet footer()}

@@ -1,6 +1,7 @@
 <script>
   /** Create or edit a place collection. Editing sends only the description when it changed. */
   import Dialog from '#lib/components/Dialog.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ open: boolean, initial?: any, busy?: boolean, onsubmit: (body: any) => void, onclose: () => void }} */
   let { open, initial = null, busy = false, onsubmit, onclose } = $props();
@@ -15,10 +16,10 @@
   }
 </script>
 
-<Dialog {open} title={initial ? t('ge.editCollection') : t('ge.createCollection')} {onclose}>
+<Dialog help={t('help.dialog.geoCollection')} {open} title={initial ? t('ge.editCollection') : t('ge.createCollection')} {onclose}>
   <form class="stack" onsubmit={(e) => { e.preventDefault(); submit(); }}>
-    {#if !initial}<div class="field"><label for="cf-name">{t('ge.name')}</label><input id="cf-name" class="input mono" bind:value={name} required pattern={'[a-z0-9]+([.\\-_][a-z0-9]+)*'} placeholder="branches" /><span class="hint">{t('ge.nameHint')}</span></div>{/if}
-    <div class="field"><label for="cf-desc">{t('ge.description')}</label><input id="cf-desc" class="input" bind:value={description} maxlength="500" /></div>
+    {#if !initial}<div class="field"><FieldLabel for="cf-name" help={t('help.ge.name')}>{t('ge.name')}</FieldLabel><input id="cf-name" class="input mono" bind:value={name} required pattern={'[a-z0-9]+([.\\-_][a-z0-9]+)*'} placeholder="branches" /><span class="hint">{t('ge.nameHint')}</span></div>{/if}
+    <div class="field"><FieldLabel for="cf-desc" help={t('help.ge.description')}>{t('ge.description')}</FieldLabel><input id="cf-desc" class="input" bind:value={description} maxlength="500" /></div>
     <button type="submit" class="sr-only">ok</button>
   </form>
   {#snippet footer()}

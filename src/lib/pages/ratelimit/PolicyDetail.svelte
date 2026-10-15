@@ -1,6 +1,7 @@
 <script>
   /** One policy: windows, hourly decisions, overrides, top consumers and a subject lookup with reset. */
   import Page from '#lib/components/Page.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Stat from '#lib/components/Stat.svelte';
@@ -104,7 +105,7 @@
   const resetSubject = () => run(async () => { const r = /** @type {any} */ (await api.delete(`${base}/subjects/${encodeURIComponent(subject)}/usage`)); toasts.ok(t('rl.resetDone', { n: r.removed })); await Promise.all([usage.load(), top.load(), res.load()]); }, null);
 </script>
 
-<Page title={x ? x.name : t('rl.policy')} back="/atc-ratelimit/{sid}">
+<Page help={t('help.page.ratelimitPolicy')} docs={sid} title={x ? x.name : t('rl.policy')} back="/atc-ratelimit/{sid}">
   {#snippet actions()}
     {#if x && session.isAdmin}
       <button class="btn" onclick={() => { editOpen = true; }} disabled={busy}><Icon name="settings" size={16} /><span class="hide-m"> {t('rl.edit')}</span></button>
@@ -147,7 +148,7 @@
         <div class="stack">
           <Panel title={t('rl.lookup')} bodyClass="stack">
             <form class="row" style="gap:8px" onsubmit={(e) => { e.preventDefault(); lookup(); }}>
-              <input class="input grow mono" bind:value={lookupInput} placeholder={t('rl.subjectPlaceholder')} aria-label={t('rl.subject')} maxlength="200" />
+              <input id="rl-lookup" class="input grow mono" bind:value={lookupInput} placeholder={t('rl.subjectPlaceholder')} aria-label={t('rl.subject')} maxlength="200" /><HelpTip text={t('help.rl.lookup')} for="rl-lookup" />
               <button type="submit" class="btn" disabled={!lookupInput.trim()}><Icon name="search" size={16} /><span class="hide-m"> {t('rl.lookupBtn')}</span></button>
             </form>
             {#if subject}

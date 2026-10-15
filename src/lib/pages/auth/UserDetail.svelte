@@ -1,5 +1,6 @@
 <script>
   import Page from '#lib/components/Page.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Skeleton from '#lib/components/Skeleton.svelte';
@@ -45,7 +46,7 @@
   const base = $derived(`/services/${sid}/atc-auth/users/${id}`);
 </script>
 
-<Page title={u?.email ?? t('auth.users')} back="/atc-auth/{sid}">
+<Page help={t('help.page.authUser')} docs={sid} title={u?.email ?? t('auth.users')} back="/atc-auth/{sid}">
   {#snippet actions()}
     {#if u && session.isAdmin}
       {#if u.status === 'active'}<button class="btn danger" onclick={() => { confirm = 'disable'; }} disabled={busy}><Icon name="lock" size={16} /> {t('auth.disable')}</button>
@@ -115,9 +116,9 @@
 <Confirm open={revoking !== null} title={t('auth.revoke')} message={t('auth.revokeDesc')} danger confirmLabel={t('auth.revoke')} {busy} onconfirm={() => run(() => api.delete(`${base}/sessions/${revoking}`), t('auth.revoked'))} oncancel={() => { revoking = null; }} />
 <Confirm open={confirm === 'disable'} title={t('auth.disable')} message={t('auth.disableDesc')} danger irreversible={false} confirmLabel={t('auth.disable')} {busy} onconfirm={() => run(() => api.patch(base, { status: 'disabled' }), t('auth.updated'))} oncancel={() => { confirm = null; }} />
 <Confirm open={confirm === 'revokeAll'} title={t('auth.revokeAll')} message={t('auth.revokeAllDesc')} danger confirmLabel={t('auth.revokeAll')} {busy} onconfirm={() => run(async () => { const r = /** @type {any} */ (await api.delete(`${base}/sessions`)); toasts.info(t('auth.revokedAll', { n: r.revoked })); }, t('auth.updated'))} oncancel={() => { confirm = null; }} />
-<Dialog open={emailOpen} title={t('auth.changeEmail')} onclose={() => { emailOpen = false; }}>
+<Dialog help={t('help.dialog.authEmail')} open={emailOpen} title={t('auth.changeEmail')} onclose={() => { emailOpen = false; }}>
   <p class="small muted" style="margin-bottom:12px">{t('auth.changeEmailDesc')}</p>
-  <div class="field"><label for="ne">{t('auth.newEmail')}</label><input id="ne" class="input" type="email" autocomplete="off" bind:value={newEmail} aria-invalid={newEmail && !emailOk ? 'true' : undefined} /></div>
+  <div class="field"><FieldLabel for="ne" help={t('help.auth.newEmail')}>{t('auth.newEmail')}</FieldLabel><input id="ne" class="input" type="email" autocomplete="off" bind:value={newEmail} aria-invalid={newEmail && !emailOk ? 'true' : undefined} /></div>
   {#snippet footer()}<button class="btn" onclick={() => { emailOpen = false; }}>{t('common.cancel')}</button><button class="btn primary" disabled={busy || !emailOk} onclick={async () => { await run(() => api.patch(base, { email: newEmail.trim() }), t('auth.emailChanged')); emailOpen = false; }}>{t('common.save')}</button>{/snippet}
 </Dialog>
 <Confirm open={confirm === 'resetMfa'} title={t('auth.resetMfa')} message={t('auth.resetMfaDesc')} danger irreversible={false} confirmLabel={t('auth.resetMfa')} {busy} onconfirm={() => run(() => api.delete(`${base}/mfa`), t('auth.mfaWasReset'))} oncancel={() => { confirm = null; }} />

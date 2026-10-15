@@ -5,6 +5,7 @@
    * be red without claiming permanence. Deletes may demand a typed word.
    */
   import Dialog from './Dialog.svelte';
+  import FieldLabel from './FieldLabel.svelte';
   import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ open: boolean, title: string, message: string, confirmLabel?: string, danger?: boolean, irreversible?: boolean, typeWord?: string, busy?: boolean, onconfirm: () => void, oncancel: () => void }} */
   let { open, title, message, confirmLabel, danger = false, irreversible = danger, typeWord, busy = false, onconfirm, oncancel } = $props();
@@ -18,7 +19,7 @@
   {#if irreversible}<p class="small danger-text" style="margin-top:8px">{t('confirm.irreversible')}</p>{/if}
   {#if typeWord}
     <div class="field" style="margin-top:12px">
-      <label for="confirm-word">{t('common.typeToConfirm', { word: typeWord })}</label>
+      <FieldLabel for="confirm-word" help={t('help.confirm.typeWord')}>{t('common.typeToConfirm', { word: typeWord })}</FieldLabel>
       <input id="confirm-word" class="input mono" bind:value={typed} autocomplete="off" />
     </div>
   {/if}

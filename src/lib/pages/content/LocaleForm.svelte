@@ -1,6 +1,7 @@
 <script>
   /** Add a locale (tag + fallback) or change an existing locale's fallback. */
   import Dialog from '#lib/components/Dialog.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ open: boolean, ns: any, locale?: any, busy?: boolean, onsubmit: (locale: string, fallback: string|null) => void, onclose: () => void }} */
   let { open, ns, locale = null, busy = false, onsubmit, onclose } = $props();
@@ -13,13 +14,13 @@
   const submit = () => onsubmit(locale ? locale.locale : tag.trim(), fallback || null);
 </script>
 
-<Dialog {open} title={locale ? t('ct.editLocale', { l: locale.locale }) : t('ct.addLocale')} {onclose}>
+<Dialog help={t('help.dialog.ctLocale')} {open} title={locale ? t('ct.editLocale', { l: locale.locale }) : t('ct.addLocale')} {onclose}>
   <form class="stack" onsubmit={(e) => { e.preventDefault(); submit(); }}>
     {#if !locale}
-      <div class="field"><label for="cl-tag">{t('ct.locale')}</label><input id="cl-tag" class="input mono" bind:value={tag} required maxlength="35" placeholder="tr-CY" /><span class="hint">{t('ct.defaultLocaleHint')}</span></div>
+      <div class="field"><FieldLabel for="cl-tag" help={t('help.ct.locale')}>{t('ct.locale')}</FieldLabel><input id="cl-tag" class="input mono" bind:value={tag} required maxlength="35" placeholder="tr-CY" /><span class="hint">{t('ct.defaultLocaleHint')}</span></div>
     {/if}
     {#if !isDefault}
-      <div class="field"><label for="cl-fb">{t('ct.fallback')}</label>
+      <div class="field"><FieldLabel for="cl-fb" help={t('help.ct.fallback')}>{t('ct.fallback')}</FieldLabel>
         <select id="cl-fb" class="select" bind:value={fallback}><option value="">{t('ct.fallbackNone')}</option>{#each options as l (l)}<option value={l}>{l}</option>{/each}</select>
         <span class="hint">{t('ct.fallbackHint')}</span></div>
     {/if}

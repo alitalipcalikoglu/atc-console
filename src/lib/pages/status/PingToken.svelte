@@ -7,7 +7,7 @@
   let { path, onclose } = $props();
 </script>
 
-<Dialog open={path !== null} title={t('stx.pingTitle')} {onclose}>
+<Dialog help={t('help.dialog.stPing')} open={path !== null} title={t('stx.pingTitle')} {onclose}>
   <div class="stack">
     <p class="small muted no-margin">{t('stx.pingDesc')}</p>
     <div class="field"><span class="label">{t('stx.pingPath')}</span><div class="row sha"><code class="mono small truncate" title={path}>{path}</code>{#if path}<CopyButton text={path} />{/if}</div></div>

@@ -1,6 +1,8 @@
 <script>
   /** Create or edit a subscription. Editing sends only the fields that changed. */
   import Dialog from '#lib/components/Dialog.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ open: boolean, initial?: any, busy?: boolean, onsubmit: (body: any) => void, onclose: () => void }} */
   let { open, initial = null, busy = false, onsubmit, onclose } = $props();
@@ -41,16 +43,16 @@
   function submit() { if (valid) onsubmit(build()); }
 </script>
 
-<Dialog {open} title={initial ? t('wh.edit') : t('wh.create')} {onclose}>
+<Dialog help={t('help.dialog.whSubscription')} {open} title={initial ? t('wh.edit') : t('wh.create')} {onclose}>
   <form class="stack" onsubmit={(e) => { e.preventDefault(); submit(); }}>
-    <div class="field"><label for="sf-name">{t('wh.name')}</label><input id="sf-name" class="input mono" bind:value={name} required pattern={'[a-z0-9]+([.\\-_][a-z0-9]+)*'} placeholder="kargocu-a" /><span class="hint">{t('wh.nameHint')}</span></div>
-    <div class="field"><label for="sf-desc">{t('fl.description')}</label><input id="sf-desc" class="input" bind:value={description} maxlength="500" /></div>
-    <div class="field"><label for="sf-url">{t('wh.url')}</label><input id="sf-url" class="input mono" type="url" bind:value={url} required placeholder="https://api.partner.example/hooks" /></div>
+    <div class="field"><FieldLabel for="sf-name" help={t('help.wh.name')}>{t('wh.name')}</FieldLabel><input id="sf-name" class="input mono" bind:value={name} required pattern={'[a-z0-9]+([.\\-_][a-z0-9]+)*'} placeholder="kargocu-a" /><span class="hint">{t('wh.nameHint')}</span></div>
+    <div class="field"><FieldLabel for="sf-desc" help={t('help.wh.description')}>{t('fl.description')}</FieldLabel><input id="sf-desc" class="input" bind:value={description} maxlength="500" /></div>
+    <div class="field"><FieldLabel for="sf-url" help={t('help.wh.url')}>{t('wh.url')}</FieldLabel><input id="sf-url" class="input mono" type="url" bind:value={url} required placeholder="https://api.partner.example/hooks" /></div>
     <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
-      <div class="field"><label for="sf-events">{t('wh.eventPatterns')}</label><textarea id="sf-events" class="textarea mono" rows="4" bind:value={events} required placeholder="order.paid&#10;order.*"></textarea><span class="hint">{t('wh.patternsHint')}</span></div>
-      <div class="field"><label for="sf-headers">{t('wh.headers')} <span class="faint">({t('common.optional')})</span></label><textarea id="sf-headers" class="textarea mono" rows="4" bind:value={headers} placeholder="X-Tenant: shop-1" aria-invalid={parsedHeaders.error ? 'true' : undefined}></textarea>{#if parsedHeaders.error}<span class="error">{parsedHeaders.error}</span>{:else}<span class="hint">{t('wh.headersHint')}</span>{/if}</div>
+      <div class="field"><FieldLabel for="sf-events" help={t('help.wh.events')}>{t('wh.eventPatterns')}</FieldLabel><textarea id="sf-events" class="textarea mono" rows="4" bind:value={events} required placeholder="order.paid&#10;order.*"></textarea><span class="hint">{t('wh.patternsHint')}</span></div>
+      <div class="field"><FieldLabel for="sf-headers" help={t('help.wh.headers')}>{t('wh.headers')} <span class="faint">({t('common.optional')})</span></FieldLabel><textarea id="sf-headers" class="textarea mono" rows="4" bind:value={headers} placeholder="X-Tenant: shop-1" aria-invalid={parsedHeaders.error ? 'true' : undefined}></textarea>{#if parsedHeaders.error}<span class="error">{parsedHeaders.error}</span>{:else}<span class="hint">{t('wh.headersHint')}</span>{/if}</div>
     </div>
-    {#if !initial}<label class="checkbox small"><input type="checkbox" bind:checked={enabled} /> {t('wh.startEnabled')}</label>{/if}
+    {#if !initial}<label class="checkbox small"><input id="sf-enabled" type="checkbox" bind:checked={enabled} /> {t('wh.startEnabled')}</label><HelpTip text={t('help.wh.startEnabled')} for="sf-enabled" />{/if}
     <button type="submit" class="sr-only">ok</button>
   </form>
   {#snippet footer()}

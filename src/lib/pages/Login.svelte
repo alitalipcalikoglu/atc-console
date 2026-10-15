@@ -1,5 +1,7 @@
 <script>
   import Icon from '#lib/components/Icon.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import { useSession } from '#lib/client/session.svelte.js';
   const session = useSession();
   import { goto } from '$app/navigation';
@@ -38,12 +40,12 @@
 
 <div class="login-wrap">
   <form class="card login" onsubmit={session.totpPending ? submitTotp : submit}>
-    <div class="row" style="margin-bottom:18px"><img src="/icons/icon.svg" alt="" width="36" height="36" style="border-radius:10px" /><div><h1 style="font-size:1.2rem">{session.totpPending ? t('login.totpTitle') : t('login.title')}</h1><p class="small muted">{session.totpPending ? t('login.totpSubtitle') : t('login.subtitle')}</p></div></div>
+    <div class="row" style="margin-bottom:18px"><img src="/icons/icon.svg" alt="" width="36" height="36" style="border-radius:10px" /><div><h1 style="font-size:1.2rem">{session.totpPending ? t('login.totpTitle') : t('login.title')}<HelpTip text={session.totpPending ? t('help.login.totp') : t('help.login.page')} /></h1><p class="small muted">{session.totpPending ? t('login.totpSubtitle') : t('login.subtitle')}</p></div></div>
     {#if session.totpPending}
-      <div class="field"><label for="code">{t('login.code')}</label><input id="code" class="input mono" style="letter-spacing:.3em;font-size:1.3rem;text-align:center" inputmode="numeric" pattern={'[0-9]{6}'} maxlength="6" autocomplete="one-time-code" bind:value={code} required /></div>
+      <div class="field"><FieldLabel for="code" help={t('help.login.code')}>{t('login.code')}</FieldLabel><input id="code" class="input mono" style="letter-spacing:.3em;font-size:1.3rem;text-align:center" inputmode="numeric" pattern={'[0-9]{6}'} maxlength="6" autocomplete="one-time-code" bind:value={code} required /></div>
     {:else}
-      <div class="field"><label for="username">{t('common.username')}</label><input id="username" class="input" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" bind:value={username} required /></div>
-      <div class="field"><label for="password">{t('common.password')}</label><input id="password" class="input" type="password" autocomplete="current-password" bind:value={password} required /></div>
+      <div class="field"><FieldLabel for="username" help={t('help.login.username')}>{t('common.username')}</FieldLabel><input id="username" class="input" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" bind:value={username} required /></div>
+      <div class="field"><FieldLabel for="password" help={t('help.login.password')}>{t('common.password')}</FieldLabel><input id="password" class="input" type="password" autocomplete="current-password" bind:value={password} required /></div>
     {/if}
     {#if error}<p class="small danger-text" role="alert">{error}</p>{/if}
     <button class="btn primary" type="submit" disabled={busy} style="min-height:42px">{busy ? t('common.loading') : session.totpPending ? t('login.totpSubmit') : t('login.submit')}</button>

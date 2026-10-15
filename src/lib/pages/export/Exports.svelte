@@ -1,6 +1,7 @@
 <script>
   /** Export service home: queue and 24 h counters, the job list, and New export. */
   import { untrack } from 'svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import Page from '#lib/components/Page.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
@@ -69,7 +70,7 @@
   const STATUSES = ['queued', 'running', 'succeeded', 'failed', 'cancelled'];
 </script>
 
-<Page title={svc?.label ?? t('ex.title')} desc={t('ex.desc')}>
+<Page help={t('help.page.export')} docs={sid} title={svc?.label ?? t('ex.title')} desc={t('ex.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
     {#if session.isAdmin}<button class="btn primary" onclick={() => { createOpen = true; }} aria-label={t('ex.create')} title={t('ex.create')}><Icon name="plus" size={16} /><span class="hide-m"> {t('ex.create')}</span></button>{/if}
@@ -87,8 +88,8 @@
 
   <Panel title={t('ex.exports')} flush>
     {#snippet aside()}
-      <select class="select auto" bind:value={status} aria-label={t('ex.status')}><option value="">{t('ex.allStatuses')}</option>{#each STATUSES as s (s)}<option value={s}>{t(`ex.status.${s}`)}</option>{/each}</select>
-      <select class="select auto" bind:value={source} aria-label={t('ex.source')}><option value="">{t('ex.allSources')}</option>{#each srcList as s (s.id)}<option value={s.id}>{s.label}</option>{/each}</select>
+      <select id="ex-status" class="select auto" bind:value={status} aria-label={t('ex.status')}><option value="">{t('ex.allStatuses')}</option>{#each STATUSES as s (s)}<option value={s}>{t(`ex.status.${s}`)}</option>{/each}</select><HelpTip text={t('help.ex.statusFilter')} for="ex-status" />
+      <select id="ex-source" class="select auto" bind:value={source} aria-label={t('ex.source')}><option value="">{t('ex.allSources')}</option>{#each srcList as s (s.id)}<option value={s.id}>{s.label}</option>{/each}</select><HelpTip text={t('help.ex.sourceFilter')} for="ex-source" />
     {/snippet}
     {#if list.error}<ErrorBox error={list.error} onretry={() => list.load()} />
     {:else if list.loading && !items.length}<Skeleton rows={6} />

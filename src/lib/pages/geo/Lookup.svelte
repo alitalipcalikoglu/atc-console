@@ -1,6 +1,7 @@
 <script>
   /** Geo service home: IP, phone and distance lookups, the IP database, place collections. */
   import Page from '#lib/components/Page.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Stat from '#lib/components/Stat.svelte';
@@ -88,7 +89,7 @@
   const flagName = (c) => (c ? `${c.code}${c.name && c.name !== c.code ? ` · ${c.name}` : ''}` : '–');
 </script>
 
-<Page title={svc?.label ?? t('ge.title')} desc={t('ge.desc')}>
+<Page help={t('help.page.geo')} docs={sid} title={svc?.label ?? t('ge.title')} desc={t('ge.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
     <a class="btn" href="/atc-geo/{sid}/reference"><Icon name="globe" size={16} /><span class="hide-m"> {t('ge.reference')}</span></a>
@@ -108,7 +109,7 @@
     <div class="stack">
       <Panel title={t('ge.ipLookup')} bodyClass="stack">
         <form class="row" style="gap:8px" onsubmit={(e) => { e.preventDefault(); lookupIp(); }}>
-          <input class="input grow mono" bind:value={ip} placeholder="81.5.6.7, 2a02:6b8::1" aria-label={t('ge.ip')} maxlength="64" />
+          <input id="ge-ip" class="input grow mono" bind:value={ip} placeholder="81.5.6.7, 2a02:6b8::1" aria-label={t('ge.ip')} maxlength="64" /><HelpTip text={t('help.ge.ip')} for="ge-ip" />
           <button type="submit" class="btn" disabled={!ip.trim() || ipBusy}><Icon name="search" size={16} /><span class="hide-m"> {t('ge.lookup')}</span></button>
         </form>
         {#if ipError}<ErrorBox error={ipError} onretry={lookupIp} />
@@ -132,8 +133,8 @@
 
       <Panel title={t('ge.phone')} bodyClass="stack">
         <form class="row" style="gap:8px" onsubmit={(e) => { e.preventDefault(); lookupPhone(); }}>
-          <input class="input grow mono" bind:value={phone} placeholder="+90 532 123 45 67" aria-label={t('ge.phone')} maxlength="40" />
-          <input class="input mono" style="width:72px;flex:none" bind:value={phoneCountry} placeholder="TR" aria-label={t('ge.country')} maxlength="3" />
+          <input id="ge-phone" class="input grow mono" bind:value={phone} placeholder="+90 532 123 45 67" aria-label={t('ge.phone')} maxlength="40" /><HelpTip text={t('help.ge.phone')} for="ge-phone" />
+          <input id="ge-phone-country" class="input mono" style="width:72px;flex:none" bind:value={phoneCountry} placeholder="TR" aria-label={t('ge.country')} maxlength="3" /><HelpTip text={t('help.ge.phoneCountry')} for="ge-phone-country" />
           <button type="submit" class="btn" disabled={!phone.trim()}><Icon name="search" size={16} /><span class="hide-m"> {t('ge.lookup')}</span></button>
         </form>
         {#if phoneError}<ErrorBox error={phoneError} onretry={lookupPhone} />
@@ -149,8 +150,8 @@
 
       <Panel title={t('ge.distance')} bodyClass="stack">
         <form class="row wrap" style="gap:8px" onsubmit={(e) => { e.preventDefault(); lookupDistance(); }}>
-          <input class="input grow mono" style="min-width:150px" bind:value={from} placeholder="41.0082, 28.9784" aria-label={t('ge.from')} />
-          <input class="input grow mono" style="min-width:150px" bind:value={to} placeholder="39.9334, 32.8597" aria-label={t('ge.to')} />
+          <input id="ge-from" class="input grow mono" style="min-width:150px" bind:value={from} placeholder="41.0082, 28.9784" aria-label={t('ge.from')} /><HelpTip text={t('help.ge.from')} for="ge-from" />
+          <input id="ge-to" class="input grow mono" style="min-width:150px" bind:value={to} placeholder="39.9334, 32.8597" aria-label={t('ge.to')} /><HelpTip text={t('help.ge.to')} for="ge-to" />
           <button type="submit" class="btn" disabled={!distValid}><Icon name="route" size={16} /><span class="hide-m"> {t('ge.compute')}</span></button>
         </form>
         {#if distError}<ErrorBox error={distError} onretry={lookupDistance} />

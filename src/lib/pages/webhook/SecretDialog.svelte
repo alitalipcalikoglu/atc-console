@@ -9,7 +9,7 @@
   const fmt = $derived(new Fmt(i18n.lang));
 </script>
 
-<Dialog open={secret !== null} title={t('wh.secretTitle')} {onclose}>
+<Dialog help={t('help.dialog.whSecret')} open={secret !== null} title={t('wh.secretTitle')} {onclose}>
   <p class="small muted" style="margin:0 0 12px">{t('wh.secretOnce')}</p>
   <div class="row" style="min-width:0"><code class="result grow" style="max-height:none">{secret}</code><CopyButton text={secret ?? ''} /></div>
   {#if previousValidUntil}<p class="small muted" style="margin:12px 0 0">{t('wh.secretPrev', { until: fmt.dateTime(previousValidUntil) })}</p>{/if}

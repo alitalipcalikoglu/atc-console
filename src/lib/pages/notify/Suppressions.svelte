@@ -1,6 +1,8 @@
 <script>
   /** Notify's suppression list: who gets no mail and why; add an address, allow one again. */
   import Page from '#lib/components/Page.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Stat from '#lib/components/Stat.svelte';
@@ -57,7 +59,7 @@
   }
 </script>
 
-<Page title={t('notify.suppressions')} desc={t('notify.supDesc')} back="/atc-notify/{sid}">
+<Page help={t('help.page.notifySuppressions')} docs={sid} title={t('notify.suppressions')} desc={t('notify.supDesc')} back="/atc-notify/{sid}">
   {#snippet actions()}
     {#if session.isAdmin}<button class="btn primary" onclick={() => { email = ''; note = ''; addOpen = true; }} aria-label={t('notify.supAdd')} title={t('notify.supAdd')}><Icon name="plus" size={16} /><span class="hide-m"> {t('notify.supAdd')}</span></button>{/if}
     <button class="btn icon" onclick={() => list.load()} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
@@ -65,7 +67,7 @@
   <div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));margin-bottom:20px">
     {#each REASONS as r (r)}<Stat label={t(`notify.reason.${r}`)} value={fmt.int(counts[r] ?? 0)} />{/each}
   </div>
-  <div class="row" style="margin-bottom:12px"><input class="input grow" type="search" placeholder={t('notify.supSearch')} aria-label={t('notify.supSearch')} bind:value={q} /></div>
+  <div class="row" style="margin-bottom:12px"><input id="sup-search" class="input grow" type="search" placeholder={t('notify.supSearch')} aria-label={t('notify.supSearch')} bind:value={q} /><HelpTip text={t('help.notify.supSearch')} for="sup-search" /></div>
   <Panel title={t('notify.suppressions')} flush>
     {#if list.error}<ErrorBox error={list.error} onretry={() => list.load()} />
     {:else if !list.data}<Skeleton rows={5} />
@@ -87,10 +89,10 @@
   </Panel>
 </Page>
 
-<Dialog open={addOpen} title={t('notify.supAdd')} onclose={() => { addOpen = false; }}>
+<Dialog help={t('help.dialog.notifySupAdd')} open={addOpen} title={t('notify.supAdd')} onclose={() => { addOpen = false; }}>
   <div class="stack">
-    <div class="field"><label for="sup-email">{t('notify.address')}</label><input id="sup-email" class="input" type="email" autocomplete="off" bind:value={email} aria-invalid={email && !emailOk ? 'true' : undefined} /></div>
-    <div class="field"><label for="sup-note">{t('notify.note')}</label><input id="sup-note" class="input" maxlength="500" bind:value={note} /></div>
+    <div class="field"><FieldLabel for="sup-email" help={t('help.notify.supEmail')}>{t('notify.address')}</FieldLabel><input id="sup-email" class="input" type="email" autocomplete="off" bind:value={email} aria-invalid={email && !emailOk ? 'true' : undefined} /></div>
+    <div class="field"><FieldLabel for="sup-note" help={t('help.notify.supNote')}>{t('notify.note')}</FieldLabel><input id="sup-note" class="input" maxlength="500" bind:value={note} /></div>
   </div>
   {#snippet footer()}<button class="btn" onclick={() => { addOpen = false; }} disabled={busy}>{t('common.cancel')}</button><button class="btn primary" onclick={add} disabled={busy || !emailOk}>{t('notify.supAdd')}</button>{/snippet}
 </Dialog>

@@ -1,5 +1,6 @@
 <script>
   import Page from '#lib/components/Page.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Stat from '#lib/components/Stat.svelte';
@@ -101,7 +102,7 @@
   const m = $derived(summary.data?.summary);
 </script>
 
-<Page title={svc?.label ?? t('notify.title')} desc={t('notify.desc')}>
+<Page help={t('help.page.notify')} docs={sid} title={svc?.label ?? t('notify.title')} desc={t('notify.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
     <a class="btn" href="/atc-notify/{sid}/suppressions" aria-label={t('notify.suppressions')} title={t('notify.suppressions')}><Icon name="shield" size={16} /><span class="hide-m"> {t('notify.suppressions')}</span></a>
@@ -146,13 +147,13 @@
   </Panel>
 </Page>
 
-<Dialog open={sendOpen} title={t('notify.sendTitle')} onclose={() => { sendOpen = false; }} wide>
+<Dialog help={t('help.dialog.notifySend')} open={sendOpen} title={t('notify.sendTitle')} onclose={() => { sendOpen = false; }} wide>
   <p class="small muted" style="margin-bottom:12px">{t('notify.sendDesc')}</p>
   <div class="stack">
-    <div class="field"><label for="tpl">{t('notify.template')}</label>
+    <div class="field"><FieldLabel for="tpl" help={t('help.notify.template')}>{t('notify.template')}</FieldLabel>
       <select id="tpl" class="select" bind:value={tplName}>{#each templates as x (x.name)}<option value={x.name}>{x.name} — {x.description}</option>{/each}</select></div>
-    <div class="field"><label for="to">{t('notify.to')}</label><input id="to" class="input" type="text" placeholder="a@example.com, b@example.com" bind:value={to} /></div>
-    <div class="field"><label for="data">{t('notify.data')}</label><textarea id="data" class="textarea" rows="10" bind:value={dataText} aria-invalid={dataError ? 'true' : undefined}></textarea>{#if dataError}<span class="error">{dataError}</span>{/if}</div>
+    <div class="field"><FieldLabel for="to" help={t('help.notify.to')}>{t('notify.to')}</FieldLabel><input id="to" class="input" type="text" placeholder="a@example.com, b@example.com" bind:value={to} /></div>
+    <div class="field"><FieldLabel for="data" help={t('help.notify.data')}>{t('notify.data')}</FieldLabel><textarea id="data" class="textarea" rows="10" bind:value={dataText} aria-invalid={dataError ? 'true' : undefined}></textarea>{#if dataError}<span class="error">{dataError}</span>{/if}</div>
   </div>
   {#snippet footer()}
     <button class="btn" onclick={() => { sendOpen = false; }}>{t('common.cancel')}</button>

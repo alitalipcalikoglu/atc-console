@@ -1,6 +1,7 @@
 <script>
   /** Reference tables: countries, currencies, time zones, in the console language or another. */
   import Page from '#lib/components/Page.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Skeleton from '#lib/components/Skeleton.svelte';
@@ -27,15 +28,15 @@
   const items = $derived(tab === 'currencies' && q.trim() ? all.filter((c) => fold(`${c.code} ${c.name} ${c.countries.join(' ')}`).includes(fold(q.trim()))) : all);
 </script>
 
-<Page title={t('ge.reference')} desc={t('ge.referenceDesc')} back="/atc-geo/{sid}">
+<Page help={t('help.page.geoReference')} docs={sid} title={t('ge.reference')} desc={t('ge.referenceDesc')} back="/atc-geo/{sid}">
   {#snippet actions()}
     <button class="btn icon" onclick={() => data.load()} disabled={data.loading} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}
   <div class="stack">
     <div class="row wrap" style="gap:10px">
       <div class="seg" role="group">{#each TABS as x (x)}<button aria-pressed={tab === x} onclick={() => { tab = x; }}>{t(`ge.tab.${x}`)}</button>{/each}</div>
-      <input class="input grow" type="search" bind:value={q} placeholder={t('ge.referenceSearch')} aria-label={t('common.search')} style="min-width:160px" />
-      <input class="input mono" style="width:90px;flex:none" bind:value={lang} placeholder="en" aria-label={t('ge.lang')} title={t('ge.langHint')} maxlength="35" />
+      <input id="ge-ref-search" class="input grow" type="search" bind:value={q} placeholder={t('ge.referenceSearch')} aria-label={t('common.search')} style="min-width:160px" /><HelpTip text={t('help.ge.refSearch')} for="ge-ref-search" />
+      <input id="ge-lang" class="input mono" style="width:90px;flex:none" bind:value={lang} placeholder="en" aria-label={t('ge.lang')} title={t('ge.langHint')} maxlength="35" /><HelpTip text={t('help.ge.lang')} for="ge-lang" />
     </div>
     <Panel title={data.loaded ? t('ge.rowCount', { n: items.length }) : t(`ge.tab.${tab}`)} flush>
       {#if !langOk}<ErrorBox error={new Error(t('ge.langHint'))} />

@@ -1,5 +1,6 @@
 <script>
   import Page from '#lib/components/Page.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Skeleton from '#lib/components/Skeleton.svelte';
@@ -71,7 +72,7 @@
   const headerCount = $derived(s ? Object.keys(s.headers ?? {}).length : 0);
 </script>
 
-<Page title={s ? s.name : t('wh.subscription')} back="/atc-webhook-out/{sid}">
+<Page help={t('help.page.webhookSubscription')} docs={sid} title={s ? s.name : t('wh.subscription')} back="/atc-webhook-out/{sid}">
   {#snippet actions()}
     {#if s && session.isAdmin}
       <button class="btn primary" onclick={sendTest} disabled={busy}><Icon name="webhook" size={16} /><span class="hide-m"> {t('wh.test')}</span></button>
@@ -121,11 +122,11 @@
 
 <SubscriptionForm open={editOpen} initial={s} busy={busy} onsubmit={save} onclose={() => { editOpen = false; }} />
 <SecretDialog {secret} previousValidUntil={secretUntil} onclose={() => { secret = null; secretUntil = null; }} />
-<Dialog open={replayOpen} title={t('wh.replay')} onclose={() => { replayOpen = false; }}>
+<Dialog help={t('help.dialog.whReplay')} open={replayOpen} title={t('wh.replay')} onclose={() => { replayOpen = false; }}>
   <p class="small muted" style="margin:0 0 12px">{t('wh.replayDesc')}</p>
   <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
-    <div class="field"><label for="rp-from">{t('wh.replayFrom')}</label><input id="rp-from" class="input" type="datetime-local" bind:value={replayFrom} required /></div>
-    <div class="field"><label for="rp-to">{t('wh.replayTo')} <span class="faint">({t('common.optional')})</span></label><input id="rp-to" class="input" type="datetime-local" bind:value={replayTo} /><span class="hint">{t('wh.replayToHint')}</span></div>
+    <div class="field"><FieldLabel for="rp-from" help={t('help.wh.replayFrom')}>{t('wh.replayFrom')}</FieldLabel><input id="rp-from" class="input" type="datetime-local" bind:value={replayFrom} required /></div>
+    <div class="field"><FieldLabel for="rp-to" help={t('help.wh.replayTo')}>{t('wh.replayTo')} <span class="faint">({t('common.optional')})</span></FieldLabel><input id="rp-to" class="input" type="datetime-local" bind:value={replayTo} /><span class="hint">{t('wh.replayToHint')}</span></div>
   </div>
   {#snippet footer()}
     <button class="btn" onclick={() => { replayOpen = false; }} disabled={busy}>{t('common.cancel')}</button>

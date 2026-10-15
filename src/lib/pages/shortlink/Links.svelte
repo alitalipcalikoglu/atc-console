@@ -1,5 +1,6 @@
 <script>
   import Page from '#lib/components/Page.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import RankedList from '#lib/components/RankedList.svelte';
   import StatusBadge from '#lib/components/StatusBadge.svelte';
@@ -71,7 +72,7 @@
   const host = (u) => { try { return new URL(u).hostname; } catch { return u; } };
 </script>
 
-<Page title={svc?.label ?? t('sl.title')} desc={t('sl.desc')}>
+<Page help={t('help.page.shortlink')} docs={sid} title={svc?.label ?? t('sl.title')} desc={t('sl.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
     {#if session.isAdmin}<button class="btn primary" onclick={() => { createOpen = true; }} aria-label={t('sl.create')} title={t('sl.create')}><Icon name="plus" size={16} /><span class="hide-m"> {t('sl.create')}</span></button>{/if}
@@ -96,8 +97,8 @@
   <Panel title={t('sl.links')} flush>
     {#snippet aside()}
       <div class="seg">{#each STATUSES as s (s)}<button aria-pressed={status === s} onclick={() => { status = s; }}>{s ? t(`sl.${s}`) : t('common.all')}</button>{/each}</div>
-      <input class="input" style="width:min(240px,100%)" type="search" placeholder={t('sl.search')} bind:value={q} />
-      <input class="input" style="width:min(140px,100%)" type="search" placeholder={t('sl.tag')} bind:value={tag} />
+      <input id="sl-search" class="input" style="width:min(240px,100%)" type="search" placeholder={t('sl.search')} bind:value={q} /><HelpTip text={t('help.sl.search')} for="sl-search" />
+      <input id="sl-tag" class="input" style="width:min(140px,100%)" type="search" placeholder={t('sl.tag')} bind:value={tag} /><HelpTip text={t('help.sl.tagFilter')} for="sl-tag" />
     {/snippet}
       {#if list.error}<ErrorBox error={list.error} onretry={() => list.load()} />
       {:else if list.loading && !items.length}<Skeleton rows={6} />

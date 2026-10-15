@@ -1,5 +1,6 @@
 <script>
   import Page from '#lib/components/Page.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Stat from '#lib/components/Stat.svelte';
   import Empty from '#lib/components/Empty.svelte';
@@ -69,7 +70,7 @@
   const m = $derived(summary.data?.summary);
 </script>
 
-<Page title={svc?.label ?? t('media.title')} desc={t('media.desc')}>
+<Page help={t('help.page.media')} docs={sid} title={svc?.label ?? t('media.title')} desc={t('media.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
     <div class="seg"><button aria-pressed={view === 'grid'} onclick={() => { view = 'grid'; }} title={t('media.grid')}><Icon name="grid" size={14} /></button><button aria-pressed={view === 'list'} onclick={() => { view = 'list'; }} title={t('media.list')}><Icon name="list" size={14} /></button></div>
@@ -89,13 +90,13 @@
       ondragover={(e) => { e.preventDefault(); dragging = true; }} ondragleave={() => { dragging = false; }} ondrop={(e) => { e.preventDefault(); dragging = false; uploadFiles(e.dataTransfer?.files); }}
       onclick={() => picker?.click()} onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); picker?.click(); } }}>
       <Icon name="upload" size={28} />
-      <div style="margin-top:6px;font-weight:600">{t('media.dropHere')}</div>
+      <div style="margin-top:6px;font-weight:600">{t('media.dropHere')}<HelpTip text={t('help.media.upload')} for="media-upload" /></div>
       <div class="xs faint">{t('media.dropHint')}</div>
       <div class="row" style="justify-content:center;margin-top:12px" role="presentation" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()}>
-        <span class="small muted">{t('media.visibility')}:</span>
+        <span class="small muted">{t('media.visibility')}<HelpTip text={t('help.media.visibility')} />:</span>
         <div class="seg"><button aria-pressed={visibility === 'private'} onclick={() => { visibility = 'private'; }}>{t('media.private')}</button><button aria-pressed={visibility === 'public'} onclick={() => { visibility = 'public'; }}>{t('media.public')}</button></div>
       </div>
-      <input type="file" multiple class="sr-only" bind:this={picker} onchange={(e) => { uploadFiles(/** @type {HTMLInputElement} */ (e.currentTarget).files); /** @type {HTMLInputElement} */ (e.currentTarget).value = ''; }} />
+      <input id="media-upload" data-help-group="media-upload" type="file" multiple class="sr-only" bind:this={picker} onchange={(e) => { uploadFiles(/** @type {HTMLInputElement} */ (e.currentTarget).files); /** @type {HTMLInputElement} */ (e.currentTarget).value = ''; }} />
     </div>
     {#each uploads as u (u)}
       <div class="card" style="margin-bottom:8px"><div class="card-body row"><Icon name="upload" size={16} /><span class="grow truncate">{u.name}</span>{#if u.error}<span class="small danger-text">{u.error}</span>{:else}<div class="progress" style="width:160px"><div style="width:{Math.round(u.progress * 100)}%"></div></div>{/if}</div></div>

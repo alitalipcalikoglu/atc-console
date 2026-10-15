@@ -86,7 +86,7 @@
   }
 </script>
 
-<Page title={m ? m.name : t('stx.monitor')} back="/atc-status/{sid}">
+<Page help={t('help.page.statusMonitor')} docs={sid} title={m ? m.name : t('stx.monitor')} back="/atc-status/{sid}">
   {#snippet actions()}
     {#if m && session.isAdmin}
       <button class="btn primary" onclick={checkNow} disabled={busy} aria-label={t('stx.checkNow')} title={t('stx.checkNow')}><Icon name="play" size={16} /><span class="hide-m"> {t('stx.checkNow')}</span></button>

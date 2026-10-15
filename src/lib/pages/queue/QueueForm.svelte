@@ -1,6 +1,7 @@
 <script>
   /** Create a queue (name + settings) or edit an existing queue's settings. */
   import { untrack } from 'svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import Dialog from '#lib/components/Dialog.svelte';
   import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ open: boolean, initial?: any, busy?: boolean, onsubmit: (name: string, body: Record<string, unknown>) => void, onclose: () => void }} */
@@ -23,15 +24,15 @@
   const submit = () => onsubmit(initial ? initial.name : name.trim(), { description: description.trim(), visibilitySec: Number(visibilitySec), maxAttempts: Number(maxAttempts), backoffBaseSec: Number(backoffBaseSec), backoffMaxSec: Number(backoffMaxSec) });
 </script>
 
-<Dialog {open} title={initial ? t('qu.edit') : t('qu.create')} {onclose}>
+<Dialog help={t('help.dialog.quQueue')} {open} title={initial ? t('qu.edit') : t('qu.create')} {onclose}>
   <form class="stack" onsubmit={(e) => { e.preventDefault(); if (valid) submit(); }}>
-    {#if !initial}<div class="field"><label for="qf-name">{t('qu.name')}</label><input id="qf-name" class="input mono" bind:value={name} required pattern={'[a-z][a-z0-9._\\-]{0,63}'} placeholder="emails" /><span class="hint">{t('qu.nameHint')}</span></div>{/if}
-    <div class="field"><label for="qf-desc">{t('qu.description')}</label><input id="qf-desc" class="input" bind:value={description} maxlength="500" /></div>
+    {#if !initial}<div class="field"><FieldLabel for="qf-name" help={t('help.qu.name')}>{t('qu.name')}</FieldLabel><input id="qf-name" class="input mono" bind:value={name} required pattern={'[a-z][a-z0-9._\\-]{0,63}'} placeholder="emails" /><span class="hint">{t('qu.nameHint')}</span></div>{/if}
+    <div class="field"><FieldLabel for="qf-desc" help={t('help.qu.description')}>{t('qu.description')}</FieldLabel><input id="qf-desc" class="input" bind:value={description} maxlength="500" /></div>
     <div class="grid two-cols">
-      <div class="field"><label for="qf-vis">{t('qu.visibility')}</label><input id="qf-vis" class="input" type="number" min="1" max="43200" bind:value={visibilitySec} /><span class="hint">{t('qu.visibilityHint')}</span></div>
-      <div class="field"><label for="qf-att">{t('qu.maxAttempts')}</label><input id="qf-att" class="input" type="number" min="1" max="100" bind:value={maxAttempts} /><span class="hint">{t('qu.maxAttemptsHint')}</span></div>
-      <div class="field"><label for="qf-bb">{t('qu.backoffBase')}</label><input id="qf-bb" class="input" type="number" min="0" max="86400" bind:value={backoffBaseSec} /></div>
-      <div class="field"><label for="qf-bm">{t('qu.backoffMax')}</label><input id="qf-bm" class="input" type="number" min="0" max="604800" bind:value={backoffMaxSec} /><span class="hint">{t('qu.backoffHint')}</span></div>
+      <div class="field"><FieldLabel for="qf-vis" help={t('help.qu.visibility')}>{t('qu.visibility')}</FieldLabel><input id="qf-vis" class="input" type="number" min="1" max="43200" bind:value={visibilitySec} /><span class="hint">{t('qu.visibilityHint')}</span></div>
+      <div class="field"><FieldLabel for="qf-att" help={t('help.qu.maxAttempts')}>{t('qu.maxAttempts')}</FieldLabel><input id="qf-att" class="input" type="number" min="1" max="100" bind:value={maxAttempts} /><span class="hint">{t('qu.maxAttemptsHint')}</span></div>
+      <div class="field"><FieldLabel for="qf-bb" help={t('help.qu.backoffBase')}>{t('qu.backoffBase')}</FieldLabel><input id="qf-bb" class="input" type="number" min="0" max="86400" bind:value={backoffBaseSec} /></div>
+      <div class="field"><FieldLabel for="qf-bm" help={t('help.qu.backoffMax')}>{t('qu.backoffMax')}</FieldLabel><input id="qf-bm" class="input" type="number" min="0" max="604800" bind:value={backoffMaxSec} /><span class="hint">{t('qu.backoffHint')}</span></div>
     </div>
     <button type="submit" class="sr-only">ok</button>
   </form>

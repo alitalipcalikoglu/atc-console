@@ -1,6 +1,7 @@
 <script>
   /** Search inside one index: query, facet filters, ranked results with highlights; index and document management. */
   import Page from '#lib/components/Page.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Skeleton from '#lib/components/Skeleton.svelte';
@@ -97,7 +98,7 @@
   const attrText = (v) => (Array.isArray(v) ? v.join(', ') : String(v));
 </script>
 
-<Page title={x ? x.name : t('se.index')} back="/atc-search/{sid}">
+<Page help={t('help.page.searchIndex')} docs={sid} title={x ? x.name : t('se.index')} back="/atc-search/{sid}">
   {#snippet actions()}
     {#if x && session.isAdmin}
       <button class="btn" onclick={() => { addOpen = true; }} disabled={busy} aria-label={t('se.addDocs')} title={t('se.addDocs')}><Icon name="plus" size={16} /><span class="hide-m"> {t('se.addDocs')}</span></button>
@@ -119,8 +120,8 @@
       </div></div>
 
       <div class="row" style="gap:10px;align-items:stretch">
-        <input class="input grow" type="search" placeholder={t('se.searchPlaceholder')} bind:value={q} aria-label={t('se.search')} />
-        <select class="select" style="width:auto" bind:value={sort} aria-label={t('se.sort')}>{#each ['relevance', 'newest', 'oldest'] as s (s)}<option value={s}>{t(`se.sort.${s}`)}</option>{/each}</select>
+        <input id="se-q" class="input grow" type="search" placeholder={t('se.searchPlaceholder')} bind:value={q} aria-label={t('se.search')} /><HelpTip text={t('help.se.query')} for="se-q" />
+        <select id="se-sort" class="select" style="width:auto" bind:value={sort} aria-label={t('se.sort')}>{#each ['relevance', 'newest', 'oldest'] as s (s)}<option value={s}>{t(`se.sort.${s}`)}</option>{/each}</select><HelpTip text={t('help.se.sort')} for="se-sort" />
       </div>
 
       <div class="layout {facetKeys.length ? 'two' : ''}">
@@ -129,9 +130,9 @@
             {#snippet aside()}{#if activeFilters}<button class="btn ghost sm" onclick={() => { filters = {}; }}>{t('se.clearFilters')}</button>{/if}{/snippet}
             {#each facetKeys as key (key)}
               <div class="field">
-                <span class="subhead" style="margin:0">{key}</span>
+                <span class="subhead" style="margin:0">{key}<HelpTip text={t('help.se.facet')} for="facet-{key}" /></span>
                 {#each facetValues(key) as v (v.value)}
-                  <label class="checkbox small"><input type="checkbox" checked={(filters[key] ?? []).includes(v.value)} onchange={() => toggle(key, v.value)} /> <span class="grow truncate" title={v.value}>{v.value}</span><span class="xs faint">{fmt.int(v.count)}</span></label>
+                  <label class="checkbox small"><input type="checkbox" data-help-group="facet-{key}" checked={(filters[key] ?? []).includes(v.value)} onchange={() => toggle(key, v.value)} /> <span class="grow truncate" title={v.value}>{v.value}</span><span class="xs faint">{fmt.int(v.count)}</span></label>
                 {:else}<span class="xs faint">–</span>{/each}
               </div>
             {/each}
@@ -163,7 +164,7 @@
 
 <DocumentsImport open={addOpen} {base} ondone={() => { addOpen = false; res.load(); search(0); }} onclose={() => { addOpen = false; }} />
 <IndexForm open={editOpen} initial={x} busy={busy} onsubmit={save} onclose={() => { editOpen = false; }} />
-<Dialog open={doc !== null} title={doc?.title ?? t('se.document')} onclose={() => { doc = null; }} wide>
+<Dialog help={t('help.dialog.seDocument')} open={doc !== null} title={doc?.title ?? t('se.document')} onclose={() => { doc = null; }} wide>
   {#if doc}
     <dl class="kv">
       <dt>{t('common.id')}</dt><dd class="row" style="min-width:0"><span class="mono">{doc.id}</span><CopyButton text={doc.id} /></dd>

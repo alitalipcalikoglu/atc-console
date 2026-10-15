@@ -5,6 +5,7 @@
    * two timers for one service.
    */
   import Icon from './Icon.svelte';
+  import HelpTip from './HelpTip.svelte';
   import { services } from '#lib/client/services.svelte.js';
   import { useSession } from '#lib/client/session.svelte.js';
   const session = useSession();
@@ -43,10 +44,10 @@
     {#if p.running}<span class="mono {p.inFlight ? 'busy' : ''}" style="min-width:2.4em;text-align:right" title={p.inFlight ? t('poll.inFlight') : ''}>{p.inFlight ? '…' : `${p.countdown}s`}</span>{/if}
     {#if p.running && p.effectiveSec > value}<span class="badge warn plain" title={t('poll.slowedHint', { avg: (p.stats.avgMs / 1000).toFixed(1) })}>{t('poll.slowed', { s: p.effectiveSec })}</span>{/if}
   </span>
-  <select class="select sm" value={String(value)} onchange={change} disabled={saving || !session.isAdmin} aria-label={t('poll.label')} title={session.isAdmin ? t('poll.label') : t('poll.viewer')}>
+  <select id="auto-refresh-{sid}" class="select sm" value={String(value)} onchange={change} disabled={saving || !session.isAdmin} aria-label={t('poll.label')} title={session.isAdmin ? t('poll.label') : t('poll.viewer')}>
     {#each OPTIONS as sec (sec)}<option value={String(sec)}>{label(sec)}</option>{/each}
   </select>
-</label>
+</label><HelpTip text={t('help.poll.interval')} for="auto-refresh-{sid}" />
 
 <style>
   .poll { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex: none; }

@@ -20,7 +20,7 @@
   const json = $derived(e ? JSON.stringify(e.data, null, 2) : '');
 </script>
 
-<Page title={e ? e.type : t('wh.event')} back="/atc-webhook-out/{sid}">
+<Page help={t('help.page.webhookEvent')} docs={sid} title={e ? e.type : t('wh.event')} back="/atc-webhook-out/{sid}">
   {#snippet actions()}
     <button class="btn icon" onclick={() => res.load()} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}

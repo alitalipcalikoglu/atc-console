@@ -41,7 +41,7 @@
   const qrSrc = $derived(`/api${base}/qr.png?scale=6&margin=2`);
 </script>
 
-<Page title={l ? l.code : t('sl.link')} back="/atc-shortlink/{sid}">
+<Page help={t('help.page.shortlinkLink')} docs={sid} title={l ? l.code : t('sl.link')} back="/atc-shortlink/{sid}">
   {#snippet actions()}
     {#if l && session.isAdmin}
       <button class="btn" onclick={() => { editOpen = true; }} disabled={busy}><Icon name="settings" size={16} /><span class="hide-m"> {t('sl.edit')}</span></button>

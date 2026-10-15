@@ -4,6 +4,8 @@
    * schedule would recompute the next firing (and reject a one-shot that already fired).
    */
   import Dialog from '#lib/components/Dialog.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import { api } from '#lib/client/api.js';
   import { Fmt } from '#lib/client/format.js';
   import { t, i18n } from '#lib/client/i18n.svelte.js';
@@ -95,43 +97,43 @@
   function submit() { if (valid) onsubmit(build()); }
 </script>
 
-<Dialog {open} title={initial ? t('sc.edit') : t('sc.create')} {onclose} wide>
+<Dialog help={t('help.dialog.job')} {open} title={initial ? t('sc.edit') : t('sc.create')} {onclose} wide>
   <form class="stack" onsubmit={(e) => { e.preventDefault(); submit(); }}>
     {#if !initial}
-      <div class="field"><label for="jf-name">{t('sc.name')}</label><input id="jf-name" class="input mono" bind:value={name} required pattern={'[a-z0-9]+([.\\-_][a-z0-9]+)*'} placeholder="nightly.report" /><span class="hint">{t('sc.nameHint')}</span></div>
+      <div class="field"><FieldLabel for="jf-name" help={t('help.sc.name')}>{t('sc.name')}</FieldLabel><input id="jf-name" class="input mono" bind:value={name} required pattern={'[a-z0-9]+([.\\-_][a-z0-9]+)*'} placeholder="nightly.report" /><span class="hint">{t('sc.nameHint')}</span></div>
     {/if}
-    <div class="field"><label for="jf-desc">{t('fl.description')}</label><input id="jf-desc" class="input" bind:value={description} maxlength="500" /></div>
+    <div class="field"><FieldLabel for="jf-desc" help={t('help.sc.description')}>{t('fl.description')}</FieldLabel><input id="jf-desc" class="input" bind:value={description} maxlength="500" /></div>
 
-    <div class="subhead">{t('sc.schedule')}</div>
+    <div class="subhead">{t('sc.schedule')}<HelpTip text={t('help.sc.schedule')} /></div>
     <div class="seg" role="tablist"><button type="button" aria-pressed={mode === 'cron'} onclick={() => { mode = 'cron'; }}>{t('sc.recurring')}</button><button type="button" aria-pressed={mode === 'at'} onclick={() => { mode = 'at'; }}>{t('sc.oneShot')}</button></div>
     {#if mode === 'cron'}
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
-        <div class="field"><label for="jf-cron">{t('sc.cron')}</label><input id="jf-cron" class="input mono" bind:value={cron} required placeholder="0 9 * * mon-fri" aria-invalid={preview.error ? 'true' : undefined} /><span class="hint">{t('sc.cronHint')}</span></div>
-        <div class="field"><label for="jf-tz">{t('sc.timezone')}</label><select id="jf-tz" class="select" bind:value={timezone}>{#each timezones as z (z)}<option value={z}>{z}</option>{/each}</select></div>
+        <div class="field"><FieldLabel for="jf-cron" help={t('help.sc.cron')}>{t('sc.cron')}</FieldLabel><input id="jf-cron" class="input mono" bind:value={cron} required placeholder="0 9 * * mon-fri" aria-invalid={preview.error ? 'true' : undefined} /><span class="hint">{t('sc.cronHint')}</span></div>
+        <div class="field"><FieldLabel for="jf-tz" help={t('help.sc.timezone')}>{t('sc.timezone')}</FieldLabel><select id="jf-tz" class="select" bind:value={timezone}>{#each timezones as z (z)}<option value={z}>{z}</option>{/each}</select></div>
       </div>
       <div class="field"><span class="small" style="font-weight:550;color:var(--text-2)">{t('sc.preview')}</span>
         {#if preview.error}<span class="error">{preview.error}</span>
         {:else if preview.next.length}<span class="small mono">{preview.next.map((x) => fmt.dateTime(x)).join(' · ')}</span>
         {:else}<span class="hint">–</span>{/if}</div>
     {:else}
-      <div class="field"><label for="jf-at">{t('sc.at')}</label><input id="jf-at" class="input" type="datetime-local" bind:value={at} required aria-invalid={atError ? 'true' : undefined} />{#if atError}<span class="error">{atError}</span>{:else}<span class="hint">{t('sc.atHint')}</span>{/if}</div>
+      <div class="field"><FieldLabel for="jf-at" help={t('help.sc.at')}>{t('sc.at')}</FieldLabel><input id="jf-at" class="input" type="datetime-local" bind:value={at} required aria-invalid={atError ? 'true' : undefined} />{#if atError}<span class="error">{atError}</span>{:else}<span class="hint">{t('sc.atHint')}</span>{/if}</div>
     {/if}
 
     <div class="subhead">{t('sc.target')}</div>
-    <div class="field"><label for="jf-url">{t('sc.url')}</label><input id="jf-url" class="input mono" type="url" bind:value={url} required placeholder="https://api.example/reports/daily" /></div>
-    <div class="field"><span class="small" style="font-weight:550;color:var(--text-2)">{t('sc.method')}</span><div class="seg">{#each METHODS as m (m)}<button type="button" aria-pressed={method === m} onclick={() => { method = m; }}>{m}</button>{/each}</div></div>
+    <div class="field"><FieldLabel for="jf-url" help={t('help.sc.url')}>{t('sc.url')}</FieldLabel><input id="jf-url" class="input mono" type="url" bind:value={url} required placeholder="https://api.example/reports/daily" /></div>
+    <div class="field"><span class="small" style="font-weight:550;color:var(--text-2)">{t('sc.method')}<HelpTip text={t('help.sc.method')} /></span><div class="seg">{#each METHODS as m (m)}<button type="button" aria-pressed={method === m} onclick={() => { method = m; }}>{m}</button>{/each}</div></div>
     <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
-      <div class="field"><label for="jf-headers">{t('sc.headers')} <span class="faint">({t('common.optional')})</span></label><textarea id="jf-headers" class="textarea mono" rows="3" bind:value={headers} placeholder="X-Tenant: shop-1" aria-invalid={parsedHeaders.error ? 'true' : undefined}></textarea>{#if parsedHeaders.error}<span class="error">{parsedHeaders.error}</span>{:else}<span class="hint">{t('sc.headersHint')}</span>{/if}</div>
-      <div class="field"><label for="jf-body">{t('sc.body')} <span class="faint">({t('common.optional')})</span></label><textarea id="jf-body" class="textarea mono" rows="3" bind:value={body} disabled={!hasBody} placeholder={'{ "full": true }'} aria-invalid={parsedBody.error ? 'true' : undefined}></textarea>{#if parsedBody.error}<span class="error">{parsedBody.error}</span>{:else if !hasBody}<span class="hint">{t('sc.bodyHint')}</span>{/if}</div>
+      <div class="field"><FieldLabel for="jf-headers" help={t('help.sc.headers')}>{t('sc.headers')} <span class="faint">({t('common.optional')})</span></FieldLabel><textarea id="jf-headers" class="textarea mono" rows="3" bind:value={headers} placeholder="X-Tenant: shop-1" aria-invalid={parsedHeaders.error ? 'true' : undefined}></textarea>{#if parsedHeaders.error}<span class="error">{parsedHeaders.error}</span>{:else}<span class="hint">{t('sc.headersHint')}</span>{/if}</div>
+      <div class="field"><FieldLabel for="jf-body" help={t('help.sc.body')}>{t('sc.body')} <span class="faint">({t('common.optional')})</span></FieldLabel><textarea id="jf-body" class="textarea mono" rows="3" bind:value={body} disabled={!hasBody} placeholder={'{ "full": true }'} aria-invalid={parsedBody.error ? 'true' : undefined}></textarea>{#if parsedBody.error}<span class="error">{parsedBody.error}</span>{:else if !hasBody}<span class="hint">{t('sc.bodyHint')}</span>{/if}</div>
     </div>
     <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
-      <div class="field"><label for="jf-key">{t('sc.targetKey')}</label><select id="jf-key" class="select" bind:value={targetKey}><option value="">{t('sc.noTargetKey')}</option>{#each targetKeys as k (k)}<option value={k}>{k}</option>{/each}</select><span class="hint">{t('sc.targetKeyHint')}</span></div>
-      <div class="field"><label for="jf-timeout">{t('sc.timeout')}</label><input id="jf-timeout" class="input" type="number" min="1000" step="1000" bind:value={timeoutMs} /></div>
-      <div class="field"><label for="jf-retry">{t('sc.retryMax')}</label><input id="jf-retry" class="input" type="number" min="0" max="100" bind:value={retryMax} /></div>
-      <div class="field"><label for="jf-backoff">{t('sc.backoff')}</label><input id="jf-backoff" class="input" type="number" min="1" bind:value={backoffSec} /><span class="hint">{t('sc.retryHint')}</span></div>
+      <div class="field"><FieldLabel for="jf-key" help={t('help.sc.targetKey')}>{t('sc.targetKey')}</FieldLabel><select id="jf-key" class="select" bind:value={targetKey}><option value="">{t('sc.noTargetKey')}</option>{#each targetKeys as k (k)}<option value={k}>{k}</option>{/each}</select><span class="hint">{t('sc.targetKeyHint')}</span></div>
+      <div class="field"><FieldLabel for="jf-timeout" help={t('help.sc.timeout')}>{t('sc.timeout')}</FieldLabel><input id="jf-timeout" class="input" type="number" min="1000" step="1000" bind:value={timeoutMs} /></div>
+      <div class="field"><FieldLabel for="jf-retry" help={t('help.sc.retry')}>{t('sc.retryMax')}</FieldLabel><input id="jf-retry" class="input" type="number" min="0" max="100" bind:value={retryMax} /></div>
+      <div class="field"><FieldLabel for="jf-backoff" help={t('help.sc.backoff')}>{t('sc.backoff')}</FieldLabel><input id="jf-backoff" class="input" type="number" min="1" bind:value={backoffSec} /><span class="hint">{t('sc.retryHint')}</span></div>
     </div>
-    <div class="field"><label for="jf-tags">{t('sl.tags')} <span class="faint">({t('sl.tagsHint')})</span></label><input id="jf-tags" class="input" bind:value={tags} placeholder="reports, nightly" /></div>
-    {#if !initial}<label class="checkbox small"><input type="checkbox" bind:checked={enabled} /> {t('sc.startEnabled')}</label>{/if}
+    <div class="field"><FieldLabel for="jf-tags" help={t('help.sc.tags')}>{t('sl.tags')} <span class="faint">({t('sl.tagsHint')})</span></FieldLabel><input id="jf-tags" class="input" bind:value={tags} placeholder="reports, nightly" /></div>
+    {#if !initial}<label class="checkbox small"><input id="jf-enabled" type="checkbox" bind:checked={enabled} /> {t('sc.startEnabled')}</label><HelpTip text={t('help.sc.startEnabled')} for="jf-enabled" />{/if}
     <button type="submit" class="sr-only">ok</button>
   </form>
   {#snippet footer()}

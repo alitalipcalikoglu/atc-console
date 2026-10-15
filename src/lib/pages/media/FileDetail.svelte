@@ -1,5 +1,7 @@
 <script>
   import Page from '#lib/components/Page.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Empty from '#lib/components/Empty.svelte';
@@ -39,7 +41,7 @@
   async function sign() { try { signed = /** @type {any} */ (await api.post(`${base}/urls?ttl=${Number(ttl) || 900}`)).urls; } catch (e) { toasts.error(e); } }
 </script>
 
-<Page title={f?.name ?? t('media.files')} back="/atc-media/{sid}">
+<Page help={t('help.page.mediaFile')} docs={sid} title={f?.name ?? t('media.files')} back="/atc-media/{sid}">
   {#snippet actions()}
     {#if f && session.isAdmin}
       <button class="btn" onclick={() => { newName = f.name.replace(/\.[^.]+$/, ''); renameOpen = true; }} disabled={busy}>{t('media.rename')}</button>
@@ -71,7 +73,7 @@
           </dl>
         </div></div>
         <Panel title={t('media.urls')} flush>
-          {#snippet aside()}{#if f.visibility === 'private'}<div class="row"><input class="input" style="width:110px" inputmode="numeric" bind:value={ttl} aria-label={t('media.ttl')} /><button class="btn sm primary" onclick={sign}><Icon name="link" size={14} /> {t('media.signedUrl')}</button></div>{/if}{/snippet}
+          {#snippet aside()}{#if f.visibility === 'private'}<div class="row"><input id="media-ttl" class="input" style="width:110px" inputmode="numeric" bind:value={ttl} aria-label={t('media.ttl')} /><HelpTip text={t('help.media.ttl')} for="media-ttl" /><button class="btn sm primary" onclick={sign}><Icon name="link" size={14} /> {t('media.signedUrl')}</button></div>{/if}{/snippet}
           <div class="table-wrap"><table class="table"><tbody>
             {#each Object.entries(signed ?? f.urls) as [name, u] (name)}
               <tr><td style="width:90px"><code>{name}</code></td><td class="mono xs" style="max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><a href={u.url} target="_blank" rel="noopener" title={u.url}>{u.url.replace(/^https?:\/\/[^/]+/, '')}</a></td><td class="xs faint" style="white-space:nowrap">{#if u.expiresAt}<Time value={u.expiresAt} />{/if}</td><td style="width:40px"><CopyButton text={u.url} /></td></tr>
@@ -84,8 +86,8 @@
 </Page>
 
 <Confirm open={confirmDelete} title={t('media.delete')} message={t('media.deleteDesc', { days: 7 })} danger confirmLabel={t('common.delete')} {busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/atc-media/${sid}`); }, t('media.deleted'))} oncancel={() => { confirmDelete = false; }} />
-<Dialog open={renameOpen} title={t('media.rename')} onclose={() => { renameOpen = false; }}>
-  <div class="field"><label for="nn">{t('media.newName')}</label><input id="nn" class="input" bind:value={newName} /></div>
+<Dialog help={t('help.dialog.mediaRename')} open={renameOpen} title={t('media.rename')} onclose={() => { renameOpen = false; }}>
+  <div class="field"><FieldLabel for="nn" help={t('help.media.name')}>{t('media.newName')}</FieldLabel><input id="nn" class="input" bind:value={newName} /></div>
   {#snippet footer()}<button class="btn" onclick={() => { renameOpen = false; }}>{t('common.cancel')}</button><button class="btn primary" onclick={() => run(() => api.patch(base, { name: newName.trim() }), t('common.updated'))} disabled={busy || !newName.trim()}>{t('common.save')}</button>{/snippet}
 </Dialog>
 

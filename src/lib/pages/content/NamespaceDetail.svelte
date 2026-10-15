@@ -1,6 +1,7 @@
 <script>
   /** One namespace: locales and chains, the key table with a missing filter, the key editor, import/export, publish and releases. */
   import { untrack } from 'svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import Page from '#lib/components/Page.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
@@ -141,7 +142,7 @@
   const nextRelease = $derived((releases[0]?.number ?? 0) + 1);
 </script>
 
-<Page title={ns ? ns.name : t('ct.namespace')} back="/atc-content/{sid}">
+<Page help={t('help.page.contentNamespace')} docs={sid} title={ns ? ns.name : t('ct.namespace')} back="/atc-content/{sid}">
   {#snippet actions()}
     {#if ns && session.isAdmin}
       <button class="btn primary" onclick={() => { confirm = 'publish'; }} disabled={busy}><Icon name="upload" size={16} /><span class="hide-m"> {t('ct.publish')}</span></button>
@@ -220,8 +221,8 @@
 
       <Panel title={t('ct.keys')} flush>
         {#snippet aside()}
-          <select class="select" style="width:auto" bind:value={missing} aria-label={t('ct.missing')}><option value="">{t('ct.allKeys')}</option>{#each ns.locales as l (l.locale)}<option value={l.locale}>{t('ct.missingIn', { l: l.locale })}</option>{/each}</select>
-          <input class="input key-search" type="search" placeholder={t('ct.search')} bind:value={q} />
+          <select id="ct-missing" class="select" style="width:auto" bind:value={missing} aria-label={t('ct.missing')}><option value="">{t('ct.allKeys')}</option>{#each ns.locales as l (l.locale)}<option value={l.locale}>{t('ct.missingIn', { l: l.locale })}</option>{/each}</select><HelpTip text={t('help.ct.missingFilter')} for="ct-missing" />
+          <input id="ct-search" class="input key-search" type="search" placeholder={t('ct.search')} bind:value={q} /><HelpTip text={t('help.ct.search')} for="ct-search" />
           {#if session.isAdmin}<button class="btn sm" onclick={() => { keyEntry = null; keyOpen = true; }} disabled={busy}><Icon name="plus" size={14} /> {t('ct.addKey')}</button>{/if}
         {/snippet}
         {#if keysError}<ErrorBox error={keysError} onretry={loadKeys} />

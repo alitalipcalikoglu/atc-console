@@ -1,6 +1,8 @@
 <script>
   /** New export: source, format, the source's own filters and an optional completion e-mail. */
   import { untrack } from 'svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import Dialog from '#lib/components/Dialog.svelte';
   import { t } from '#lib/client/i18n.svelte.js';
   /** @type {{ open: boolean, sources: any[], busy?: boolean, onsubmit: (body: Record<string, unknown>) => void, onclose: () => void }} */
@@ -24,24 +26,24 @@
   }
 </script>
 
-<Dialog {open} title={t('ex.create')} {onclose}>
+<Dialog help={t('help.dialog.export')} {open} title={t('ex.create')} {onclose}>
   <form class="stack" onsubmit={(e) => { e.preventDefault(); submit(); }}>
     {#if !sources.length}<p class="small muted">{t('ex.noSources')}</p>{:else}
-      <div class="field"><label for="xf-source">{t('ex.source')}</label>
+      <div class="field"><FieldLabel for="xf-source" help={t('help.ex.source')}>{t('ex.source')}</FieldLabel>
         <select id="xf-source" class="select" value={source} onchange={(e) => pickSource(/** @type {HTMLSelectElement} */ (e.currentTarget).value)}>{#each sources as s (s.id)}<option value={s.id}>{s.label} ({s.id})</option>{/each}</select></div>
-      <div class="field"><span class="small field-label">{t('ex.format')}</span>
+      <div class="field"><span class="small field-label">{t('ex.format')}<HelpTip text={t('help.ex.format')} /></span>
         <div class="seg"><button type="button" aria-pressed={format === 'csv'} onclick={() => { format = 'csv'; }}>CSV</button><button type="button" aria-pressed={format === 'ndjson'} onclick={() => { format = 'ndjson'; }}>NDJSON</button></div></div>
       <fieldset class="stack plain">
         <legend class="small field-label">{t('ex.filters')}</legend>
         {#if !fields.length}<p class="xs faint">{t('ex.noFilters')}</p>{/if}
         {#each fields as [name, f] (name)}
-          <div class="field"><label for="xf-{name}">{human(name)}{#if f.required}<span class="faint note">({t('ex.required')})</span>{/if}</label>
+          <div class="field"><FieldLabel for="xf-{name}" help={f.description || t('help.ex.filter')}>{human(name)}{#if f.required}<span class="faint note">({t('ex.required')})</span>{/if}</FieldLabel>
             {#if f.enum}<select id="xf-{name}" class="select" bind:value={filters[name]}><option value="">–</option>{#each f.enum as v (v)}<option value={v}>{v}</option>{/each}</select>
             {:else}<input id="xf-{name}" class="input" bind:value={filters[name]} required={f.required} maxlength={f.maxLength ?? 200} placeholder={f.format === 'date-time' ? '2026-10-01T00:00:00Z' : ''} />{/if}
-            {#if f.description}<span class="hint">{f.description}</span>{/if}</div>
+            </div>
         {/each}
       </fieldset>
-      <div class="field"><label for="xf-email">{t('ex.notifyEmail')}</label><input id="xf-email" class="input" type="email" bind:value={email} maxlength="254" placeholder="ops@example.com" /><span class="hint">{t('ex.notifyHint')}</span></div>
+      <div class="field"><FieldLabel for="xf-email" help={t('help.ex.email')}>{t('ex.notifyEmail')}</FieldLabel><input id="xf-email" class="input" type="email" bind:value={email} maxlength="254" placeholder="ops@example.com" /><span class="hint">{t('ex.notifyHint')}</span></div>
     {/if}
     <button type="submit" class="sr-only">ok</button>
   </form>

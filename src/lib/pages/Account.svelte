@@ -1,5 +1,7 @@
 <script>
   import Page from '#lib/components/Page.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Confirm from '#lib/components/Confirm.svelte';
   import StatusBadge from '#lib/components/StatusBadge.svelte';
@@ -49,7 +51,7 @@
   const MODES = /** @type {const} */ (['system', 'light', 'dark']);
 </script>
 
-<Page title={t('account.title')} desc={t('account.desc')}>
+<Page help={t('help.page.account')} title={t('account.title')} desc={t('account.desc')}>
   {#if page.data.mustEnrol}<p class="small warn-text" role="alert">{t('account.totpRequiredNote')}</p>{/if}
   {#snippet actions()}<button class="btn" onclick={() => session.requestLogout()}><Icon name="logout" size={16} /> {t('account.logout')}</button>{/snippet}
   <div class="two">
@@ -57,14 +59,14 @@
       <div class="card"><div class="card-body">
         <div class="row" style="margin-bottom:12px"><div class="avatar">{session.admin?.username.slice(0, 1).toUpperCase()}</div><div class="grow" style="min-width:0"><div style="font-weight:650">{session.admin?.name}</div><div class="small muted mono truncate">{session.admin?.username}</div></div><span class="badge {session.isAdmin ? 'info' : ''}">{t(`admins.${session.admin?.role}`)}</span></div>
         <div class="row wrap" style="gap:16px">
-          <div class="field"><span class="small" style="font-weight:550;color:var(--text-2)">{t('account.theme')}</span><div class="seg">{#each MODES as m (m)}<button aria-pressed={theme.mode === m} onclick={() => theme.set(m)}>{t(`account.theme${m[0].toUpperCase()}${m.slice(1)}`)}</button>{/each}</div></div>
-          <div class="field"><span class="small" style="font-weight:550;color:var(--text-2)">{t('account.language')}</span><div class="seg"><button aria-pressed={i18n.lang === 'tr'} onclick={() => i18n.set('tr')}>Türkçe</button><button aria-pressed={i18n.lang === 'en'} onclick={() => i18n.set('en')}>English</button></div></div>
+          <div class="field"><span class="small" style="font-weight:550;color:var(--text-2)">{t('account.theme')}<HelpTip text={t('help.account.theme')} /></span><div class="seg">{#each MODES as m (m)}<button aria-pressed={theme.mode === m} onclick={() => theme.set(m)}>{t(`account.theme${m[0].toUpperCase()}${m.slice(1)}`)}</button>{/each}</div></div>
+          <div class="field"><span class="small" style="font-weight:550;color:var(--text-2)">{t('account.language')}<HelpTip text={t('help.account.language')} /></span><div class="seg"><button aria-pressed={i18n.lang === 'tr'} onclick={() => i18n.set('tr')}>Türkçe</button><button aria-pressed={i18n.lang === 'en'} onclick={() => i18n.set('en')}>English</button></div></div>
         </div>
       </div></div>
 
       <Panel title={t('account.password')}><form class="stack" onsubmit={changePassword}>
-        <div class="field"><label for="cp">{t('account.current')}</label><input id="cp" class="input" type="password" autocomplete="current-password" bind:value={cur} required /></div>
-        <div class="field"><label for="np">{t('account.new')}</label><input id="np" class="input" type="password" autocomplete="new-password" bind:value={next} required />{#if PasswordHint.weak(next)}<span class="hint warn-text">{t('common.weakPassword')}</span>{/if}</div>
+        <div class="field"><FieldLabel for="cp" help={t('help.account.current')}>{t('account.current')}</FieldLabel><input id="cp" class="input" type="password" autocomplete="current-password" bind:value={cur} required /></div>
+        <div class="field"><FieldLabel for="np" help={t('help.account.new')}>{t('account.new')}</FieldLabel><input id="np" class="input" type="password" autocomplete="new-password" bind:value={next} required />{#if PasswordHint.weak(next)}<span class="hint warn-text">{t('common.weakPassword')}</span>{/if}</div>
         <div><button class="btn primary" type="submit" disabled={busy || !cur || next.length < 12}>{t('common.save')}</button></div>
       </form></Panel>
     </div>
@@ -80,7 +82,7 @@
             <p class="small">{t('account.scan')}</p>
             <div class="qr">{@html enrol.svg}</div>
             <div class="row wrap small"><span class="muted">{t('account.secret')}:</span><code style="word-break:break-all">{enrol.secret}</code><CopyButton text={enrol.secret} /></div>
-            <div class="field"><label for="tc">{t('login.code')}</label><input id="tc" class="input mono" inputmode="numeric" pattern={'[0-9]{6}'} maxlength="6" autocomplete="one-time-code" bind:value={code} required /></div>
+            <div class="field"><FieldLabel for="tc" help={t('help.account.totpCode')}>{t('login.code')}</FieldLabel><input id="tc" class="input mono" inputmode="numeric" pattern={'[0-9]{6}'} maxlength="6" autocomplete="one-time-code" bind:value={code} required /></div>
             <div class="row"><button class="btn primary" type="submit" disabled={busy || code.length !== 6}>{t('account.enableTotp')}</button><button class="btn ghost" type="button" onclick={() => { enrol = null; }}>{t('common.cancel')}</button></div>
           </form>
         {:else}
@@ -100,11 +102,11 @@
 </Page>
 
 <Confirm open={othersOpen} title={t('account.logoutOthers')} message={t('account.logoutOthersDesc')} danger confirmLabel={t('account.logoutOthers')} {busy} onconfirm={logoutOthers} oncancel={() => { othersOpen = false; }} />
-<Dialog open={disableOpen} title={t('account.disableTotp')} onclose={() => { disableOpen = false; }}>
+<Dialog help={t('help.dialog.disableTotp')} open={disableOpen} title={t('account.disableTotp')} onclose={() => { disableOpen = false; }}>
   <p class="small muted" style="margin-bottom:12px">{t('account.disableTotpDesc')}</p>
   <div class="stack">
-    <div class="field"><label for="dp">{t('common.password')}</label><input id="dp" class="input" type="password" autocomplete="current-password" bind:value={dPassword} /></div>
-    <div class="field"><label for="dc">{t('login.code')}</label><input id="dc" class="input mono" inputmode="numeric" maxlength="6" bind:value={dCode} /></div>
+    <div class="field"><FieldLabel for="dp" help={t('help.account.disablePassword')}>{t('common.password')}</FieldLabel><input id="dp" class="input" type="password" autocomplete="current-password" bind:value={dPassword} /></div>
+    <div class="field"><FieldLabel for="dc" help={t('help.account.disableCode')}>{t('login.code')}</FieldLabel><input id="dc" class="input mono" inputmode="numeric" maxlength="6" bind:value={dCode} /></div>
   </div>
   {#snippet footer()}<button class="btn" onclick={() => { disableOpen = false; }}>{t('common.cancel')}</button><button class="btn danger solid" onclick={disableTotp} disabled={busy || !dPassword || dCode.length !== 6}>{t('account.disableTotp')}</button>{/snippet}
 </Dialog>

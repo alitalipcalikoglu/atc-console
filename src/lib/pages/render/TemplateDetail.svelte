@@ -1,6 +1,7 @@
 <script>
   /** One render template: versions, the layout editor with sample data, preview, publish, delete. */
   import { untrack } from 'svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import Page from '#lib/components/Page.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
@@ -86,7 +87,7 @@
   }
 </script>
 
-<Page title={x ? x.name : t('rd.template')} back="/atc-render/{sid}">
+<Page help={t('help.page.renderTemplate')} docs={sid} title={x ? x.name : t('rd.template')} back="/atc-render/{sid}">
   {#snippet actions()}
     {#if x}<button class="btn primary" onclick={preview} disabled={busy || !valid || !session.isAdmin}><Icon name="download" size={16} /><span class="hide-m"> {t('rd.preview')}</span></button>{/if}
     {#if x && session.isAdmin}
@@ -107,13 +108,13 @@
         <Panel title={t('rd.editor')} bodyClass="stack">
           {#snippet aside()}{#if editingFrom !== null}<span class="xs faint">{t('rd.editingFrom', { v: editingFrom })}</span>{/if}{/snippet}
           <p class="xs faint no-margin">{t('rd.previewHint')}</p>
-          <div class="field"><label for="rd-layout">{t('rd.layout')}</label>
+          <div class="field"><FieldLabel for="rd-layout" help={t('help.rd.layout')}>{t('rd.layout')}</FieldLabel>
             <textarea id="rd-layout" class="textarea mono editor" rows="18" bind:value={layoutText} spellcheck="false" aria-invalid={layout.error ? 'true' : undefined}></textarea>
             {#if layout.error}<span class="error">{t('rd.invalidJson', { msg: layout.error })}</span>{/if}</div>
-          <div class="field"><label for="rd-data">{t('rd.data')}</label>
+          <div class="field"><FieldLabel for="rd-data" help={t('help.rd.data')}>{t('rd.data')}</FieldLabel>
             <textarea id="rd-data" class="textarea mono" rows="6" bind:value={dataText} spellcheck="false" aria-invalid={data.error ? 'true' : undefined}></textarea>
             {#if data.error}<span class="error">{t('rd.invalidJson', { msg: data.error })}</span>{/if}</div>
-          {#if session.isAdmin}<div class="field"><label for="rd-note">{t('rd.note')}</label><input id="rd-note" class="input" bind:value={note} maxlength="500" /><span class="hint">{t('rd.noteHint')}</span></div>{/if}
+          {#if session.isAdmin}<div class="field"><FieldLabel for="rd-note" help={t('help.rd.note')}>{t('rd.note')}</FieldLabel><input id="rd-note" class="input" bind:value={note} maxlength="500" /><span class="hint">{t('rd.noteHint')}</span></div>{/if}
           {#if problems.length}
             <div class="problems" role="alert">
               <p class="small danger-text no-margin"><strong>{t('rd.errors')}</strong></p>

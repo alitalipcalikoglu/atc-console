@@ -1,5 +1,7 @@
 <script>
   import { PasswordHint } from '#lib/client/password-hint.js';
+  import HelpTip from '#lib/components/HelpTip.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import Page from '#lib/components/Page.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
@@ -32,7 +34,7 @@
   function openCreate() { fUsername = fName = fPassword = ''; fRole = 'viewer'; fServices = []; dialog = 'create'; }
 </script>
 
-<Page title={t('admins.title')} desc={t('admins.desc')}>
+<Page help={t('help.page.admins')} title={t('admins.title')} desc={t('admins.desc')}>
   {#snippet actions()}<button class="btn primary" onclick={openCreate}><Icon name="plus" size={16} /> {t('admins.create')}</button>{/snippet}
   <Panel title={t('admins.title')} flush>
     {#if list.error}<ErrorBox error={list.error} onretry={() => list.load()} />
@@ -68,28 +70,28 @@
   </Panel>
 </Page>
 
-<Dialog open={dialog === 'create'} title={t('admins.create')} onclose={() => { dialog = null; }}>
+<Dialog help={t('help.dialog.adminCreate')} open={dialog === 'create'} title={t('admins.create')} onclose={() => { dialog = null; }}>
   <div class="stack">
-    <div class="field"><label for="ae">{t('common.username')}</label><input id="ae" class="input" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="64" bind:value={fUsername} required /></div>
-    <div class="field"><label for="an">{t('common.name')} <span class="faint">({t('common.optional')})</span></label><input id="an" class="input" bind:value={fName} /></div>
-    <div class="field"><label for="ap">{t('common.password')}</label><input id="ap" class="input" type="password" autocomplete="new-password" bind:value={fPassword} />{#if PasswordHint.weak(fPassword)}<span class="hint warn-text">{t('common.weakPassword')}</span>{/if}</div>
-    <div class="field"><span class="small" style="font-weight:550;color:var(--text-2)">{t('common.role')}</span>
+    <div class="field"><FieldLabel for="ae" help={t('help.admins.username')}>{t('common.username')}</FieldLabel><input id="ae" class="input" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="64" bind:value={fUsername} required /></div>
+    <div class="field"><FieldLabel for="an" help={t('help.admins.name')}>{t('common.name')} <span class="faint">({t('common.optional')})</span></FieldLabel><input id="an" class="input" bind:value={fName} /></div>
+    <div class="field"><FieldLabel for="ap" help={t('help.admins.password')}>{t('common.password')}</FieldLabel><input id="ap" class="input" type="password" autocomplete="new-password" bind:value={fPassword} />{#if PasswordHint.weak(fPassword)}<span class="hint warn-text">{t('common.weakPassword')}</span>{/if}</div>
+    <div class="field"><span class="small" style="font-weight:550;color:var(--text-2)">{t('common.role')}<HelpTip text={t('help.admins.role')} for="role" /></span>
       <div class="row wrap">
-        <label class="checkbox"><input type="radio" name="role" value="viewer" bind:group={fRole} /> <span><strong>{t('admins.viewer')}</strong> <span class="muted small">— {t('admins.viewerDesc')}</span></span></label>
-        <label class="checkbox"><input type="radio" name="role" value="admin" bind:group={fRole} /> <span><strong>{t('admins.admin')}</strong> <span class="muted small">— {t('admins.adminDesc')}</span></span></label>
+        <label class="checkbox"><input type="radio" name="role" value="viewer" bind:group={fRole} data-help-group="role" /> <span><strong>{t('admins.viewer')}</strong> <span class="muted small">— {t('admins.viewerDesc')}</span></span></label>
+        <label class="checkbox"><input type="radio" name="role" value="admin" bind:group={fRole} data-help-group="role" /> <span><strong>{t('admins.admin')}</strong> <span class="muted small">— {t('admins.adminDesc')}</span></span></label>
       </div></div>
     <ServiceScope bind:value={fServices} idPrefix="cs" />
   </div>
   {#snippet footer()}<button class="btn" onclick={() => { dialog = null; }}>{t('common.cancel')}</button><button class="btn primary" disabled={busy || !fUsername || !fPassword} onclick={() => run(() => api.post('/admins', { services: fServices.length ? fServices : null, username: fUsername.trim(), name: fName.trim(), password: fPassword, role: fRole }), t('admins.created'))}>{t('admins.create')}</button>{/snippet}
 </Dialog>
-<Dialog open={dialog === 'services'} title="{t('admins.editServices')} · {target?.username ?? ''}" onclose={() => { dialog = null; }}>
+<Dialog help={t('help.dialog.adminServices')} open={dialog === 'services'} title="{t('admins.editServices')} · {target?.username ?? ''}" onclose={() => { dialog = null; }}>
   <ServiceScope bind:value={fServices} idPrefix="es" />
   <p class="small muted" style="margin-top:10px">{t('admins.scopedNote')}</p>
   {#snippet footer()}<button class="btn" onclick={() => { dialog = null; }}>{t('common.cancel')}</button><button class="btn primary" disabled={busy} onclick={() => run(() => api.patch(`/admins/${target.id}`, { services: fServices.length ? fServices : null }), t('admins.servicesSaved'))}>{t('common.save')}</button>{/snippet}
 </Dialog>
-<Dialog open={dialog === 'password'} title="{t('admins.resetPassword')} · {target?.username ?? ''}" onclose={() => { dialog = null; }}>
+<Dialog help={t('help.dialog.adminPassword')} open={dialog === 'password'} title="{t('admins.resetPassword')} · {target?.username ?? ''}" onclose={() => { dialog = null; }}>
   <p class="small muted" style="margin-bottom:12px">{t('admins.resetDesc')}</p>
-  <div class="field"><label for="rp">{t('account.new')}</label><input id="rp" class="input" type="password" autocomplete="new-password" bind:value={fPassword} />{#if PasswordHint.weak(fPassword)}<span class="hint warn-text">{t('common.weakPassword')}</span>{/if}</div>
+  <div class="field"><FieldLabel for="rp" help={t('help.admins.newPassword')}>{t('account.new')}</FieldLabel><input id="rp" class="input" type="password" autocomplete="new-password" bind:value={fPassword} />{#if PasswordHint.weak(fPassword)}<span class="hint warn-text">{t('common.weakPassword')}</span>{/if}</div>
   {#snippet footer()}<button class="btn" onclick={() => { dialog = null; }}>{t('common.cancel')}</button><button class="btn primary" disabled={busy || fPassword.length < 12} onclick={() => run(() => api.post(`/admins/${target.id}/password`, { password: fPassword }), t('admins.passwordSet'))}>{t('common.save')}</button>{/snippet}
 </Dialog>
 <Confirm open={pending?.kind === 'delete'} title={t('admins.delete')} message="{pending?.admin.username ?? ''}: {t('admins.deleteDesc')}" danger typeWord={pending?.admin.username ?? ''} confirmLabel={t('common.delete')} {busy} onconfirm={() => confirmed((a) => api.delete(`/admins/${a.id}`), t('admins.deleted'))} oncancel={() => { pending = null; }} />
