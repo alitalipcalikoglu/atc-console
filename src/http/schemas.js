@@ -88,8 +88,7 @@ export class Schemas {
   static webhookPatch = { type: 'object', additionalProperties: false, minProperties: 1, properties: Schemas.webhookFields };
   static webhookReplay = Schemas.body(['from'], { from: { type: 'string', minLength: 20, maxLength: 40 }, to: { type: 'string', minLength: 20, maxLength: 40 } });
   static searchName = { type: 'string', pattern: '^[a-z0-9]+([.\\-_][a-z0-9]+)*$', maxLength: 80 };
-  static searchIndexFields = { description: { type: 'string', maxLength: 500 }, weights: { type: 'object', additionalProperties: false, properties: { title: { type: 'number' }, body: { type: 'number' }, tags: { type: 'number' } } }, facets: { type: 'array', maxItems: 20, items: { type: 'string', minLength: 1, maxLength: 64 } } };
-  static { Schemas.searchIndexFields = { ...Schemas.searchIndexFields, language: { type: 'string', enum: ['none', 'tr'] } }; }
+  static searchIndexFields = { description: { type: 'string', maxLength: 500 }, weights: { type: 'object', additionalProperties: false, properties: { title: { type: 'number' }, body: { type: 'number' }, tags: { type: 'number' } } }, facets: { type: 'array', maxItems: 20, items: { type: 'string', minLength: 1, maxLength: 64 } }, language: { type: 'string', enum: ['none', 'tr'] } };
   static searchIndexCreate = Schemas.body(['name'], { name: Schemas.searchName, ...Schemas.searchIndexFields });
   static searchIndexPatch = { type: 'object', additionalProperties: false, minProperties: 1, properties: Schemas.searchIndexFields };
   static searchQuery = { type: 'object', additionalProperties: false, properties: { limit: { type: 'string', pattern: '^([1-9]|[1-9][0-9]|100)$' }, offset: { type: 'string', pattern: '^(0|[1-9][0-9]{0,4})$' } } };
