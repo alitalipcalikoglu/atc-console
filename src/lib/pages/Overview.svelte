@@ -96,7 +96,8 @@
 </Page>
 
 <style>
-  .services { grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); align-items: stretch; }
+  /* At most three cards per row: the third of the row (minus gaps) is the minimum width, so a fourth never fits. */
+  .services { grid-template-columns: repeat(auto-fill, minmax(max(290px, calc((100% - 32px) / 3)), 1fr)); align-items: stretch; }
   .service { display: flex; flex-direction: column; min-width: 0; }
   .head { display: flex; align-items: center; gap: 12px; padding: 14px 16px 0; min-width: 0; }
   .title { min-width: 0; }
