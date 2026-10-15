@@ -55,7 +55,7 @@ npm run typecheck
 | Overview | health, readiness, latency and headline numbers of every service; cards with auto-refresh enabled tick at their own interval | refresh one service at a time (no global refresh) |
 | Service pages | – | auto-refresh per service (Off / 15 s / 30 s / 1 min / 5 min), stored in `services.json` |
 | Notify | queue counters, messages by status, delivery errors, attempts | retry failed messages, send a test message from a template |
-| Auth | users, verification state, lockouts, sessions per device, audit trail | create user, disable/enable, delete, revoke one or all sessions, resend verification, send password reset |
+| Auth | users, verification state, MFA state, lockouts, sessions per device, audit trail | create user, disable/enable, delete, revoke one or all sessions, resend verification, send password reset, change email, export, anonymize, reset MFA |
 | Media | files as grid or list with previews, storage numbers | drag-and-drop upload (public/private), rename, switch visibility, soft delete and restore, generate signed links, create upload tickets |
 | Gateway | readiness per route, requests by status class, p50/p95 latency, bytes, rejections | – (gateway has no write API) |
 | Audit | events pushed by every service with filters (outcome, action prefix, source, actor, target, request id, IP, time range), 24-hour statistics, event detail with metadata and hashes | verify the hash chain, export NDJSON/CSV (both recorded in the console log) |

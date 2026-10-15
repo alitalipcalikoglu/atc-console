@@ -11154,6 +11154,43 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-auth/users/{id}/mfa:
+    delete:
+      operationId: atc-console.atc-auth.users.resetMfa
+      tags:
+        - atc-auth
+      summary: "Remove a user's MFA"
+      description: >-
+        Typed pass-through to the **auth** service instance named by `sid` — console relays this to its `DELETE
+        /v1/users/{id}/mfa`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "204":
+          description: Done. console discards auth's response body.
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
 components:
   securitySchemes:
     SessionCookie:

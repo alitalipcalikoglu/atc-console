@@ -31,6 +31,11 @@ export class AuthClient extends ServiceClient {
     return this.json('GET', `/v1/users/${encodeURIComponent(id)}/export`);
   }
 
+  /** Remove a user's MFA (lost device). @param {string} id */
+  resetMfa(id) {
+    return this.json('DELETE', `/v1/users/${encodeURIComponent(id)}/mfa`);
+  }
+
   /** @param {string} id */
   anonymizeUser(id) {
     return this.json('POST', `/v1/users/${encodeURIComponent(id)}/anonymize`);

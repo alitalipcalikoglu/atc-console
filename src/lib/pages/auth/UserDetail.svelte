@@ -24,7 +24,7 @@
   $effect(() => { res.load(); });
   const d = $derived(/** @type {any} */ (res.data));
   const u = $derived(d?.user);
-  /** @type {null|'disable'|'delete'|'revokeAll'|'anonymize'} */
+  /** @type {null|'disable'|'delete'|'revokeAll'|'anonymize'|'resetMfa'} */
   let confirm = $state(null);
   let emailOpen = $state(false);
   let newEmail = $state('');
@@ -56,6 +56,7 @@
       <RowMenu label={t('common.actions')} items={[
         { label: t('auth.changeEmail'), icon: 'mail', run: () => { newEmail = ''; emailOpen = true; } },
         { label: t('auth.export'), icon: 'download', run: downloadExport },
+        ...(u.mfaEnabled ? [{ label: t('auth.resetMfa'), icon: 'shield', danger: true, run: () => { confirm = 'resetMfa'; } }] : []),
         { label: t('auth.anonymize'), icon: 'shield', danger: true, run: () => { confirm = 'anonymize'; } },
       ]} />
     {/if}
@@ -70,6 +71,7 @@
         <div class="row wrap" style="margin-bottom:14px">
           <StatusBadge status={u.lockedUntil ? 'locked' : u.status} label={u.lockedUntil ? t('auth.locked') : u.status} />
           {#if u.emailVerified}<span class="badge ok">{t('auth.verified')}</span>{:else}<span class="badge warn">{t('auth.unverified')}</span>{/if}
+          {#if u.mfaEnabled}<span class="badge ok">{t('auth.mfaOn')}</span>{/if}
           <span class="mono xs muted">{u.id}</span><CopyButton text={u.id} />
         </div>
         <dl class="kv">
@@ -77,6 +79,7 @@
           <dt>{t('common.created')}</dt><dd><Time value={u.createdAt} mode="absolute" /></dd>
           <dt>{t('auth.passwordChanged')}</dt><dd><Time value={u.passwordChangedAt} /></dd>
           {#if u.emailVerifiedAt}<dt>{t('auth.verified')}</dt><dd><Time value={u.emailVerifiedAt} mode="absolute" /></dd>{/if}
+          {#if u.mfaEnabledAt}<dt>{t('auth.mfa')}</dt><dd><Time value={u.mfaEnabledAt} mode="absolute" /></dd>{/if}
           {#if u.lockedUntil}<dt>{t('auth.locked')}</dt><dd class="danger-text"><Time value={u.lockedUntil} /></dd>{/if}
         </dl>
       </div></div>
@@ -117,5 +120,6 @@
   <div class="field"><label for="ne">{t('auth.newEmail')}</label><input id="ne" class="input" type="email" autocomplete="off" bind:value={newEmail} aria-invalid={newEmail && !emailOk ? 'true' : undefined} /></div>
   {#snippet footer()}<button class="btn" onclick={() => { emailOpen = false; }}>{t('common.cancel')}</button><button class="btn primary" disabled={busy || !emailOk} onclick={async () => { await run(() => api.patch(base, { email: newEmail.trim() }), t('auth.emailChanged')); emailOpen = false; }}>{t('common.save')}</button>{/snippet}
 </Dialog>
+<Confirm open={confirm === 'resetMfa'} title={t('auth.resetMfa')} message={t('auth.resetMfaDesc')} danger irreversible={false} confirmLabel={t('auth.resetMfa')} {busy} onconfirm={() => run(() => api.delete(`${base}/mfa`), t('auth.mfaWasReset'))} oncancel={() => { confirm = null; }} />
 <Confirm open={confirm === 'anonymize'} title={t('auth.anonymizeTitle')} message={t('auth.anonymizeDesc')} danger typeWord={u?.email ?? ''} confirmLabel={t('auth.anonymize')} {busy} onconfirm={() => run(() => api.post(`${base}/anonymize`, {}), t('auth.anonymized'))} oncancel={() => { confirm = null; }} />
 <Confirm open={confirm === 'delete'} title={t('auth.deleteUser')} message={t('auth.deleteDesc')} danger typeWord={u?.email ?? ''} confirmLabel={t('common.delete')} {busy} onconfirm={() => run(async () => { await api.delete(base); goto(`/atc-auth/${sid}`); }, t('auth.userDeleted'), false)} oncancel={() => { confirm = null; }} />
