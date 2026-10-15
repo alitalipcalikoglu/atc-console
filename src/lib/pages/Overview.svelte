@@ -25,6 +25,15 @@
     return () => { for (const u of unsubs) u(); };
   });
   /** @param {any} o */
+  function rank(o) { return o && !o.health ? 0 : o && !o.ready ? 1 : 2; }
+  // Unreachable first, then degraded; the sort is stable, so healthy and still-loading cards keep the nav order.
+  const sorted = $derived([...services.items].sort((a, b) => rank(services.overview[a.id]) - rank(services.overview[b.id])));
+  const summary = $derived.by(() => {
+    const n = { ok: 0, warn: 0, danger: 0, loading: 0 };
+    for (const s of services.items) { const o = services.overview[s.id]; n[o ? (tone(o) || 'loading') : 'loading']++; }
+    return n;
+  });
+  /** @param {any} o */
   function tone(o) { return !o ? '' : o.health && o.ready ? 'ok' : o.health ? 'warn' : 'danger'; }
   /** @param {any} o */
   function label(o) { return !o ? t('common.loading') : o.health && o.ready ? t('overview.healthy') : o.health ? t('overview.degraded') : t('overview.down'); }
@@ -58,8 +67,15 @@
 </script>
 
 <Page title={t('overview.title')} desc={t('overview.desc')}>
+  <div class="summary">
+    <span class="count">{services.items.length} {t('overview.services')}</span>
+    {#if summary.ok}<span class="badge ok">{summary.ok} {t('overview.healthy')}</span>{/if}
+    {#if summary.warn}<span class="badge warn">{summary.warn} {t('overview.degraded')}</span>{/if}
+    {#if summary.danger}<span class="badge danger">{summary.danger} {t('overview.down')}</span>{/if}
+    {#if summary.loading}<span class="badge">{summary.loading} {t('common.loading')}</span>{/if}
+  </div>
   <div class="grid services">
-    {#each services.items as s (s.id)}
+    {#each sorted as s (s.id)}
       {@const o = services.overview[s.id]}
       {@const p = poller.for(s.id)}
       {@const rows = facts(s, o)}
@@ -98,6 +114,8 @@
 <style>
   /* At most three cards per row: the third of the row (minus gaps) is the minimum width, so a fourth never fits. */
   .services { grid-template-columns: repeat(auto-fill, minmax(max(290px, calc((100% - 32px) / 3)), 1fr)); align-items: stretch; }
+  .summary { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 16px; }
+  .count { font-weight: 650; margin-right: 4px; }
   .service { display: flex; flex-direction: column; min-width: 0; }
   .head { display: flex; align-items: center; gap: 12px; padding: 14px 16px 0; min-width: 0; }
   .title { min-width: 0; }
@@ -106,6 +124,8 @@
   .icon-wrap { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: var(--accent-soft); color: var(--accent); flex: none; }
   .body { flex: 1; padding: 14px 16px; }
   .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
+  /* An odd last stat takes the full row instead of leaving a hole. */
+  .stats > div:last-child:nth-child(odd) { grid-column: 1 / -1; }
   .stats > div { min-width: 0; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--surface-2); }
   .stats dt { font-size: .75rem; color: var(--text-3); }
   .stats dt::first-letter { text-transform: uppercase; }
