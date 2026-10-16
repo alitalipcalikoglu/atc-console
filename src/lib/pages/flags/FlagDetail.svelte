@@ -171,7 +171,7 @@
 <FlagForm open={editOpen} initial={f} busy={busy.flag} onsubmit={(body) => patchFlag(body, t('fl.updated'))} onclose={() => { editOpen = false; }} />
 <Confirm open={confirm === 'archive'} title={t('fl.archive')} message={t('fl.archiveDesc')} confirmLabel={t('fl.archive')} busy={busy.flag} onconfirm={() => patchFlag({ archived: true }, t('fl.archived'))} oncancel={() => { confirm = null; }} />
 <Confirm open={confirm === 'reshuffle'} title={t('fl.reshuffle')} message={t('fl.reshuffleDesc')} confirmLabel={t('fl.reshuffle')} busy={busy.flag} onconfirm={() => patchFlag({ reshuffle: true }, t('fl.reshuffled'))} oncancel={() => { confirm = null; }} />
-<Confirm open={confirm === 'delete'} title={t('fl.delete')} message={t('fl.deleteDesc')} danger typeWord={f?.key} confirmLabel={t('common.delete')} busy={busy.flag} onconfirm={() => run('flag', async () => { await api.delete(base); goto(`/atc-flags/${sid}`); }, t('fl.deleted'))} oncancel={() => { confirm = null; }} />
+<Confirm open={confirm === 'delete'} title={t('fl.delete')} message={t('fl.deleteDesc')} danger typeWord={f?.key} confirmLabel={t('common.delete')} busy={busy.flag} onconfirm={() => run('flag', async () => { const r = /** @type {any} */ (await api.delete(base)); if (r?.change) { confirm = null; return r; } goto(`/atc-flags/${sid}`); }, t('fl.deleted'))} oncancel={() => { confirm = null; }} />
 
 <style>
   .linkish { background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font: inherit; }

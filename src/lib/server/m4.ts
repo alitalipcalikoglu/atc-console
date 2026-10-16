@@ -79,7 +79,8 @@ export const jsonRoute = (route: Route): RequestHandler => {
       runtime.prepareM4();
       const output = await ActingAdmin.run(resolved.admin.username, () => route.handler({ runtime, event, params, query, body, ...resolved }));
       if (output instanceof Response) return output;
-      if (route.status === 204) return new Response(null, { status: 204 });
+      // A 204 route whose handler still hands back a body relays an upstream 202: the write became an approval request.
+      if (route.status === 204) return output == null ? new Response(null, { status: 204 }) : Response.json(output, { status: 202 });
       return Response.json(output, { status: route.status ?? 200 });
     });
   };

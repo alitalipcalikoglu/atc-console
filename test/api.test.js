@@ -264,6 +264,7 @@ const fake = createServer((req, res) => {
     if (p === '/v1/flags/checkout.new/history') return json(200, { items: [{ id: 3, action: 'env.update' }], nextCursor: null });
     if (p === '/v1/flags/checkout.new' && req.method === 'PATCH') return json(200, { flag: { key: 'checkout.new', archived: true } });
     if (p === '/v1/flags/checkout.new' && req.method === 'DELETE') return res.writeHead(204).end();
+    if (p === '/v1/flags/checkout.prod' && req.method === 'DELETE') return json(202, { change: { id: 'chg_mv8abcde0123456789abcdef', key: 'checkout.prod', env: 'prod', kind: 'flag', payload: { delete: true }, status: 'pending' } });
     if (p === '/v1/flags/checkout.new/envs/prod' && req.method === 'PATCH') return json(200, { env: 'prod', state: { enabled: true, percentage: 25 } });
     if (p === '/v1/flags/checkout.new/envs/staging/copy') return json(200, { env: 'prod', state: { enabled: true } });
     if (p === '/v1/evaluate' && req.method === 'POST') return json(200, { env: 'prod', version: 5, flags: { 'checkout.new': { value: true, reason: 'rule', ruleId: 'staff' } } });
@@ -655,11 +656,13 @@ test('flags: environments, list, create, detail with history, env patch, copy, e
   assert.equal(JSON.parse(seen.at(-1)?.body ?? '{}').details, true);
   assert.equal((await t.app.inject({ method: 'PATCH', url: '/api/services/atc-flags/atc-flags/flags/checkout.new', headers: { cookie, ...CSRF }, payload: { archived: true } })).json().flag.archived, true);
   assert.equal((await t.app.inject({ method: 'DELETE', url: '/api/services/atc-flags/atc-flags/flags/checkout.new', headers: { cookie, ...CSRF } })).statusCode, 204);
+  const reviewed = await t.app.inject({ method: 'DELETE', url: '/api/services/atc-flags/atc-flags/flags/checkout.prod', headers: { cookie, ...CSRF } });
+  assert.deepEqual([reviewed.statusCode, reviewed.json().change.kind], [202, 'flag'], 'a delete that became an approval request is relayed as 202 with the change');
   res = await t.app.inject({ url: '/api/services/atc-flags/atc-flags/stats', headers: { cookie } });
   assert.equal(res.json().environments[0].evaluations, 77);
   const log = await t.app.inject({ url: '/api/audit?action=atc-flags.', headers: { cookie } });
-  assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action).slice(0, 5), ['atc-flags.flag.delete', 'atc-flags.flag.update', 'atc-flags.env.copy', 'atc-flags.env.update', 'atc-flags.flag.create']);
-  assert.deepEqual(log.json().items[2].meta, { service: 'atc-flags', from: 'staging', to: 'prod' });
+  assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action).slice(0, 5), ['atc-flags.flag.delete', 'atc-flags.flag.delete', 'atc-flags.flag.update', 'atc-flags.env.copy', 'atc-flags.env.update']);
+  assert.deepEqual(log.json().items[3].meta, { service: 'atc-flags', from: 'staging', to: 'prod' });
 });
 
 test('scheduler: jobs, detail with runs, run now, patch, runs, cancel, preview, keys, delete (audited)', async () => {
