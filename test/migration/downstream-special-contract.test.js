@@ -119,7 +119,7 @@ test('downstream oracle: GET/query, POST JSON, PATCH JSON, DELETE, key and trace
   assert.equal(response.status, 202);
   request = latest((entry) => entry.url === '/v1/messages' && entry.method === 'POST');
   assert.ok(request.body);
-  assert.deepEqual(JSON.parse(request.body.toString()), send);
+  assert.deepEqual(JSON.parse(request.body.toString()), { ...send, transactional: true }, 'console sends are relayed verbatim plus the transactional flag');
 
   response = await fetch(`${consoleApp.origin}/api/services/atc-auth/atc-auth/users/user:1`, { method: 'PATCH', headers: { cookie, ...CSRF, 'content-type': 'application/json' }, body: JSON.stringify({ status: 'disabled' }) });
   assert.equal(response.status, 200);

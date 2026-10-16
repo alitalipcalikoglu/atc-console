@@ -9,7 +9,8 @@ export const GET = jsonRoute({
 export const POST = jsonRoute({
   auth: 'admin', params: Schemas.serviceParams, body: { type: 'object' }, status: 202,
   handler: async (context) => {
-    const output = await context.runtime.clients.get(context.params.sid, NotifyClient).send(context.body);
+    // An admin's manual send is operational mail: it must reach an address that unsubscribed from other mail or complained.
+    const output = await context.runtime.clients.get(context.params.sid, NotifyClient).send({ ...context.body, transactional: true });
     record(context, 'atc-notify.message.send', (output as any)?.id ?? null, { service: context.params.sid, channel: context.body.channel, template: context.body.template, to: context.body.to });
     return output;
   },

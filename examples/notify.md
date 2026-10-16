@@ -20,7 +20,7 @@ The message table filters by status, loads more with a button, and shows attempt
 2. Enter one or more recipients (comma separated).
 3. Edit the JSON and press **Send**.
 
-The message is really queued and delivered. Validation failures from notify (`VALIDATION_FAILED` with the failing path) surface in the toast. Audited as `atc-notify.message.send` with template and recipients.
+The message is really queued and delivered, marked `transactional: true` (it reaches an address that unsubscribed from other mail or complained; a bounced or operator-suppressed address still gets nothing). Validation failures from notify (`VALIDATION_FAILED` with the failing path) surface in the toast. Audited as `atc-notify.message.send` with template and recipients.
 
 ## Behind the scenes
 

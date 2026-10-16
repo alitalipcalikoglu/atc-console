@@ -370,6 +370,10 @@ test('session endpoints: login sets an httpOnly cookie, /session reflects state,
 test('CSRF header required on mutations; viewers are read-only; admins are audited', async () => {
   const admin = await signIn(t);
   const viewer = await signIn(t, { username: 'viewer', role: 'viewer' });
+  seen.length = 0;
+  const sent = await t.app.inject({ method: 'POST', url: '/api/services/atc-notify/atc-notify/messages', headers: { cookie: admin.cookie, ...CSRF }, payload: { channel: 'email', template: 'generic', to: ['ops@example.com'], data: {} } });
+  assert.equal(sent.statusCode, 202, sent.body);
+  assert.equal(JSON.parse(/** @type {any} */ (seen.find((s) => s.url === '/v1/messages' && s.method === 'POST')).body).transactional, true, 'console sends are transactional');
   let res = await t.app.inject({ method: 'POST', url: '/api/services/atc-notify/atc-notify/messages/m1/retry', headers: { cookie: admin.cookie } });
   assert.equal(res.statusCode, 403, 'no CSRF header');
   assert.match(res.json().error.message, /x-console-request/);
