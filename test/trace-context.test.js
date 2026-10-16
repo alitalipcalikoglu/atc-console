@@ -128,6 +128,12 @@ test('with TRUST_PROXY=true, a well-formed inbound traceparent IS adopted: same 
     assert.notEqual(outbound.match(TRACEPARENT)?.[2], claimedSpanId, 'the downstream hop still gets its own fresh span-id, never the caller\'s reused');
     assert.equal(res.headers.traceparent?.toString().match(TRACEPARENT)?.[1], claimedTraceId, 'echoed response also carries the continued trace-id');
 
+    // The client IP is the entry the trusted proxy appended, never one the client wrote first.
+    const spoofed = await trusting.app.inject({ method: 'POST', url: '/api/session/login', headers: { ...CSRF, 'x-forwarded-for': '203.0.113.9, 10.0.0.2' }, payload: { username: 'root', password: 'wrong-password-1' } });
+    assert.equal(spoofed.statusCode, 401, spoofed.body);
+    const log = await trusting.app.inject({ url: '/api/audit?action=login.failed&limit=1', headers: { cookie: trustingCookie } });
+    assert.equal(log.json().items[0]?.ip, '10.0.0.2', 'the last X-Forwarded-For hop is the client, not the first (client-written) one');
+
     seen.length = 0;
     const malformedRes = await trusting.app.inject({ url: '/api/services/atc-search/atc-search/indexes', headers: { cookie: trustingCookie, ...CSRF, traceparent: 'garbage' } });
     assert.equal(malformedRes.statusCode, 200, malformedRes.body);

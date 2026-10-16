@@ -9,10 +9,12 @@ import { Runtime } from '#lib/server/runtime.js';
 
 const CSRF_EXEMPT = new Set(['/api/session/login', '/api/session/totp']);
 
+// Behind one trusted proxy the LAST X-Forwarded-For entry is the address that proxy saw; everything
+// before it was written by the client and would let it pick its own rate-limit key and audit IP.
 const clientIp = (event: Parameters<Handle>[0]['event'], trustProxy: boolean) => {
   const direct = event.getClientAddress() || null;
   if (!trustProxy) return direct;
-  return event.request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || direct;
+  return event.request.headers.get('x-forwarded-for')?.split(',').at(-1)?.trim() || direct;
 };
 
 export const handle: Handle = async ({ event, resolve }) => {
