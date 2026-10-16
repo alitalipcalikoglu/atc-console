@@ -199,7 +199,11 @@ try {
     const enrolCode = Totp.code(enrolment.secret, Math.floor(Date.now() / 30_000));
     response = await fetch(`${app.origin}/api/me/totp/confirm`, json('POST', { code: enrolCode }, { cookie: viewer.cookie, 'x-console-request': '1' }));
     assert.equal(response.status, 204);
+    // The enrolment code is spent for its step; disabling needs a fresh one (the verifier accepts the next step).
     response = await fetch(`${app.origin}/api/me/totp/disable`, json('POST', { password: PASSWORD, code: enrolCode }, { cookie: viewer.cookie, 'x-console-request': '1' }));
+    assert.equal(response.status, 401, 'a code already used for enrolment cannot disable two-factor');
+    const disableCode = Totp.code(enrolment.secret, Math.floor(Date.now() / 30_000) + 1);
+    response = await fetch(`${app.origin}/api/me/totp/disable`, json('POST', { password: PASSWORD, code: disableCode }, { cookie: viewer.cookie, 'x-console-request': '1' }));
     assert.equal(response.status, 204);
     response = await fetch(`${app.origin}/api/me/password`, json('POST', { currentPassword: PASSWORD, newPassword: NEW_PASSWORD }, { cookie: viewer.cookie, 'x-console-request': '1' }));
     assert.equal(response.status, 204);
