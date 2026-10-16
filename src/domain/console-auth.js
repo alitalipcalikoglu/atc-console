@@ -251,7 +251,8 @@ export class ConsoleAuth {
     await this.#verifyOwnPassword(admin, input.password, ctx, 'totp.disable_failed');
     if (!admin.totp_secret || admin.totp_enabled_at === null) throw new ConsoleError('CONFLICT', 'two-factor authentication is not enabled');
     const step = Totp.verify(/** @type {string} */ (this.#totpSecret(admin)), input.code, this.now());
-    if (step === null) { this.#countFailure(admin, ctx, 'totp.disable_failed', 'bad_totp'); throw new ConsoleError('INVALID_TOTP', 'code is incorrect'); }
+    // A code already used (sign-in, enrolment) in the same step is refused here too, so a captured code cannot turn the factor off.
+    if (step === null || !this.sessions.claimTotpStep(admin.id, step)) { this.#countFailure(admin, ctx, 'totp.disable_failed', 'bad_totp'); throw new ConsoleError('INVALID_TOTP', 'code is incorrect'); }
     this.admins.disableTotp(admin.id, this.now());
     this.audit.record({ adminId: admin.id, adminUsername: admin.username, action: 'totp.disabled', ip: ctx.ip }, this.now());
   }

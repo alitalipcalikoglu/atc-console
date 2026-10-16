@@ -82,6 +82,8 @@ test('TOTP enrolment, second step, replay refusal, disable', async () => {
   assert.throws(() => t.auth.completeTotp(pending2.session, Totp.code(secret, step2), ctx), (e) => e instanceof ConsoleError && e.code === 'INVALID_TOTP', 'same code cannot be replayed');
 
   await rejectsWith(t.auth.disableTotp(admin, { password: 'wrong password!!', code: Totp.code(secret, step2 + 1) }, ctx), 'INVALID_CREDENTIALS');
+  await rejectsWith(t.auth.disableTotp(admin, { password: ADMIN_PASSWORD, code: Totp.code(secret, step2) }, ctx), 'INVALID_TOTP'); // the code that just completed the sign-in cannot also turn the factor off
+  assert.ok(t.admins.byId(admin.id)?.totp_secret, 'still enabled');
   t.clock.now += 30_000;
   await t.auth.disableTotp(admin, { password: ADMIN_PASSWORD, code: Totp.code(secret, Math.floor(t.clock.now / 1000 / 30)) }, ctx);
   assert.equal(t.admins.byId(admin.id)?.totp_secret, null);
