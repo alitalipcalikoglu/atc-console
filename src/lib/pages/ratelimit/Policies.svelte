@@ -60,7 +60,9 @@
     <Stat label={t('rl.allowed24h')} value={fmt.int(st?.last24h?.allowed)} />
     <Stat label={t('rl.denied24h')} value={fmt.int(st?.last24h?.denied)} tone={st?.last24h?.denied ? 'warn' : ''} sub={denyRate === null ? undefined : t('rl.denyRate', { p: denyRate })} />
     <Stat label={t('rl.counters')} value={fmt.int(st?.counters)} sub={st ? fmt.bytes(st.dbBytes) : undefined} />
+    <Stat label={t('rl.backend')} value={st?.backend ?? '–'} sub={st?.backend ? t(`rl.backend.${st.backend}`) : undefined} tone={st?.backend === 'memory' ? 'warn' : ''} />
   </div>
+  <p class="xs faint" style="margin:-12px 0 20px">{t('help.rl.backend')}</p>
 
   <Panel title={t('rl.policies')} flush>
     {#if list.error}<ErrorBox error={list.error} onretry={() => list.load()} />

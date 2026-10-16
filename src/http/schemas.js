@@ -57,6 +57,8 @@ export class Schemas {
     expiresAt: { type: 'string', maxLength: 40, nullable: true }, maxClicks: { type: 'integer', minimum: 1, maximum: 1000000000, nullable: true },
     tags: { type: 'array', maxItems: 20, items: { type: 'string', minLength: 1, maxLength: 40 } }, note: { type: 'string', maxLength: 500, nullable: true },
   };
+  /** One batch: up to 500 links, each the same shape as a single create. */
+  static shortlinkBatch = Schemas.body(['links'], { links: { type: 'array', minItems: 1, maxItems: 500, items: Schemas.body(['url'], { url: Schemas.shortlinkBody.url, slug: Schemas.shortlinkBody.slug, permanent: Schemas.shortlinkBody.permanent, expiresAt: Schemas.shortlinkBody.expiresAt, maxClicks: Schemas.shortlinkBody.maxClicks, tags: Schemas.shortlinkBody.tags, note: Schemas.shortlinkBody.note }) } });
   static schedulerQuery = {
     type: 'object', additionalProperties: false,
     properties: {
@@ -147,6 +149,9 @@ export class Schemas {
   static renderDescribe = Schemas.body(['description'], { description: { type: 'string', maxLength: 500 } });
   static renderPublish = Schemas.body(['layout'], { layout: Schemas.renderLayout, note: { type: 'string', maxLength: 500 } });
   static renderPreview = Schemas.body(['layout'], { layout: Schemas.renderLayout, data: { type: 'object' } });
+  static renderJobParams = { type: 'object', properties: { sid: Schemas.sid, id: { type: 'string', pattern: Ids.pattern('rnd') } }, required: ['sid', 'id'] };
+  static renderJobsQuery = { type: 'object', additionalProperties: false, properties: { status: { type: 'string', enum: ['queued', 'running', 'succeeded', 'failed', 'cancelled'] }, limit: { type: 'string', pattern: '^([1-9]|[1-9][0-9]|1[0-9][0-9]|200)$' }, cursor: { type: 'string', pattern: Ids.pattern('rnd') } } };
+  static renderJob = Schemas.body(['template'], { template: Schemas.renderName, version: { type: 'integer', minimum: 1 }, data: { type: 'object' }, filename: { type: 'string', minLength: 1, maxLength: 120 }, store: { type: 'boolean' } });
   static queueName = { type: 'string', pattern: '^[a-z][a-z0-9._-]{0,63}$' };
   static queueMessageId = { type: 'string', pattern: Ids.pattern('msg') };
   static queueParams = { type: 'object', properties: { sid: Schemas.sid, id: Schemas.queueName }, required: ['sid', 'id'] };

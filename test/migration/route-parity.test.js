@@ -52,9 +52,9 @@ test('final gate: SvelteKit filesystem endpoints match canonical OpenAPI bidirec
   const duplicates = implementation.filter((value, index) => implementation.indexOf(value) !== index);
   const missing = canonical.operations.filter((operation) => !implementation.includes(operation));
   const extra = implementation.filter((operation) => !canonical.operations.includes(operation));
-  assert.equal(canonical.paths, 200);
-  assert.equal(canonical.operations.length, 254);
-  assert.equal(implementation.length, 254);
+  assert.equal(canonical.paths, 206);
+  assert.equal(canonical.operations.length, 261);
+  assert.equal(implementation.length, 261);
   assert.deepEqual(duplicates, [], `duplicate SvelteKit operations: ${duplicates.join(', ')}`);
   assert.deepEqual(missing, [], `missing SvelteKit operations: ${missing.join(', ')}`);
   assert.deepEqual(extra, [], `extra SvelteKit operations: ${extra.join(', ')}`);

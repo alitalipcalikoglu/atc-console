@@ -24,6 +24,8 @@
 
 **Create link** in the app bar. Only the destination is required. Optional: short code (3–64 characters; random when empty), expiry (local time, sent as ISO), click limit, tags (comma separated), note, and **Permanent redirect (301)**. On success the console opens the new link's page and shows its code.
 
+**Batch create** (app bar) takes one destination per line, optionally followed by a code, plus tags and the redirect kind for all of them, up to 500 per batch. The dialog then shows every line with its new code or the service's reason for refusing it (code taken, host not allowed); the good lines are created even when others fail. Audited as `atc-shortlink.link.batch` with the counts.
+
 Errors from the service arrive as toasts with the service's message: `"promo" is already in use`, `host "evil.test" is not allowed`, `expiresAt must be in the future`.
 
 ## Link page

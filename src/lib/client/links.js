@@ -11,6 +11,7 @@ export class Links {
     fil: [['atc-media', 'files']],
     pay: [['atc-payments', 'payments']],
     exp: [['atc-export', 'exports']],
+    rnd: [['atc-render', 'renders']],
     bk: [['atc-backup', 'backups']],
     run: [['atc-scheduler', 'runs']],
     sub: [['atc-webhook-out', 'subscriptions']],
@@ -26,6 +27,7 @@ export class Links {
     'atc-status': [['maintenance', 'stx.maintenance']],
     'atc-flags': [['changes', 'fl.changes']],
     'atc-geo': [['reference', 'ge.reference']],
+    'atc-render': [['renders', 'rd.jobs']],
   });
 
   static ID = /^([a-z]{2,4})_[0-9a-z]{6,12}[0-9a-f]{16}$/;

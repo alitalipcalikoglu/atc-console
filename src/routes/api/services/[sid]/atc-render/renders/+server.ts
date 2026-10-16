@@ -1,0 +1,4 @@
+import { RenderClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, number, record, text } from '#lib/server/m4.js';
+export const GET = jsonRoute({ auth: 'session', params: Schemas.serviceParams, query: Schemas.renderJobsQuery, handler: ({ runtime, params, query }) => runtime.clients.get(params.sid, RenderClient).renders({ status: text(query.status), limit: number(query.limit), cursor: text(query.cursor) }) });
+export const POST = jsonRoute({ auth: 'admin', params: Schemas.serviceParams, body: Schemas.renderJob, status: 202, handler: async (context) => { const output = await context.runtime.clients.get(context.params.sid, RenderClient).createRender(context.body) as any; record(context, 'atc-render.job.create', output?.job?.id ?? null, { service: context.params.sid, template: context.body.template, version: context.body.version ?? null, store: context.body.store === true }); return output; } });

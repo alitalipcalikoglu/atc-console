@@ -11,6 +11,7 @@
   import ServiceTabs from '#lib/components/ServiceTabs.svelte';
   import AutoRefresh from '#lib/components/AutoRefresh.svelte';
   import PollStats from '#lib/components/PollStats.svelte';
+  import HelpTip from '#lib/components/HelpTip.svelte';
   import TemplateForm from './TemplateForm.svelte';
   import { poller } from '#lib/client/poller.svelte.js';
   import { api } from '#lib/client/api.js';
@@ -30,8 +31,12 @@
   const base = $derived(`/services/${sid}/atc-render`);
   const list = new Resource(() => api.get(`${base}/templates`));
   const stats = new Resource(() => api.get(`${base}/stats`));
+  const fonts = new Resource(() => api.get(`${base}/fonts`));
   $effect(() => service.subscribe(() => Promise.all([list.load(), stats.load()])));
-  $effect(() => { list.load(); stats.load(); });
+  $effect(() => { list.load(); stats.load(); fonts.load(); });
+  const fontList = $derived(/** @type {any} */ (fonts.data));
+  // The built-in default is not in `items` (those are the families loaded from FONTS_DIR); show it first.
+  const families = $derived(fontList ? [...new Set([fontList.default, ...fontList.items])] : []);
   const refreshNow = () => service.trigger();
   const items = $derived(/** @type {any[]} */ (/** @type {any} */ (list.data)?.items ?? []));
   const st = $derived(/** @type {any} */ (stats.data));
@@ -49,6 +54,7 @@
 <Page help={t('help.page.render')} docs={sid} title={svc?.label ?? t('rd.title')} desc={t('rd.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
+    <a class="btn" href="/atc-render/{sid}/renders" aria-label={t('rd.jobs')} title={t('rd.jobs')}><Icon name="list" size={16} /><span class="hide-m"> {t('rd.jobs')}</span></a>
     {#if session.isAdmin}<button class="btn primary" onclick={() => { createOpen = true; }} aria-label={t('rd.create')} title={t('rd.create')}><Icon name="plus" size={16} /><span class="hide-m"> {t('rd.create')}</span></button>{/if}
     <button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}
@@ -81,6 +87,17 @@
       </table></div>
     {/if}
   </Panel>
+
+  <div style="height:20px"></div>
+  <Panel title={t('rd.fonts')}>
+    {#snippet aside()}<HelpTip text={t('help.rd.fonts')} />{/snippet}
+    {#if fonts.error}<ErrorBox error={fonts.error} onretry={() => fonts.load()} />
+    {:else if !fontList}<Skeleton rows={2} />
+    {:else}
+      <div class="row wrap tight">{#each families as f (f)}<span class="badge {f === fontList.default ? 'info' : 'plain'}"><span class="mono">{f}</span>{#if f === fontList.default} · {t('rd.defaultFont')}{/if}</span>{/each}</div>
+      <p class="xs faint" style="margin:8px 0 0">{t('rd.fontsHint')}</p>
+    {/if}
+  </Panel>
 </Page>
 
 <TemplateForm open={createOpen} busy={creating} onsubmit={create} onclose={() => { createOpen = false; }} />
@@ -88,4 +105,5 @@
 <style>
   .stat-row { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); margin-bottom: 20px; }
   .desc { max-width: 320px; }
+  .tight { gap: 6px; }
 </style>

@@ -47,6 +47,14 @@ const fake = createServer((req, res) => {
       if (p === '/v1/templates/invoice' && req.method === 'DELETE') return res.writeHead(204).end();
       if (p === '/v1/templates/invoice/versions') return json(201, { version: { version: 3, layout: JSON.parse(body).layout } });
       if (p === '/v1/templates/invoice/versions/2') return json(200, { version: { version: 2, layout: { blocks: [] } } });
+      const RJ = 'rnd_mv8abcde0123456789abcdef';
+      const job = (/** @type {object} */ extra) => ({ id: RJ, status: 'succeeded', template: 'invoice', version: 2, filename: 'inv-7', store: false, createdBy: 'atc-console', createdAt: '2026-10-16T00:00:00.000Z', startedAt: null, finishedAt: null, pages: 1, bytes: 8, error: null, result: { download: `/v1/renders/${RJ}/pdf` }, ...extra });
+      if (p === '/v1/fonts') return json(200, { default: 'dejavu', items: ['dejavu', 'inter'], nextCursor: null });
+      if (p === '/v1/renders' && req.method === 'GET') return json(200, { items: [job({})], nextCursor: null });
+      if (p === '/v1/renders' && req.method === 'POST') return json(202, { job: job({ status: 'queued', result: null, pages: null, bytes: null, filename: JSON.parse(body).filename ?? 'invoice-v2' }) });
+      if (p === `/v1/renders/${RJ}` && req.method === 'GET') return json(200, { job: job({}) });
+      if (p === `/v1/renders/${RJ}/cancel`) return json(200, { job: job({ status: 'cancelled', result: null }) });
+      if (p === `/v1/renders/${RJ}/pdf`) return res.writeHead(200, { 'content-type': 'application/pdf', 'content-length': '8', 'content-disposition': 'attachment; filename="inv-7.pdf"' }).end('%PDF-1.3');
       if (p === '/v1/render/preview') {
         const b = JSON.parse(body);
         if (b.layout.blocks[0]?.type === 'bad') return json(400, { error: { code: 'VALIDATION_FAILED', message: 'body/layout/blocks/0 must match exactly one schema', details: [{ path: '/layout/blocks/0', message: 'must match exactly one schema' }] } });
@@ -252,6 +260,7 @@ const fake = createServer((req, res) => {
     if (p === '/v1/chain/verify') return json(200, { ok: true, checked: 42, fromSeq: 1, toSeq: 42, firstBroken: null, head: { seq: 42, hash: 'ab'.repeat(32) } });
     if (p === '/v1/links' && req.method === 'GET') return json(200, { items: [{ code: 'abc1234', url: 'https://example.com', status: 'active' }], nextCursor: null });
     if (p === '/v1/links' && req.method === 'POST') return json(201, { link: { code: 'new1234', url: JSON.parse(body).url, status: 'active' } });
+    if (p === '/v1/links/batch' && req.method === 'POST') { const links = JSON.parse(body).links; return json(200, { created: links.length - 1, failed: 1, results: links.map((/** @type {any} */ l, /** @type {number} */ i) => (i === 0 ? { index: 0, error: { code: 'SLUG_TAKEN', message: 'taken' } } : { index: i, link: { code: `b${i}`, url: l.url, status: 'active' } })) }); }
     if (p === '/v1/links/abc1234' && req.method === 'GET') return json(200, { link: { code: 'abc1234', url: 'https://example.com', clicks: 3 } });
     if (p === '/v1/links/abc1234/stats') return json(200, { code: 'abc1234', total: 3, clicks: 3, visitors: 2, bots: 0, byDay: [], byReferrer: [], byDevice: {}, recent: [] });
     if (p === '/v1/links/abc1234' && req.method === 'PATCH') return json(200, { link: { code: 'abc1234', enabled: false, status: 'disabled' } });
@@ -612,6 +621,10 @@ test('shortlink: list, create, detail with stats, patch, delete, QR proxy, overv
   res = await t.app.inject({ method: 'POST', url: '/api/services/atc-shortlink/atc-shortlink/links', headers: { cookie, ...CSRF }, payload: { url: 'https://example.com/x', tags: ['a'], expiresAt: null } });
   assert.equal(res.statusCode, 201, res.body);
   assert.equal(res.json().link.code, 'new1234');
+  assert.equal((await t.app.inject({ method: 'POST', url: '/api/services/atc-shortlink/atc-shortlink/links/batch', headers: { cookie: viewer.cookie, ...CSRF }, payload: { links: [{ url: 'https://example.com/a' }] } })).statusCode, 403);
+  res = await t.app.inject({ method: 'POST', url: '/api/services/atc-shortlink/atc-shortlink/links/batch', headers: { cookie, ...CSRF }, payload: { links: [{ url: 'https://example.com/a', slug: 'taken' }, { url: 'https://example.com/b', tags: ['x'] }] } });
+  assert.deepEqual([res.statusCode, res.json().created, res.json().failed, res.json().results[1].link.code], [200, 1, 1, 'b1']);
+  assert.equal((await t.app.inject({ method: 'POST', url: '/api/services/atc-shortlink/atc-shortlink/links/batch', headers: { cookie, ...CSRF }, payload: { links: [] } })).statusCode, 400);
   res = await t.app.inject({ url: '/api/services/atc-shortlink/atc-shortlink/links/abc1234?days=7', headers: { cookie } });
   assert.equal(res.json().link.clicks, 3);
   assert.equal(res.json().stats.visitors, 2);
@@ -628,8 +641,8 @@ test('shortlink: list, create, detail with stats, patch, delete, QR proxy, overv
   res = await t.app.inject({ url: '/api/services/atc-shortlink/atc-shortlink/stats?days=7', headers: { cookie } });
   assert.equal(res.json().links.active, 9);
   const log = await t.app.inject({ url: '/api/audit?action=atc-shortlink.', headers: { cookie } });
-  assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action).slice(0, 3), ['atc-shortlink.link.delete', 'atc-shortlink.link.update', 'atc-shortlink.link.create']);
-  assert.equal(log.json().items[2].target, 'new1234');
+  assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action).slice(0, 4), ['atc-shortlink.link.delete', 'atc-shortlink.link.update', 'atc-shortlink.link.batch', 'atc-shortlink.link.create']);
+  assert.equal(log.json().items[3].target, 'new1234');
 });
 
 test('flags: environments, list, create, detail with history, env patch, copy, evaluate, delete', async () => {
@@ -1005,8 +1018,24 @@ test('render: templates, versions, preview relay (attachment, sandbox, validatio
   res = await t.app.inject({ method: 'POST', url: `${B}/preview`, headers: { cookie, ...CSRF }, payload: { layout: { blocks: [{ type: 'table' }] } } });
   assert.deepEqual([res.statusCode, res.json().error.details.block], [422, 'blocks[0].rows']);
   assert.equal((await t.app.inject({ method: 'DELETE', url: `${B}/templates/invoice`, headers: { cookie, ...CSRF } })).statusCode, 204);
+  // jobs and fonts
+  const RJ = 'rnd_mv8abcde0123456789abcdef';
+  assert.deepEqual((await t.app.inject({ url: `${B}/fonts`, headers: { cookie: viewer.cookie } })).json().items, ['dejavu', 'inter']);
+  res = await t.app.inject({ url: `${B}/renders?status=succeeded&limit=10`, headers: { cookie: viewer.cookie } });
+  assert.deepEqual([res.statusCode, res.json().items[0].id, seen.at(-1)?.url], [200, RJ, '/v1/renders?status=succeeded&limit=10']);
+  assert.equal((await t.app.inject({ url: `${B}/renders?status=bogus`, headers: { cookie } })).statusCode, 400);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/renders`, headers: { cookie: viewer.cookie, ...CSRF }, payload: { template: 'invoice' } })).statusCode, 403);
+  res = await t.app.inject({ method: 'POST', url: `${B}/renders`, headers: { cookie, ...CSRF }, payload: { template: 'invoice', version: 2, data: { no: 7 }, filename: 'inv-7' } });
+  assert.deepEqual([res.statusCode, res.json().job.status], [202, 'queued']);
+  assert.equal((await t.app.inject({ url: `${B}/renders/${RJ}`, headers: { cookie: viewer.cookie } })).json().job.result.download, `/v1/renders/${RJ}/pdf`);
+  assert.equal((await t.app.inject({ url: `${B}/renders/not-an-id`, headers: { cookie } })).statusCode, 400);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/renders/${RJ}/cancel`, headers: { cookie: viewer.cookie, ...CSRF } })).statusCode, 403);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${B}/renders/${RJ}/cancel`, headers: { cookie, ...CSRF } })).json().job.status, 'cancelled');
+  res = await t.app.inject({ url: `${B}/renders/${RJ}/pdf`, headers: { cookie } });
+  assert.deepEqual([res.statusCode, res.body, res.headers['content-type'], res.headers['content-disposition'], res.headers['content-security-policy'], res.headers['cache-control']], [200, '%PDF-1.3', 'application/pdf', 'attachment; filename="inv-7.pdf"', "default-src 'none'; sandbox", 'no-store']);
+  assert.equal((await t.app.inject({ url: `${B}/renders/${RJ}/pdf`, headers: { cookie: viewer.cookie } })).statusCode, 403, 'downloads are admin only');
   const log = await t.app.inject({ url: '/api/audit?action=atc-render.', headers: { cookie } });
-  assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-render.template.delete', 'atc-render.document.preview', 'atc-render.version.create', 'atc-render.template.update', 'atc-render.template.create']);
+  assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-render.job.download', 'atc-render.job.cancel', 'atc-render.job.create', 'atc-render.template.delete', 'atc-render.document.preview', 'atc-render.version.create', 'atc-render.template.update', 'atc-render.template.create']);
 });
 
 test('acting admin: X-Actor carries the signed-in username to content, export, render and flags only; document routes take 2 MiB', async () => {

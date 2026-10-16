@@ -11,6 +11,7 @@
   import Confirm from '#lib/components/Confirm.svelte';
   import RowMenu from '#lib/components/RowMenu.svelte';
   import TemplateForm from './TemplateForm.svelte';
+  import RenderForm from './RenderForm.svelte';
   import { api, ApiError } from '#lib/client/api.js';
   import { Resource } from '#lib/client/resource.svelte.js';
   import { goto } from '$app/navigation';
@@ -79,6 +80,13 @@
     busy = true;
     try { await api.delete(base); toasts.ok(t('rd.deleted')); goto(`/atc-render/${sid}`); } catch (e) { toasts.error(e); } finally { busy = false; confirm = null; }
   }
+  let queueOpen = $state(false);
+  /** @param {{ template: string, version: number, data: object, filename?: string, store: boolean }} body */
+  async function queue(body) {
+    busy = true;
+    try { const r = /** @type {any} */ (await api.post(`/services/${sid}/atc-render/renders`, body)); toasts.ok(t('rd.queued', { id: r.job.id })); queueOpen = false; SAMPLES.set(`${sid}/${id}`, dataText); goto(`/atc-render/${sid}/renders/${r.job.id}`); }
+    catch (e) { show(e); } finally { busy = false; }
+  }
   let editOpen = $state(false);
   /** @param {{ description: string }} body */
   async function describe(body) {
@@ -93,6 +101,7 @@
     {#if x && session.isAdmin}
       <button class="btn" onclick={() => { confirm = 'publish'; }} disabled={busy || !valid}><Icon name="upload" size={16} /><span class="hide-m"> {t('rd.publish')}</span></button>
       <RowMenu label={t('common.actions')} items={[
+        { label: t('rd.queue'), icon: 'clock', run: () => { queueOpen = true; } },
         { label: t('rd.edit'), icon: 'settings', run: () => { editOpen = true; } },
         { label: t('rd.delete'), icon: 'trash', danger: true, run: () => { confirm = 'delete'; } },
       ]} />
@@ -144,6 +153,7 @@
 </Page>
 
 <TemplateForm open={editOpen} initial={x} {busy} onsubmit={describe} onclose={() => { editOpen = false; }} />
+<RenderForm open={queueOpen} template={id} version={x?.latestVersion ?? 1} dataText={dataText} {busy} onsubmit={queue} onclose={() => { queueOpen = false; }} />
 <Confirm open={confirm === 'publish'} title={t('rd.publish')} message={t('rd.publishDesc', { n: (x?.latestVersion ?? 0) + 1 })} confirmLabel={t('rd.publish')} {busy} onconfirm={publish} oncancel={() => { confirm = null; }} />
 <Confirm open={confirm === 'delete'} title={t('rd.delete')} message={t('rd.deleteDesc')} danger typeWord={x?.name} confirmLabel={t('common.delete')} {busy} onconfirm={remove} oncancel={() => { confirm = null; }} />
 

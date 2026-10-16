@@ -11994,6 +11994,304 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-render/fonts:
+    get:
+      operationId: atc-console.atc-render.fonts.list
+      tags:
+        - atc-render
+      summary: "Font families the render service offers."
+      description: >-
+        Typed pass-through to the **render** service instance named by `sid` — console relays this to its `GET
+        /v1/fonts`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the render service's own `GET /v1/fonts` response body, relayed
+            unchanged. See the render service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-render/renders:
+    get:
+      operationId: atc-console.atc-render.jobs.list
+      tags:
+        - atc-render
+      summary: "Render jobs queued by the console."
+      description: >-
+        Typed pass-through to the **render** service instance named by `sid` — console relays this to its `GET
+        /v1/renders`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - name: status
+          in: query
+          required: false
+          schema: {"type":"string","enum":["queued","running","succeeded","failed","cancelled"]}
+        - name: limit
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^([1-9]|[1-9][0-9]|1[0-9][0-9]|200)$"}
+        - name: cursor
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^rnd_[0-9a-z]{6,12}[0-9a-f]{16}$"}
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the render service's own `GET /v1/renders` response body, relayed
+            unchanged. See the render service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    post:
+      operationId: atc-console.atc-render.jobs.create
+      tags:
+        - atc-render
+      summary: "Queue a background render of a template."
+      description: >-
+        Typed pass-through to the **render** service instance named by `sid` — console relays this to its `POST
+        /v1/renders`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["template"],"properties":{"template":{"type":"string","pattern":"^[a-z][a-z0-9-]{0,63}$"},"version":{"type":"integer","minimum":1},"data":{"type":"object"},"filename":{"type":"string","minLength":1,"maxLength":120},"store":{"type":"boolean"}}}
+      responses:
+        "202":
+          description: Pass-through of the render service's own `POST /v1/renders` response body, relayed
+            unchanged. See the render service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-render/renders/{id}:
+    get:
+      operationId: atc-console.atc-render.jobs.get
+      tags:
+        - atc-render
+      summary: "One render job."
+      description: >-
+        Typed pass-through to the **render** service instance named by `sid` — console relays this to its `GET
+        /v1/renders/{id}`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the render service's own `GET /v1/renders/{id}` response body, relayed
+            unchanged. See the render service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-render/renders/{id}/cancel:
+    post:
+      operationId: atc-console.atc-render.jobs.cancel
+      tags:
+        - atc-render
+      summary: "Cancel a queued render job."
+      description: >-
+        Typed pass-through to the **render** service instance named by `sid` — console relays this to its `POST
+        /v1/renders/{id}/cancel`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the render service's own `POST /v1/renders/{id}/cancel` response body, relayed
+            unchanged. See the render service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-render/renders/{id}/pdf:
+    get:
+      operationId: atc-console.atc-render.jobs.pdf
+      tags:
+        - atc-render
+      summary: "Download a finished job's PDF through the console."
+      description: >-
+        Typed pass-through to the **render** service instance named by `sid` — console relays this to its `GET
+        /v1/renders/{id}/pdf`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: The finished PDF, streamed through the console as an attachment (never rendered inline), sandboxed and not cached. `409` from the render service while the job is not finished is relayed as is.
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-shortlink/links/batch:
+    post:
+      operationId: atc-console.atc-shortlink.links.batch
+      tags:
+        - atc-shortlink
+      summary: "Create up to 500 short links in one call."
+      description: >-
+        Typed pass-through to the **shortlink** service instance named by `sid` — console relays this to its
+        `POST /v1/links/batch`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["links"],"properties":{"links":{"type":"array","minItems":1,"maxItems":500,"items":{"type":"object","additionalProperties":false,"required":["url"],"properties":{"url":{"type":"string","minLength":8,"maxLength":8192},"slug":{"type":"string","pattern":"^[A-Za-z0-9][A-Za-z0-9_-]{2,63}$"},"permanent":{"type":"boolean"},"expiresAt":{"type":"string","maxLength":40,"nullable":true},"maxClicks":{"type":"integer","minimum":1,"maximum":1000000000,"nullable":true},"tags":{"type":"array","maxItems":20,"items":{"type":"string","minLength":1,"maxLength":40}},"note":{"type":"string","maxLength":500,"nullable":true}}}}}}
+      responses:
+        "200":
+          description: Pass-through of the shortlink service's own `POST /v1/links/batch` response body, relayed
+            unchanged. See the shortlink service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
 components:
   securitySchemes:
     SessionCookie:

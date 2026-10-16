@@ -34,6 +34,8 @@
   "/atc-export/:sid/exports/:id",
   "/atc-render/:sid",
   "/atc-render/:sid/templates/:id",
+  "/atc-render/:sid/renders",
+  "/atc-render/:sid/renders/:id",
   "/atc-queue/:sid",
   "/atc-queue/:sid/queues/:id",
   "/atc-backup/:sid",

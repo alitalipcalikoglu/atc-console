@@ -17,6 +17,11 @@ export class ShortlinkClient extends ServiceClient {
     return this.json('GET', `/v1/links?${ShortlinkClient.params(q, ['q', 'tag', 'status', 'createdBy', 'limit', 'cursor'])}`);
   }
 
+  /** @param {{ links: object[] }} body */
+  createLinks(body) {
+    return this.json('POST', '/v1/links/batch', { body, timeoutMs: 60_000 });
+  }
+
   /** @param {string} code */
   getLink(code) {
     return this.json('GET', `/v1/links/${encodeURIComponent(code)}`);

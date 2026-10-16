@@ -16,6 +16,7 @@
   import PollStats from '#lib/components/PollStats.svelte';
   import CopyButton from '#lib/components/CopyButton.svelte';
   import LinkForm from './LinkForm.svelte';
+  import BatchForm from './BatchForm.svelte';
   import { poller } from '#lib/client/poller.svelte.js';
   import { api } from '#lib/client/api.js';
   import { Resource } from '#lib/client/resource.svelte.js';
@@ -58,7 +59,14 @@
     catch (e) { toasts.error(e); } finally { more = false; }
   }
   let createOpen = $state(false);
+  let batchOpen = $state(false);
   let busy = $state(false);
+  /** @param {{ links: object[] }} body */
+  async function createBatch(body) {
+    busy = true;
+    try { const r = /** @type {any} */ (await api.post(`/services/${sid}/atc-shortlink/links/batch`, body)); toasts.ok(t('sl.batchDone', { created: r.created, failed: r.failed })); await list.load(); return r; }
+    catch (e) { toasts.error(e); return null; } finally { busy = false; }
+  }
   /** @param {any} body */
   async function create(body) {
     busy = true;
@@ -75,6 +83,7 @@
 <Page help={t('help.page.shortlink')} docs={sid} title={svc?.label ?? t('sl.title')} desc={t('sl.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
+    {#if session.isAdmin}<button class="btn" onclick={() => { batchOpen = true; }} aria-label={t('sl.batch')} title={t('sl.batch')}><Icon name="list" size={16} /><span class="hide-m"> {t('sl.batch')}</span></button>{/if}
     {#if session.isAdmin}<button class="btn primary" onclick={() => { createOpen = true; }} aria-label={t('sl.create')} title={t('sl.create')}><Icon name="plus" size={16} /><span class="hide-m"> {t('sl.create')}</span></button>{/if}
     <button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}
@@ -126,3 +135,4 @@
 </Page>
 
 <LinkForm open={createOpen} title={t('sl.create')} submitLabel={t('sl.create')} {busy} onsubmit={create} onclose={() => { createOpen = false; }} />
+<BatchForm open={batchOpen} {sid} {busy} onsubmit={createBatch} onclose={() => { batchOpen = false; }} />

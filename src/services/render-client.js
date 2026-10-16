@@ -58,6 +58,49 @@ export class RenderClient extends ServiceClient {
     return res;
   }
 
+  fonts() {
+    return this.json('GET', '/v1/fonts');
+  }
+
+  /** @param {{ status?: string, limit?: number, cursor?: string }} q */
+  renders(q) {
+    return this.json('GET', `/v1/renders?${RenderClient.params(q, ['status', 'limit', 'cursor'])}`);
+  }
+
+  /** @param {{ template: string, version?: number, data?: object, filename?: string, store?: boolean }} body */
+  createRender(body) {
+    return this.json('POST', '/v1/renders', { body });
+  }
+
+  /** @param {string} id */
+  render(id) {
+    return this.json('GET', `/v1/renders/${RenderClient.seg(id)}`);
+  }
+
+  /** @param {string} id */
+  cancelRender(id) {
+    return this.json('POST', `/v1/renders/${RenderClient.seg(id)}/cancel`);
+  }
+
+  /** The finished PDF of a job, for relaying. @param {string} id @returns {Promise<Response>} */
+  async renderPdf(id) {
+    const res = await this.request('GET', `/v1/renders/${RenderClient.seg(id)}/pdf`, { headers: { accept: 'application/pdf, application/json' } });
+    if (!res.ok) {
+      const text = await res.text();
+      let data = null;
+      try { data = JSON.parse(text); } catch { data = null; }
+      throw new ServiceError(data?.error?.message ?? `${this.def.id} responded ${res.status}`, { statusCode: res.status, code: data?.error?.code, details: data?.error?.details, service: this.def.id });
+    }
+    return res;
+  }
+
+  /** @param {Record<string, string|number|undefined>} q @param {readonly string[]} keys */
+  static params(q, keys) {
+    const p = new URLSearchParams();
+    for (const k of keys) if (q[k] !== undefined && q[k] !== '') p.set(k, String(q[k]));
+    return p;
+  }
+
   stats() {
     return this.json('GET', '/v1/stats');
   }

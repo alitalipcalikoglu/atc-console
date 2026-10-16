@@ -18,6 +18,18 @@ App bar:
 
 Previews accept up to 2 MiB through the console (other console requests stay at 64 KiB), enough for layouts with a few embedded base64 images; larger ones are previewed directly against the service.
 
+## Render jobs
+
+**Render jobs** (app bar of the Render page) lists the background renders the console queued, newest first, with a status filter (queued, running, succeeded, failed, cancelled) and load more. Only jobs queued with the console's own key appear; applications see their own through the API.
+
+From a template page, ⋯ → **Queue render** opens a dialog: file name (optional), whether the PDF goes to atc-media as a private file, and the data JSON (pre-filled with the editor's sample data). The job is queued with the template's latest version pinned and its page opens.
+
+The job page shows state, pages, size, where the PDF lives, template and version, times and the error of a failed job. App bar: **Download PDF** (admin; streamed through `GET /api/services/<sid>/atc-render/renders/<id>/pdf`, an attachment, sandboxed, never cached), **Open in media** for stored jobs (the short-lived signed link), **Cancel job** (admin, confirmation) while the job is still queued; a running job finishes. **Audit** opens the audit events about the job.
+
+## Fonts
+
+The Render page lists the font families the service loaded from `FONTS_DIR` plus the built-in default (`dejavu`); a layout names one in `page.font`. Adding a family means dropping a TrueType file on the render host; the console only shows what is there.
+
 ## Recorded in the console log
 
-`atc-render.template.create`, `atc-render.template.update`, `atc-render.template.delete`, `atc-render.version.create` (version), `atc-render.document.preview` (block count; never the data).
+`atc-render.template.create`, `atc-render.template.update`, `atc-render.template.delete`, `atc-render.version.create` (version), `atc-render.document.preview` (block count; never the data), `atc-render.job.create` (template, version, store), `atc-render.job.cancel`, `atc-render.job.download`.
