@@ -12,6 +12,7 @@
   import { Resource } from '#lib/client/resource.svelte.js';
   import { page as route } from '$app/state';
   import { Navigation } from '#lib/client/navigation.js';
+  import { FilterTimer } from '#lib/client/filter-timer.js';
   import { t } from '#lib/client/i18n.svelte.js';
   import { toasts } from '#lib/client/toast.svelte.js';
   let action = $state(route.url.searchParams.get('action') ?? '');
@@ -20,8 +21,8 @@
   let more = $state(false);
   const url = (/** @type {string|null} */ b) => `/audit?limit=50${action ? `&action=${encodeURIComponent(action)}` : ''}${b ? `&cursor=${b}` : ''}`;
   const list = new Resource(async () => { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(url(null))); items = r.items; before = r.nextCursor; return r; });
-  /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
-  $effect(() => { action; clearTimeout(timer); timer = setTimeout(() => { Navigation.replaceQuery(route.url, { action }); list.load(); }, 250); return () => clearTimeout(timer); });
+  const timer = new FilterTimer(250);
+  $effect(() => { action; timer.schedule(() => { Navigation.replaceQuery(route.url, { action }); list.load(); }); return () => timer.cancel(); });
   async function loadMore() { more = true; try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(url(before))); items = [...items, ...r.items]; before = r.nextCursor; } catch (e) { toasts.error(e); } finally { more = false; } }
   const QUICK = ['', 'login', 'admin.', 'atc-notify.', 'atc-auth.', 'atc-media.'];
 </script>

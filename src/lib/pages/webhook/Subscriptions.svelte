@@ -26,6 +26,7 @@
   const session = useSession();
   import { services } from '#lib/client/services.svelte.js';
   import { Fmt } from '#lib/client/format.js';
+  import { FilterTimer } from '#lib/client/filter-timer.js';
   import { t, i18n } from '#lib/client/i18n.svelte.js';
   import { toasts } from '#lib/client/toast.svelte.js';
   /** @type {{ sid: string }} */
@@ -66,8 +67,8 @@
     eItems = r.items; eBefore = r.nextCursor; return r;
   });
   const types = new Resource(() => api.get(`${base}/event-types`));
-  /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
-  $effect(() => { status; q; clearTimeout(timer); timer = setTimeout(() => { Navigation.replaceQuery(route.url, { status, q }); list.load(); }, 300); return () => clearTimeout(timer); });
+  const timer = new FilterTimer();
+  $effect(() => { status; q; timer.schedule(() => { Navigation.replaceQuery(route.url, { status, q }); list.load(); }); return () => timer.cancel(); });
   $effect(() => { dstatus; Navigation.replaceQuery(route.url, { dstatus }); deliveries.load(); });
   $effect(() => { etype; Navigation.replaceQuery(route.url, { type: etype }); events.load(); });
   $effect(() => { stats.load(); types.load(); });

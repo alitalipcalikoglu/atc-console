@@ -23,6 +23,7 @@
   import { useSession } from '#lib/client/session.svelte.js';
   const session = useSession();
   import { Fmt } from '#lib/client/format.js';
+  import { FilterTimer } from '#lib/client/filter-timer.js';
   import { t, i18n } from '#lib/client/i18n.svelte.js';
   import { toasts } from '#lib/client/toast.svelte.js';
   /** @type {{ sid: string, id: string }} */
@@ -56,8 +57,8 @@
       result = r; hits = cursor ? [...hits, ...r.items] : r.items; searchError = null;
     } catch (e) { if (mine === seq) { searchError = e; if (!cursor) { result = null; hits = []; } } } finally { if (mine === seq) { searching = false; more = false; } }
   }
-  /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
-  $effect(() => { q; sort; filters; x; clearTimeout(timer); timer = setTimeout(() => { Navigation.replaceQuery(route.url, { q, sort: sort === 'relevance' ? null : sort, f: Object.keys(filters).length ? JSON.stringify(filters) : null }); search(); }, 250); return () => clearTimeout(timer); });
+  const timer = new FilterTimer(250);
+  $effect(() => { q; sort; filters; x; timer.schedule(() => { Navigation.replaceQuery(route.url, { q, sort: sort === 'relevance' ? null : sort, f: Object.keys(filters).length ? JSON.stringify(filters) : null }); search(); }); return () => timer.cancel(); });
   const activeFilters = $derived(Object.values(filters).reduce((a, v) => a + v.length, 0));
   /** @param {string} key @param {string} value */
   function toggle(key, value) {

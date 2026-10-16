@@ -25,6 +25,7 @@
   const session = useSession();
   import { services } from '#lib/client/services.svelte.js';
   import { Fmt } from '#lib/client/format.js';
+  import { FilterTimer } from '#lib/client/filter-timer.js';
   import { t, i18n } from '#lib/client/i18n.svelte.js';
   import { toasts } from '#lib/client/toast.svelte.js';
   /** @type {{ sid: string }} */
@@ -43,9 +44,9 @@
     const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-auth/users?limit=50${email ? `&email=${encodeURIComponent(email)}` : ''}`));
     items = r.items; cursor = r.nextCursor; return r;
   });
-  /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
+  const timer = new FilterTimer();
   $effect(() => { summary.load(); });
-  $effect(() => { q; clearTimeout(timer); timer = setTimeout(() => { Navigation.replaceQuery(route.url, { q }); list.load(); }, q ? 300 : 0); return () => clearTimeout(timer); });
+  $effect(() => { q; timer.schedule(() => { Navigation.replaceQuery(route.url, { q }); list.load(); }); return () => timer.cancel(); });
   async function loadMore() {
     more = true;
     try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-auth/users?limit=50&cursor=${encodeURIComponent(cursor ?? '')}`)); items = [...items, ...r.items]; cursor = r.nextCursor; }

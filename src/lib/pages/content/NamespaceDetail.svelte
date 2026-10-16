@@ -25,6 +25,7 @@
   import { Navigation } from '#lib/client/navigation.js';
   import { useSession } from '#lib/client/session.svelte.js';
   import { Fmt } from '#lib/client/format.js';
+  import { FilterTimer } from '#lib/client/filter-timer.js';
   import { t, i18n } from '#lib/client/i18n.svelte.js';
   import { toasts } from '#lib/client/toast.svelte.js';
   const session = useSession();
@@ -56,8 +57,8 @@
     try { const r = /** @type {any} */ (await api.get(`${base}/keys?${qs(cursor)}`)); keys = [...keys, ...r.items]; cursor = r.nextCursor; }
     catch (e) { toasts.error(e); } finally { more = false; }
   }
-  /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
-  $effect(() => { q; missing; review; clearTimeout(timer); timer = setTimeout(() => { Navigation.replaceQuery(route.url, { q, missing, review }); loadKeys(); }, 300); return () => clearTimeout(timer); });
+  const timer = new FilterTimer();
+  $effect(() => { q; missing; review; timer.schedule(() => { Navigation.replaceQuery(route.url, { q, missing, review }); loadKeys(); }); return () => timer.cancel(); });
   /** Approve or reject one value as shown in the editor; the value is sent so a concurrent edit is not approved blindly. */
   /** @param {string} locale @param {'approve'|'reject'} decision @param {string} value */
   async function reviewValue(locale, decision, value) {

@@ -25,6 +25,7 @@
   const session = useSession();
   import { services } from '#lib/client/services.svelte.js';
   import { Fmt } from '#lib/client/format.js';
+  import { FilterTimer } from '#lib/client/filter-timer.js';
   import { t, i18n } from '#lib/client/i18n.svelte.js';
   import { toasts } from '#lib/client/toast.svelte.js';
   /** @type {{ sid: string }} */
@@ -55,8 +56,8 @@
     const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-scheduler/runs?${rqs(null)}`));
     runItems = r.items; runBefore = r.nextCursor; return r;
   });
-  /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
-  $effect(() => { enabled; q; tag; clearTimeout(timer); timer = setTimeout(() => { Navigation.replaceQuery(route.url, { enabled, q, tag }); list.load(); }, 300); return () => clearTimeout(timer); });
+  const timer = new FilterTimer();
+  $effect(() => { enabled; q; tag; timer.schedule(() => { Navigation.replaceQuery(route.url, { enabled, q, tag }); list.load(); }); return () => timer.cancel(); });
   $effect(() => { runStatus; Navigation.replaceQuery(route.url, { status: runStatus }); runs.load(); });
   $effect(() => { stats.load(); });
   async function loadMore() {

@@ -18,6 +18,7 @@
   import { Resource } from '#lib/client/resource.svelte.js';
   import { useSession } from '#lib/client/session.svelte.js';
   import { Fmt } from '#lib/client/format.js';
+  import { FilterTimer } from '#lib/client/filter-timer.js';
   import { t, i18n } from '#lib/client/i18n.svelte.js';
   import { toasts } from '#lib/client/toast.svelte.js';
   /** @type {{ sid: string }} */
@@ -36,8 +37,8 @@
     const r = /** @type {any} */ (await api.get(query(null)));
     items = r.items; cursor = r.nextCursor; counts = r.counts; return r;
   });
-  /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
-  $effect(() => { q; clearTimeout(timer); timer = setTimeout(() => list.load(), 250); return () => clearTimeout(timer); });
+  const timer = new FilterTimer(250);
+  $effect(() => { q; timer.schedule(() => list.load()); return () => timer.cancel(); });
   async function loadMore() {
     more = true;
     try { const r = /** @type {any} */ (await api.get(query(cursor))); items = [...items, ...r.items]; cursor = r.nextCursor; } catch (e) { toasts.error(e); } finally { more = false; }

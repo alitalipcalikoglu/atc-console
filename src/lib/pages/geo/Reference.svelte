@@ -11,6 +11,7 @@
   import { Resource } from '#lib/client/resource.svelte.js';
   import { page as route } from '$app/state';
   import { Navigation } from '#lib/client/navigation.js';
+  import { FilterTimer } from '#lib/client/filter-timer.js';
   import { t, i18n } from '#lib/client/i18n.svelte.js';
   /** @type {{ sid: string }} */
   let { sid } = $props();
@@ -21,8 +22,8 @@
   let lang = $state(route.url.searchParams.get('lang') ?? i18n.lang);
   const langOk = $derived(/^[A-Za-z0-9-]{2,35}$/.test(lang.trim()));
   const data = new Resource(() => api.get(`${base}/${tab}?lang=${encodeURIComponent(lang.trim())}${tab !== 'currencies' && q.trim() ? `&q=${encodeURIComponent(q.trim())}` : ''}`));
-  /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
-  $effect(() => { tab; q; lang; if (!langOk) return; clearTimeout(timer); timer = setTimeout(() => { Navigation.replaceQuery(route.url, { tab: tab === 'countries' ? null : tab, q: q || null, lang: lang === i18n.lang ? null : lang }); data.load(); }, 250); return () => clearTimeout(timer); });
+  const timer = new FilterTimer(250);
+  $effect(() => { tab; q; lang; if (!langOk) return; timer.schedule(() => { Navigation.replaceQuery(route.url, { tab: tab === 'countries' ? null : tab, q: q || null, lang: lang === i18n.lang ? null : lang }); data.load(); }); return () => timer.cancel(); });
   const all = $derived(/** @type {any[]} */ (/** @type {any} */ (data.data)?.items ?? []));
   const fold = (/** @type {string} */ s) => s.normalize('NFD').replace(/\p{M}+/gu, '').replace(/ı/g, 'i').replace(/I/g, 'i').toLowerCase();
   const items = $derived(tab === 'currencies' && q.trim() ? all.filter((c) => fold(`${c.code} ${c.name} ${c.countries.join(' ')}`).includes(fold(q.trim()))) : all);

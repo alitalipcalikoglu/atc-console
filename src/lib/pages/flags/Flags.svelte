@@ -24,6 +24,7 @@
   const session = useSession();
   import { services } from '#lib/client/services.svelte.js';
   import { Fmt } from '#lib/client/format.js';
+  import { FilterTimer } from '#lib/client/filter-timer.js';
   import { t, i18n } from '#lib/client/i18n.svelte.js';
   import { toasts } from '#lib/client/toast.svelte.js';
   /** @type {{ sid: string }} */
@@ -45,8 +46,8 @@
     const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-flags/flags?${qs(null)}`));
     items = r.items; cursor = r.nextCursor; return r;
   });
-  /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
-  $effect(() => { archived; q; tag; kind; clearTimeout(timer); timer = setTimeout(() => { Navigation.replaceQuery(route.url, { archived: archived ? 'true' : null, q, tag, kind }); list.load(); }, 300); return () => clearTimeout(timer); });
+  const timer = new FilterTimer();
+  $effect(() => { archived; q; tag; kind; timer.schedule(() => { Navigation.replaceQuery(route.url, { archived: archived ? 'true' : null, q, tag, kind }); list.load(); }); return () => timer.cancel(); });
   $effect(() => { stats.load(); });
   async function loadMore() {
     more = true;

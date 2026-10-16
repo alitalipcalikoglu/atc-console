@@ -24,6 +24,7 @@
   import { Navigation } from '#lib/client/navigation.js';
   import { services } from '#lib/client/services.svelte.js';
   import { Fmt } from '#lib/client/format.js';
+  import { FilterTimer } from '#lib/client/filter-timer.js';
   import { t, i18n } from '#lib/client/i18n.svelte.js';
   import { toasts } from '#lib/client/toast.svelte.js';
   /** @type {{ sid: string }} */
@@ -61,13 +62,12 @@
     const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-audit/events?${qs()}`));
     items = r.items; cursor = r.nextCursor; return r;
   });
-  /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
-  // Any filter change: mirror into the URL and reload after a short pause (typing).
+  const timer = new FilterTimer();
+  // Any filter change: mirror into the URL and reload after a short pause (typing); the first load runs at once.
   $effect(() => {
-    const snapshot = JSON.stringify(f);
-    clearTimeout(timer);
-    timer = setTimeout(() => { Navigation.replaceQuery(route.url, Object.fromEntries(KEYS.map((k) => [k, f[k] || null]))); list.load(); }, snapshot ? 300 : 0);
-    return () => clearTimeout(timer);
+    JSON.stringify(f);
+    timer.schedule(() => { Navigation.replaceQuery(route.url, Object.fromEntries(KEYS.map((k) => [k, f[k] || null]))); list.load(); });
+    return () => timer.cancel();
   });
   $effect(() => { stats.load(); summary.load(); });
   async function loadMore() {
