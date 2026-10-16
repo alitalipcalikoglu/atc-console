@@ -112,6 +112,14 @@
           </table></div>
         {/if}
       </Panel>
+      {#if d.disputes?.length}
+        <Panel title={t('pm.disputes')} flush>
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th>{t('pm.amount')}</th><th>{t('pm.status')}</th><th class="hide-m">{t('pm.reason')}</th><th>{t('pm.dueBy')}</th></tr></thead>
+            <tbody>{#each d.disputes as x (x.id)}<tr><td class="nowrap"><a href="/atc-payments/{sid}/disputes?payment={p.id}">{fmt.money(x.amount, p.currency)}</a><div class="xs faint mono">{x.id}</div></td><td><StatusBadge status={x.status} label={t(`pm.ds.${x.status}`)} /></td><td class="hide-m small">{x.reason}</td><td class="small nowrap">{#if x.evidenceDueBy}<Time value={x.evidenceDueBy} mode="absolute" />{:else}–{/if}</td></tr>{/each}</tbody>
+          </table></div>
+        </Panel>
+      {/if}
       <Panel title={t('pm.ledger')} flush>
         {#if !d.ledger.length}<Empty icon="card" title={t('pm.noLedger')} />
         {:else}

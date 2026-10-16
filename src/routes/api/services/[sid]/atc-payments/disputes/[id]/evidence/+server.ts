@@ -1,0 +1,3 @@
+import { PaymentsClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, record } from '#lib/server/m4.js';
+export const POST = jsonRoute({ auth: 'admin', params: Schemas.paymentDisputeParams, body: Schemas.paymentDisputeEvidence, handler: async (context) => { const output = await context.runtime.clients.get(context.params.sid, PaymentsClient).disputeEvidence(context.params.id, context.body) as any; record(context, 'atc-payments.dispute.evidence', context.params.id, { service: context.params.sid, fields: Object.keys(context.body.evidence), submit: context.body.submit === true, status: output?.dispute?.status }); return output; } });

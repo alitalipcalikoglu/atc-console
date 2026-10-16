@@ -2,6 +2,10 @@
 
 **Media** page: counters (files, unique objects, stored bytes, uploads, downloads), an upload area, and files as a grid with thumbnails or as a table (the choice is remembered).
 
+The table and the file page show each file's **owner** (the API key that uploaded it: the console, atc-backup, atc-render, atc-export …); the console's key is an admin key in media (`ADMIN_KEYS`), so it sees every owner's files. Type a key id in the owner box and press Enter to narrow the list.
+
+**Quarantine** (app bar) lists uploads the virus scan rejected (name, the signature ClamAV reported, owner, size, when). They are never served; **Delete** (admin, typed confirmation with the quarantine id) removes one, the rest go after `QUARANTINE_DAYS`. The console log records `atc-media.quarantine.delete`.
+
 ## Upload
 
 Drop files on the dashed area or click it to pick. Choose **Private** (default) or **Public** first. Each file uploads with a progress bar and appears at the top when done. Images are re-encoded by media (orientation applied, EXIF removed); the toast shows the stored name.

@@ -47,5 +47,9 @@
   "/docs",
   "/account",
   "/about",
-  "/atc-notify/:sid/suppressions"
+  "/atc-notify/:sid/suppressions",
+  "/atc-flags/:sid/changes",
+  "/atc-status/:sid/maintenance",
+  "/atc-media/:sid/quarantine",
+  "/atc-payments/:sid/disputes"
 ]

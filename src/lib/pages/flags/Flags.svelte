@@ -83,6 +83,7 @@
 <Page help={t('help.page.flags')} docs={sid} title={svc?.label ?? t('fl.title')} desc={t('fl.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
+    <a class="btn" href="/atc-flags/{sid}/changes" aria-label={t('fl.changes')} title={t('fl.changes')}><Icon name="check" size={16} /><span class="hide-m"> {t('fl.changes')}</span></a>
     {#if session.isAdmin}<button class="btn primary" onclick={() => { createOpen = true; }} aria-label={t('fl.create')} title={t('fl.create')}><Icon name="plus" size={16} /><span class="hide-m"> {t('fl.create')}</span></button>{/if}
     <button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}

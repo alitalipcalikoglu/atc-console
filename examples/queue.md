@@ -1,6 +1,6 @@
 # Queues from the console
 
-**Queues** page (one per configured `atc-queue` service; the console's key there has the `admin` role): five stats (queues; ready messages with the delayed count; messages in progress; dead letters; age of the oldest waiting message, highlighted above five minutes) and the queue list with depth by state and a *Paused* badge. **New queue** (app bar, admin) asks for the name (permanent), a description, the lease time, the maximum attempts and the backoff base and maximum.
+**Queues** page (one per configured `atc-queue` service; the console's key there has the `admin` role): five stats (queues; ready messages with the delayed count; messages in progress; dead letters; age of the oldest waiting message, highlighted above five minutes) and the queue list with depth by state and a *Paused* badge. **New queue** (app bar, admin) asks for the name (permanent), a description, the lease time, the maximum attempts and the backoff base and maximum, and optionally **Push delivery**: a receiver URL, a signing secret (32-256 characters, stored encrypted, never shown again; leave it empty on edit to keep the current one) and how many deliveries may run in parallel. A push queue answers pulls with 409; clearing the checkbox switches it back to pull. The settings card shows *Delivery* (the push URL or *pull*).
 
 ## The queue page
 

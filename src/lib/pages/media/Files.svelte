@@ -34,15 +34,18 @@
   /** @type {any[]} */ let items = $state([]);
   /** @type {string|null} */ let cursor = $state(null);
   let more = $state(false);
+  /** Owner key id filter; the console's key sees every key's files. Applied on change (Enter or leaving the field). */
+  let owner = $state('');
+  const ownerQ = $derived(/^[A-Za-z0-9_.-]{1,64}$/.test(owner.trim()) ? `&owner=${encodeURIComponent(owner.trim())}` : '');
   const summary = new Resource(() => api.get(`/services/${sid}/status`));
   const list = new Resource(async () => {
-    const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-media/files?limit=48`));
+    const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-media/files?limit=48${ownerQ}`));
     items = r.items; cursor = r.nextCursor; return r;
   });
   $effect(() => { list.load(); summary.load(); });
   async function loadMore() {
     more = true;
-    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-media/files?limit=48&cursor=${encodeURIComponent(cursor ?? '')}`)); items = [...items, ...r.items]; cursor = r.nextCursor; }
+    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-media/files?limit=48${ownerQ}&cursor=${encodeURIComponent(cursor ?? '')}`)); items = [...items, ...r.items]; cursor = r.nextCursor; }
     catch (e) { toasts.error(e); } finally { more = false; }
   }
 
@@ -73,6 +76,7 @@
 <Page help={t('help.page.media')} docs={sid} title={svc?.label ?? t('media.title')} desc={t('media.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
+    <a class="btn" href="/atc-media/{sid}/quarantine" aria-label={t('media.quarantine')} title={t('media.quarantine')}><Icon name="shield" size={16} /><span class="hide-m"> {t('media.quarantine')}</span></a>
     <div class="seg"><button aria-pressed={view === 'grid'} onclick={() => { view = 'grid'; }} title={t('media.grid')}><Icon name="grid" size={14} /></button><button aria-pressed={view === 'list'} onclick={() => { view = 'list'; }} title={t('media.list')}><Icon name="list" size={14} /></button></div>
     <button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}
@@ -103,6 +107,7 @@
     {/each}
   {/if}
 
+  <div class="row" style="margin-bottom:12px"><input id="media-owner" class="input grow" type="search" placeholder={t('media.ownerFilter')} aria-label={t('media.ownerFilter')} value={owner} onchange={(e) => { owner = /** @type {HTMLInputElement} */ (e.currentTarget).value; list.load(); }} /><HelpTip text={t('help.media.ownerFilter')} for="media-owner" /></div>
   {#if list.error}<ErrorBox error={list.error} onretry={() => list.load()} boxed />
   {:else if list.loading && !items.length}<Skeleton rows={4} height={90} />
   {:else if !items.length}<div class="card"><Empty icon="image" title={t('media.emptyTitle')} desc={t('media.emptyDesc')} /></div>
@@ -119,11 +124,11 @@
     </div>
   {:else}
     <div class="card flush"><div class="card-body"><div class="table-wrap"><table class="table">
-      <thead><tr><th></th><th>{t('common.name')}</th><th class="hide-m">{t('common.type')}</th><th class="num">{t('common.size')}</th><th class="hide-m">{t('media.dimensions')}</th><th>{t('media.visibility')}</th><th class="hide-m">{t('common.created')}</th></tr></thead>
+      <thead><tr><th></th><th>{t('common.name')}</th><th class="hide-m">{t('common.type')}</th><th class="num">{t('common.size')}</th><th class="hide-m">{t('media.dimensions')}</th><th>{t('media.visibility')}</th><th class="hide-m">{t('media.owner')}</th><th class="hide-m">{t('common.created')}</th></tr></thead>
       <tbody>{#each items as f (f.id)}<tr class="clickable" onclick={() => goto(`/atc-media/${sid}/files/${f.id}`)}>
         <td style="width:44px">{#if isImage(f)}<img src="/api/services/{sid}/atc-media/files/{f.id}/bytes/thumb" alt="" width="36" height="36" style="border-radius:6px;object-fit:cover;display:block" loading="lazy" />{:else}<Icon name="file" />{/if}</td>
         <td class="truncate" style="max-width:280px">{f.name}</td><td class="mono small hide-m">{f.mime}</td><td class="num">{fmt.bytes(f.size)}</td>
-        <td class="small muted hide-m">{f.width ? `${f.width}×${f.height}` : '–'}</td><td><StatusBadge status={f.visibility} label={t(`media.${f.visibility}`)} /></td><td class="hide-m"><Time value={f.createdAt} /></td>
+        <td class="small muted hide-m">{f.width ? `${f.width}×${f.height}` : '–'}</td><td><StatusBadge status={f.visibility} label={t(`media.${f.visibility}`)} /></td><td class="mono xs hide-m">{f.owner ?? '–'}</td><td class="hide-m"><Time value={f.createdAt} /></td>
       </tr>{/each}</tbody></table></div></div></div>
   {/if}
   <LoadMore {cursor} busy={more} onmore={loadMore} />

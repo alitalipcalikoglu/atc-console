@@ -1,7 +1,7 @@
 import { MediaClient, Schemas } from '#lib/server/m4-contract.js';
 import { jsonRoute, number, record, text } from '#lib/server/m4.js';
 import { CONSOLE_UPLOAD_LIMIT_BYTES, specialRoute, UploadStream, uploadTooLarge } from '#lib/server/m5.js';
-export const GET = jsonRoute({ auth: 'session', params: Schemas.serviceParams, query: Schemas.paging, handler: ({ runtime, params, query }) => runtime.clients.get(params.sid, MediaClient).listFiles({ limit: number(query.limit), cursor: text(query.cursor) }) });
+export const GET = jsonRoute({ auth: 'session', params: Schemas.serviceParams, query: Schemas.mediaFilesQuery, handler: ({ runtime, params, query }) => runtime.clients.get(params.sid, MediaClient).listFiles({ limit: number(query.limit), cursor: text(query.cursor), owner: text(query.owner) }) });
 
 export const PUT = specialRoute({
   auth: 'admin',

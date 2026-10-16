@@ -32,6 +32,10 @@ Edits stay local until **Save**, so a half-typed rule never reaches applications
 
 App bar: **Edit** (description, tags), **Archive** / **Unarchive**, delete (type the key to confirm). The description line has **Reshuffle buckets** (draws new rollout buckets; asks for confirmation).
 
+## Approvals
+
+Environments listed in the flags service's `PROTECTED_ENVS` are changed through requests: saving, toggling or copying onto them answers *waiting for approval* instead of applying. **Approvals** (app bar of the flags page) lists the requests (flag, environment, what changes, state, who asked and who decided, when) with a *Pending / Approved / Rejected / All* switch and the protected environments. **Approve** (danger confirmation) applies the request; **Reject** closes it. The console sends the signed-in admin's name, and the service refuses an approval by the person who asked, so a second admin is always needed. A request whose environment changed after it was made is closed as stale; ask again.
+
 ## Evaluate
 
 The **Evaluate** panel asks the service what this flag returns for a given environment and context (user id, email, `key=value` attributes) and shows the value, the reason (`rule` with the rule id, `in rollout`, `outside rollout`, `disabled`, `default`, `missing`) and the environment version. Use it to answer "why does this user not see the feature" without touching production.
@@ -52,5 +56,8 @@ The last 20 changes of the flag: time, action, environment, actor (API key id) a
 | `PATCH /api/services/:id/atc-flags/flags/:key/envs/:env` | one environment's state; admin; audited `atc-flags.env.update` |
 | `POST /api/services/:id/atc-flags/flags/:key/envs/:env/copy` | `{ to }`; admin; audited `atc-flags.env.copy` |
 | `POST /api/services/:id/atc-flags/evaluate` | `{ env, context, keys }` with details |
+| `GET /api/services/:id/atc-flags/changes` | change requests of protected environments; `status`, `key`, `limit` |
+| `POST /api/services/:id/atc-flags/changes/:cid/approve` | admin; applies the request; audited `atc-flags.change.approve` |
+| `POST /api/services/:id/atc-flags/changes/:cid/reject` | `{ note? }`; admin; audited `atc-flags.change.reject` |
 
 The console's key must be `readwrite` without an environment scope; a scoped key would hide the other environments from every screen.

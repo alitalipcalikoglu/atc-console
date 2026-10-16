@@ -28,6 +28,16 @@ export class PaymentsClient extends ServiceClient {
   refund(id, body, idempotencyKey) { return this.json('POST', `/v1/payments/${PaymentsClient.seg(id)}/refunds`, { body, headers: { 'idempotency-key': idempotencyKey }, timeoutMs: PaymentsClient.PROVIDER_MS }); }
   /** @param {number} limit */
   events(limit) { return this.json('GET', `/v1/provider-events?limit=${limit}`); }
+  /** @param {Record<string, string|number|undefined>} q */
+  disputes(q) {
+    const p = new URLSearchParams();
+    for (const k of ['status', 'open', 'payment', 'limit', 'cursor']) if (q[k] !== undefined && q[k] !== '') p.set(k, String(q[k]));
+    return this.json('GET', `/v1/disputes?${p}`);
+  }
+  /** @param {string} id @param {{ evidence: Record<string, string>, submit?: boolean }} body */
+  disputeEvidence(id, body) { return this.json('POST', `/v1/disputes/${PaymentsClient.seg(id)}/evidence`, { body, timeoutMs: PaymentsClient.PROVIDER_MS }); }
+  /** @param {string} id */
+  acceptDispute(id) { return this.json('POST', `/v1/disputes/${PaymentsClient.seg(id)}/accept`, { timeoutMs: PaymentsClient.PROVIDER_MS }); }
   stats() { return this.json('GET', '/v1/stats'); }
 
   /** Overview card facts, from `/v1/stats`. */

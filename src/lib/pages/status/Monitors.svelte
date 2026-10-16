@@ -71,6 +71,7 @@
 <Page help={t('help.page.status')} docs={sid} title={svc?.label ?? t('stx.title')} desc={t('stx.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
+    <a class="btn" href="/atc-status/{sid}/maintenance" aria-label={t('stx.maintenance')} title={t('stx.maintenance')}><Icon name="settings" size={16} /><span class="hide-m"> {t('stx.maintenance')}</span></a>
     {#if session.isAdmin}<button class="btn primary" onclick={() => { createOpen = true; }} aria-label={t('stx.create')} title={t('stx.create')}><Icon name="plus" size={16} /><span class="hide-m"> {t('stx.create')}</span></button>{/if}
     <button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}

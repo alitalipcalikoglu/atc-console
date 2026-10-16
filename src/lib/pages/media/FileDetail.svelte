@@ -68,6 +68,7 @@
             <dt>{t('common.type')}</dt><dd class="mono small">{f.mime}</dd>
             <dt>{t('common.size')}</dt><dd>{fmt.bytes(f.size)}</dd>
             {#if f.width}<dt>{t('media.dimensions')}</dt><dd>{f.width} × {f.height}</dd>{/if}
+            <dt>{t('media.owner')}</dt><dd class="mono small">{f.owner ?? '–'}</dd>
             <dt>{t('media.sha')}</dt><dd class="mono xs row" style="word-break:break-all">{f.sha256}<CopyButton text={f.sha256} /></dd>
             <dt>{t('common.created')}</dt><dd><Time value={f.createdAt} mode="absolute" /></dd>
           </dl>

@@ -10,6 +10,10 @@ The header card shows whether bundles serve the draft (*Up to date*), an older s
 
 **Keys** has a search box and a *Missing in …* filter (both kept in the URL), a status badge per key (*complete*, *n/m locales*, *placeholder mismatch*) and paging. Clicking a key opens the editor: description and one field per locale, default first, with the default value's `{placeholders}` listed. Only changed fields are sent; an empty field removes that locale's value. A save that leaves other locales with different placeholders is accepted with a notice naming them; a translation with the wrong placeholders is refused with the service's message. **Delete key** (typed confirmation) is in the editor footer. **Add key** creates one.
 
+**Review**: the locale table counts values pending review per locale (and rejected ones); clicking a count filters the key table. The key table also has a *Pending review in …* / *Rejected in …* filter. In the key editor each value shows its review state, who reviewed it and the note; **Approve** and **Reject** (admin) act on the value as shown, so a value someone changed meanwhile is skipped with a message. Whoever wrote a value cannot review it: the console sends the signed-in admin's name, so two admins review each other. With `PUBLISH_REQUIRES_REVIEW=true` on the service, publishing waits until every value is approved.
+
+Values may use ICU messages (`{count, plural, one {# item} other {# items}}`); the service checks the plural categories of each locale and the editor lists the argument names of the default value.
+
 **Releases** lists releases newest first (note, key count, who and when, *rollback of #n*). Per older release (admin): **Roll back to this release** (confirmation; publishes that content as a new release and keeps the draft) and **Roll back and restore draft** (danger confirmation; also replaces the draft, unpublished edits are lost).
 
 ## App bar
@@ -21,4 +25,4 @@ The header card shows whether bundles serve the draft (*Up to date*), an older s
 
 ## Recorded in the console log
 
-`atc-content.namespace.create`, `atc-content.namespace.update` (the patch), `atc-content.namespace.delete`, `atc-content.locale.upsert` (locale, fallback), `atc-content.locale.delete`, `atc-content.key.upsert` (changed locales; never the text), `atc-content.key.delete`, `atc-content.translations.import` (locale and counts), `atc-content.release.publish` (release), `atc-content.release.rollback` (new release, source release, restoreDraft).
+`atc-content.namespace.create`, `atc-content.namespace.update` (the patch), `atc-content.namespace.delete`, `atc-content.locale.upsert` (locale, fallback), `atc-content.locale.delete`, `atc-content.key.upsert` (changed locales; never the text), `atc-content.key.delete`, `atc-content.translations.import` (locale and counts), `atc-content.release.publish` (release), `atc-content.release.rollback` (new release, source release, restoreDraft), `atc-content.value.review` (decision, updated, skipped).

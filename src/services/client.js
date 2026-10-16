@@ -60,7 +60,7 @@ export class PrometheusText {
  */
 export class ServiceClient {
   /** Service types that accept `X-Actor` from the console key (`ACTOR_KEYS` on their side). */
-  static ACTOR_TYPES = new Set(['atc-content', 'atc-export', 'atc-render']);
+  static ACTOR_TYPES = new Set(['atc-content', 'atc-export', 'atc-render', 'atc-flags']);
 
   /**
    * @param {ServiceDef} def

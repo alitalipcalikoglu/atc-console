@@ -52,7 +52,8 @@
   /** @param {string} e @param {() => Promise<unknown>} fn @param {string} ok */
   async function run(e, fn, ok) {
     busy = { ...busy, [e]: true };
-    try { await fn(); toasts.ok(ok); await res.load(); } catch (err) { toasts.error(err); } finally { busy = { ...busy, [e]: false }; }
+    // A protected environment answers 202 with a change request instead of applying the change.
+    try { const r = /** @type {any} */ (await fn()); toasts.ok(r?.change ? t('fl.chRequested', { env: r.change.env }) : ok); await res.load(); } catch (err) { toasts.error(err); } finally { busy = { ...busy, [e]: false }; }
   }
   /** @param {string} e */
   const save = (e) => run(e, () => { const s = drafts[e]; return api.patch(`${base}/envs/${e}`, { value: s.value, offValue: s.offValue, percentage: clampPct(s.percentage), rules: s.rules }); }, t('fl.saved', { env: e }));

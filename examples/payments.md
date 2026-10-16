@@ -13,6 +13,15 @@ App bar (admin):
 - **Refund** (when something is refundable): an amount in the payment's currency (empty = all that is left) and a reason; the button shows the exact amount and asks for a danger confirmation. Each opened dialog gets its own idempotency key, so submitting twice never refunds twice. A refund Stripe reports as pending shows as pending until its webhook arrives.
 - ⋯: **Sync from Stripe** (applies Stripe's current state when webhooks were missed) and **Cancel payment** (pending or processing only; danger confirmation).
 
+## Disputes
+
+**Disputes** (app bar of the payments page) lists chargebacks Stripe reported by webhook: amount, status (needs response, under review, won, lost; inquiries are marked as such), reason, evidence deadline and the payment. *Open only* (default) hides closed ones; the payment page shows its own disputes and links here filtered to that payment.
+
+For a dispute that needs a response (admin):
+
+- **Evidence** opens a form with the common text fields (customer name and e-mail, product, service date, access log, refund policy, other evidence). **Save draft** stores them on Stripe and can be repeated; **Submit to issuer** sends them after a danger confirmation, after which nothing can be changed. Files are added in the Stripe dashboard.
+- **Accept dispute** concedes it after a typed confirmation with the dispute id; Stripe closes it as lost.
+
 ## Recorded in the console log
 
-`atc-payments.refund.create` (payment, amount, status), `atc-payments.payment.sync` (changed, status), `atc-payments.payment.cancel` (status).
+`atc-payments.refund.create` (payment, amount, status), `atc-payments.payment.sync` (changed, status), `atc-payments.payment.cancel` (status), `atc-payments.dispute.evidence` (fields, submit, status), `atc-payments.dispute.accept` (status).

@@ -57,7 +57,12 @@ export class ContentClient extends ServiceClient {
 
   /** @param {string} ns @param {Record<string, string|number|undefined>} q */
   keys(ns, q) {
-    return this.json('GET', `/v1/namespaces/${ContentClient.seg(ns)}/keys?${ContentClient.params(q, ['q', 'missing', 'limit', 'cursor'])}`);
+    return this.json('GET', `/v1/namespaces/${ContentClient.seg(ns)}/keys?${ContentClient.params(q, ['q', 'missing', 'review', 'reviewLocale', 'limit', 'cursor'])}`);
+  }
+
+  /** Approve or reject draft values. @param {string} ns @param {object} body */
+  review(ns, body) {
+    return this.json('POST', `/v1/namespaces/${ContentClient.seg(ns)}/review`, { body });
   }
 
   /** @param {string} ns @param {string} key */

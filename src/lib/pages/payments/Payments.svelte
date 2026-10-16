@@ -86,6 +86,7 @@
 <Page help={t('help.page.payments')} docs={sid} title={svc?.label ?? t('pm.title')} desc={t('pm.desc')}>
   {#snippet actions()}
     <AutoRefresh {sid} />
+    <a class="btn" href="/atc-payments/{sid}/disputes" aria-label={t('pm.disputes')} title={t('pm.disputes')}><Icon name="alert" size={16} /><span class="hide-m"> {t('pm.disputes')}</span></a>
     {#if session.isAdmin}<button class="btn" onclick={() => { rcResult = null; rcOpen = true; }} aria-label={t('pm.reconcile')} title={t('pm.reconcile')}><Icon name="check" size={16} /><span class="hide-m"> {t('pm.reconcile')}</span></button>{/if}
     <button class="btn icon" onclick={refreshNow} disabled={service.inFlight} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}

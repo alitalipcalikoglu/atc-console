@@ -62,6 +62,21 @@ export class FlagsClient extends ServiceClient {
     return this.json('POST', '/v1/evaluate', { body: { ...body, details: true } });
   }
 
+  /** Change requests of protected environments. @param {Record<string, string|number|undefined>} q */
+  changes(q) {
+    return this.json('GET', `/v1/changes?${FlagsClient.params(q, ['status', 'key', 'limit'])}`);
+  }
+
+  /** @param {string} id */
+  approveChange(id) {
+    return this.json('POST', `/v1/changes/${encodeURIComponent(id)}/approve`);
+  }
+
+  /** @param {string} id @param {{ note?: string }} body */
+  rejectChange(id, body) {
+    return this.json('POST', `/v1/changes/${encodeURIComponent(id)}/reject`, { body });
+  }
+
   stats() {
     return this.json('GET', '/v1/stats');
   }

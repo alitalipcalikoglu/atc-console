@@ -14,6 +14,8 @@
   import StatusBadge from '#lib/components/StatusBadge.svelte';
   import MonitorForm from './MonitorForm.svelte';
   import PingToken from './PingToken.svelte';
+  import Dialog from '#lib/components/Dialog.svelte';
+  import FieldLabel from '#lib/components/FieldLabel.svelte';
   import { api } from '#lib/client/api.js';
   import { Resource } from '#lib/client/resource.svelte.js';
   import { goto } from '$app/navigation';
@@ -56,6 +58,14 @@
   $effect(() => { reloadAll(); });
 
   let busy = $state(false);
+  // Public incident update: shown on the status page and mailed to subscribers; "resolved" closes the incident.
+  /** @type {string|null} */ let updating = $state(null);
+  /** @type {'investigating'|'identified'|'monitoring'|'resolved'} */ let updStatus = $state('investigating');
+  let updMessage = $state('');
+  async function postUpdate() {
+    busy = true;
+    try { await api.post(`${svcBase}/incidents/${updating}/updates`, { status: updStatus, message: updMessage.trim() }); toasts.ok(t('stx.updPosted')); updating = null; await loadIncidents(null); } catch (e) { toasts.error(e); } finally { busy = false; }
+  }
   let editOpen = $state(false);
   let confirmDelete = $state(false);
   let confirmRotate = $state(false);
@@ -114,7 +124,7 @@
         {#if m.description}<p class="no-margin desc-line">{m.description}</p>{/if}
         <dl class="kv">
           <dt>{t('stx.kind')}</dt><dd>{t(`stx.k.${m.kind}`)}</dd>
-          {#if m.kind !== 'heartbeat'}<dt>{m.kind === 'http' ? t('stx.url') : t('stx.targetHost')}</dt><dd class="mono small truncate" title={m.url}>{m.kind === 'http' ? `${m.method} ` : ''}{m.url}</dd>{/if}
+          {#if m.kind !== 'heartbeat'}<dt>{m.kind === 'http' ? t('stx.url') : m.kind === 'dns' ? t('stx.dnsHost') : t('stx.targetHost')}</dt><dd class="mono small truncate" title={m.url}>{m.kind === 'http' ? `${m.method} ` : ''}{m.url}</dd>{/if}
           <dt>{t('stx.every')}</dt><dd>{fmt.duration(m.intervalSec)}</dd>
           {#if m.kind === 'heartbeat'}
             <dt>{t('stx.graceLabel')}</dt><dd>{fmt.duration(m.graceSec)}</dd>
@@ -125,6 +135,7 @@
           {#if m.kind === 'http'}<dt>{t('stx.expect')}</dt><dd class="mono small">{m.expectStatus.join(', ')}</dd>{/if}
           {#if m.expectText}<dt>{t('stx.expectText')}</dt><dd class="mono small">{m.expectText}</dd>{/if}
           {#if m.kind === 'tls'}<dt>{t('stx.warnDays')}</dt><dd>{m.warnDays}</dd>{/if}
+          {#if m.kind === 'dns'}<dt>{t('stx.dnsType')}</dt><dd class="mono">{m.dnsType}</dd>{/if}
           <dt>{t('stx.threshold')}</dt><dd>{m.failThreshold}</dd>
           <dt>{t('stx.nextCheck')}</dt><dd>{#if m.nextCheckAt}<Time value={m.nextCheckAt} />{:else}–{/if}</dd>
           <dt>{t('stx.createdBy')}</dt><dd class="mono small">{m.createdBy}</dd>
@@ -157,7 +168,7 @@
         {#if !incidents.length}<Empty icon="check" title={t('stx.noIncidents')} />
         {:else}
           <div class="table-wrap"><table class="table">
-            <thead><tr><th>{t('stx.opened')}</th><th>{t('stx.state')}</th><th>{t('stx.duration')}</th><th class="hide-m">{t('stx.cause')}</th></tr></thead>
+            <thead><tr><th>{t('stx.opened')}</th><th>{t('stx.state')}</th><th>{t('stx.duration')}</th><th class="hide-m">{t('stx.cause')}</th><th></th></tr></thead>
             <tbody>
               {#each incidents as i (i.id)}
                 <tr>
@@ -165,6 +176,7 @@
                   <td><StatusBadge status={i.state} label={t(`stx.i.${i.state}`)} />{#if i.notifyError}<div class="xs danger-text truncate err" title={i.notifyError}>{i.notifyError}</div>{/if}</td>
                   <td class="small">{fmt.duration(i.durationSec)}</td>
                   <td class="hide-m small"><span class="truncate err" title={i.cause}>{i.cause}</span></td>
+                  <td>{#if session.isAdmin && i.state === 'open'}<button class="btn sm" disabled={busy} onclick={() => { updating = i.id; updStatus = 'investigating'; updMessage = ''; }}>{t('stx.updPost')}</button>{/if}</td>
                 </tr>
               {/each}
             </tbody>
@@ -176,6 +188,13 @@
   {/if}
 </Page>
 
+<Dialog help={t('help.dialog.statusIncidentUpdate')} open={updating !== null} title={t('stx.updPost')} onclose={() => { updating = null; }}>
+  <div class="stack">
+    <div class="field"><FieldLabel for="upd-status" help={t('help.stx.updStatus')}>{t('stx.updStatus')}</FieldLabel><select id="upd-status" class="select" bind:value={updStatus}>{#each ['investigating', 'identified', 'monitoring', 'resolved'] as st (st)}<option value={st}>{t(`stx.upd.${st}`)}</option>{/each}</select></div>
+    <div class="field"><FieldLabel for="upd-message" help={t('help.stx.updMessage')}>{t('stx.updMessage')}</FieldLabel><textarea id="upd-message" class="input" rows="4" maxlength="2000" bind:value={updMessage}></textarea></div>
+  </div>
+  {#snippet footer()}<button class="btn" onclick={() => { updating = null; }} disabled={busy}>{t('common.cancel')}</button><button class="btn primary" onclick={postUpdate} disabled={busy || !updMessage.trim()}>{t('stx.updPost')}</button>{/snippet}
+</Dialog>
 <PingToken path={pingPath} onclose={() => { pingPath = null; }} />
 <Confirm open={confirmRotate} title={t('stx.rotateTitle')} message={t('stx.rotateDesc')} danger confirmLabel={t('stx.rotate')} {busy} onconfirm={rotate} oncancel={() => { confirmRotate = false; }} />
 <MonitorForm open={editOpen} initial={m} {busy} onsubmit={save} onclose={() => { editOpen = false; }} />

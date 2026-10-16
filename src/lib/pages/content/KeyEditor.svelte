@@ -2,9 +2,10 @@
   /** Create a key or edit one key's description and per-locale values; only changed locales are sent. */
   import Dialog from '#lib/components/Dialog.svelte';
   import FieldLabel from '#lib/components/FieldLabel.svelte';
+  import StatusBadge from '#lib/components/StatusBadge.svelte';
   import { t } from '#lib/client/i18n.svelte.js';
-  /** @type {{ open: boolean, ns: any, entry?: any, busy?: boolean, onsubmit: (key: string, body: { description?: string, values?: Record<string, string|null> }) => void, ondelete?: () => void, onclose: () => void }} */
-  let { open, ns, entry = null, busy = false, onsubmit, ondelete, onclose } = $props();
+  /** @type {{ open: boolean, ns: any, entry?: any, busy?: boolean, onsubmit: (key: string, body: { description?: string, values?: Record<string, string|null> }) => void, ondelete?: () => void, onreview?: (locale: string, decision: 'approve'|'reject', value: string) => void, onclose: () => void }} */
+  let { open, ns, entry = null, busy = false, onsubmit, ondelete, onreview, onclose } = $props();
   let key = $state('');
   let description = $state('');
   /** @type {Record<string, string>} */ let values = $state({});
@@ -16,7 +17,7 @@
   });
   // Default locale first: it is the source the others are checked against.
   const locales = $derived(/** @type {string[]} */ ((ns?.locales ?? []).map((/** @type {any} */ l) => l.locale).sort((/** @type {string} */ a, /** @type {string} */ b) => Number(b === ns.defaultLocale) - Number(a === ns.defaultLocale))));
-  const placeholders = $derived([...new Set(Array.from((values[ns?.defaultLocale] ?? '').matchAll(/\{([A-Za-z_][A-Za-z0-9_]{0,63})\}/g), (m) => m[1]))].sort());
+  const placeholders = $derived([...new Set(Array.from((values[ns?.defaultLocale] ?? '').matchAll(/\{\s*([A-Za-z_][A-Za-z0-9_]{0,63})\s*[,}]/g), (m) => m[1]))].sort());
   /** @param {string} l */
   const changed = (l) => (values[l] ?? '') !== (entry?.values?.[l] ?? '');
   function submit() {
@@ -38,7 +39,15 @@
     <p class="xs faint" style="margin:0">{t('ct.placeholdersHint', { p: placeholders.length ? placeholders.map((p) => `{${p}}`).join(' ') : t('ct.noPlaceholders') })} {t('ct.emptyMeansNone')}</p>
     {#each locales as l (l)}
       <div class="field"><FieldLabel for="ck-{l}" help={t('help.ct.value')}>{l}{#if l === ns.defaultLocale}<span class="faint note">({t('ct.default')})</span>{/if}{#if entry?.mismatched?.includes(l)}<span class="danger-text xs note">· {t('ct.mismatch')}</span>{/if}</FieldLabel>
-        <textarea id="ck-{l}" class="textarea" rows="2" bind:value={values[l]} maxlength="100000"></textarea></div>
+        <textarea id="ck-{l}" class="textarea" rows="2" bind:value={values[l]} maxlength="100000"></textarea>
+        {#if entry?.review?.[l]}{@const r = entry.review[l]}
+          <div class="row xs" style="gap:6px;flex-wrap:wrap">
+            <StatusBadge status={r.state} label={t(`ct.rv.${r.state}`)} />
+            {#if r.by}<span class="faint">{r.by}{#if r.note} · {r.note}{/if}</span>{/if}
+            {#if onreview && !changed(l) && r.state !== 'approved'}<button type="button" class="btn sm" onclick={() => onreview(l, 'approve', entry.values[l])} disabled={busy}>{t('ct.approve')}</button>{/if}
+            {#if onreview && !changed(l) && r.state !== 'rejected'}<button type="button" class="btn sm" onclick={() => onreview(l, 'reject', entry.values[l])} disabled={busy}>{t('ct.reject')}</button>{/if}
+          </div>
+        {/if}</div>
     {/each}
     <button type="submit" class="sr-only">ok</button>
   </form>

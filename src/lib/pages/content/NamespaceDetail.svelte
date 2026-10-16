@@ -38,12 +38,14 @@
   // ---- keys (search + missing filter in the URL, cursor paging)
   let q = $state(route.url.searchParams.get('q') ?? '');
   let missing = $state(route.url.searchParams.get('missing') ?? '');
+  /** Review filter `state|locale`, e.g. `pending|tr`; empty = no filter. */
+  let review = $state(route.url.searchParams.get('review') ?? '');
   /** @type {any[]} */ let keys = $state([]);
   /** @type {string|null} */ let cursor = $state(null);
   let keysLoading = $state(false);
   let more = $state(false);
   /** @type {unknown} */ let keysError = $state(null);
-  const qs = (/** @type {string|null} */ c) => { const p = new URLSearchParams({ limit: '50' }); if (q.trim()) p.set('q', q.trim()); if (missing) p.set('missing', missing); if (c) p.set('cursor', c); return p.toString(); };
+  const qs = (/** @type {string|null} */ c) => { const p = new URLSearchParams({ limit: '50' }); if (q.trim()) p.set('q', q.trim()); if (missing) p.set('missing', missing); if (review) { const [st, l] = review.split('|'); p.set('review', st); if (l) p.set('reviewLocale', l); } if (c) p.set('cursor', c); return p.toString(); };
   async function loadKeys() {
     keysLoading = true;
     try { const r = /** @type {any} */ (await api.get(`${base}/keys?${qs(null)}`)); keys = r.items; cursor = r.nextCursor; keysError = null; }
@@ -55,7 +57,19 @@
     catch (e) { toasts.error(e); } finally { more = false; }
   }
   /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
-  $effect(() => { q; missing; clearTimeout(timer); timer = setTimeout(() => { Navigation.replaceQuery(route.url, { q, missing }); loadKeys(); }, 300); return () => clearTimeout(timer); });
+  $effect(() => { q; missing; review; clearTimeout(timer); timer = setTimeout(() => { Navigation.replaceQuery(route.url, { q, missing, review }); loadKeys(); }, 300); return () => clearTimeout(timer); });
+  /** Approve or reject one value as shown in the editor; the value is sent so a concurrent edit is not approved blindly. */
+  /** @param {string} locale @param {'approve'|'reject'} decision @param {string} value */
+  async function reviewValue(locale, decision, value) {
+    if (!keyEntry) return;
+    const key = keyEntry.key;
+    await run(async () => {
+      const r = /** @type {any} */ (await api.post(`${base}/review`, { decision, items: [{ key, locale, value }] }));
+      if (r.skipped?.length) throw new Error(t(`ct.rvSkip.${r.skipped[0].code}`));
+      keyEntry = /** @type {any} */ (await api.get(`${base}/keys/${encodeURIComponent(key)}`)).key;
+      await Promise.all([loadKeys(), res.load()]);
+    }, t(decision === 'approve' ? 'ct.approved' : 'ct.rejected', { l: locale }));
+  }
 
   // ---- releases (newest first, nextBefore paging)
   /** @type {any[]} */ let releases = $state([]);
@@ -177,13 +191,14 @@
         <Panel title={t('ct.locales')} flush>
           {#snippet aside()}{#if session.isAdmin}<button class="btn sm" onclick={() => { localeTarget = null; localeOpen = true; }} disabled={busy}><Icon name="plus" size={14} /> {t('ct.addLocale')}</button>{/if}{/snippet}
           <div class="table-wrap"><table class="table">
-            <thead><tr><th>{t('ct.locale')}</th><th>{t('ct.chain')}</th><th>{t('ct.missing')}</th>{#if session.isAdmin}<th></th>{/if}</tr></thead>
+            <thead><tr><th>{t('ct.locale')}</th><th>{t('ct.chain')}</th><th>{t('ct.missing')}</th><th>{t('ct.rvPending')}</th>{#if session.isAdmin}<th></th>{/if}</tr></thead>
             <tbody>
               {#each ns.locales as l (l.locale)}
                 <tr>
                   <td><span class="row" style="gap:6px"><code>{l.locale}</code>{#if l.locale === ns.defaultLocale}<StatusBadge status="default" label={t('ct.default')} />{/if}</span></td>
                   <td class="mono small">{l.chain.join(' → ')}</td>
                   <td>{#if ns.missing[l.locale]}<button class="linkish" onclick={() => { missing = l.locale; }}>{fmt.int(ns.missing[l.locale])}</button>{:else}0{/if}</td>
+                  <td>{#if ns.review?.[l.locale]?.pending}<button class="linkish" onclick={() => { review = `pending|${l.locale}`; }}>{fmt.int(ns.review[l.locale].pending)}</button>{:else}0{/if}{#if ns.review?.[l.locale]?.rejected}<button class="linkish danger-text xs" style="margin-left:6px" onclick={() => { review = `rejected|${l.locale}`; }}>{t('ct.rvRejectedN', { n: ns.review[l.locale].rejected })}</button>{/if}</td>
                   {#if session.isAdmin}<td style="text-align:right">{#if l.locale !== ns.defaultLocale}<RowMenu label={t('common.actions')} items={[
                     { label: t('ct.fallback'), icon: 'settings', run: () => { localeTarget = l; localeOpen = true; } },
                     { label: t('ct.makeDefault'), icon: 'flag', run: () => { target = l; confirm = 'makeDefault'; } },
@@ -222,6 +237,7 @@
       <Panel title={t('ct.keys')} flush>
         {#snippet aside()}
           <select id="ct-missing" class="select" style="width:auto" bind:value={missing} aria-label={t('ct.missing')}><option value="">{t('ct.allKeys')}</option>{#each ns.locales as l (l.locale)}<option value={l.locale}>{t('ct.missingIn', { l: l.locale })}</option>{/each}</select><HelpTip text={t('help.ct.missingFilter')} for="ct-missing" />
+          <select id="ct-review" class="select" style="width:auto" bind:value={review} aria-label={t('ct.review')}><option value="">{t('ct.rvAny')}</option>{#each ns.locales as l (l.locale)}<option value="pending|{l.locale}">{t('ct.rvPendingIn', { l: l.locale })}</option><option value="rejected|{l.locale}">{t('ct.rvRejectedIn', { l: l.locale })}</option>{/each}</select><HelpTip text={t('help.ct.reviewFilter')} for="ct-review" />
           <input id="ct-search" class="input key-search" type="search" placeholder={t('ct.search')} bind:value={q} /><HelpTip text={t('help.ct.search')} for="ct-search" />
           {#if session.isAdmin}<button class="btn sm" onclick={() => { keyEntry = null; keyOpen = true; }} disabled={busy}><Icon name="plus" size={14} /> {t('ct.addKey')}</button>{/if}
         {/snippet}
@@ -252,7 +268,7 @@
 
 <NamespaceForm open={editOpen} initial={ns} {busy} onsubmit={saveNamespace} onclose={() => { editOpen = false; }} />
 <LocaleForm open={localeOpen} {ns} locale={localeTarget} {busy} onsubmit={saveLocale} onclose={() => { localeOpen = false; localeTarget = null; }} />
-<KeyEditor open={keyOpen} {ns} entry={keyEntry} {busy} onsubmit={saveKey} ondelete={session.isAdmin ? () => { target = keyEntry; confirm = 'deleteKey'; } : undefined} onclose={() => { keyOpen = false; keyEntry = null; }} />
+<KeyEditor open={keyOpen} {ns} entry={keyEntry} {busy} onsubmit={saveKey} onreview={session.isAdmin ? reviewValue : undefined} ondelete={session.isAdmin ? () => { target = keyEntry; confirm = 'deleteKey'; } : undefined} onclose={() => { keyOpen = false; keyEntry = null; }} />
 <ImportDialog open={importOpen} {ns} {busy} {report} onsubmit={runImport} onclose={() => { importOpen = false; report = null; }} />
 <ExportDialog open={exportOpen} {sid} {ns} onclose={() => { exportOpen = false; }} />
 <Confirm open={confirm === 'publish'} title={t('ct.publish')} message={t('ct.publishDesc', { n: nextRelease })} confirmLabel={t('ct.publish')} {busy} onconfirm={publish} oncancel={() => { confirm = null; }} />

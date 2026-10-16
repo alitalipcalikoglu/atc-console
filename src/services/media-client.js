@@ -5,12 +5,23 @@ export class MediaClient extends ServiceClient {
   /** One byte range, as media serves it; multi-range and other units are not forwarded. */
   static RANGE = /^bytes=\d{0,15}-\d{0,15}$/;
 
-  /** @param {{ limit?: number, cursor?: string }} q */
+  /** @param {{ limit?: number, cursor?: string, owner?: string }} q  `owner` narrows the list (the console's key is an admin key in media). */
   listFiles(q) {
     const p = new URLSearchParams();
     if (q.limit) p.set('limit', String(q.limit));
     if (q.cursor) p.set('cursor', q.cursor);
+    if (q.owner) p.set('owner', q.owner);
     return this.json('GET', `/v1/files?${p}`);
+  }
+
+  /** Uploads the virus scan rejected. */
+  quarantine() {
+    return this.json('GET', '/v1/quarantine');
+  }
+
+  /** @param {string} id */
+  deleteQuarantined(id) {
+    return this.json('DELETE', `/v1/quarantine/${encodeURIComponent(id)}`);
   }
 
   /** @param {string} id */

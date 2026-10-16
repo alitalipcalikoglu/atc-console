@@ -128,6 +128,7 @@
           <dt>{t('qu.visibility')}</dt><dd>{q.visibilitySec}</dd>
           <dt>{t('qu.maxAttempts')}</dt><dd>{q.maxAttempts}</dd>
           <dt>{t('qu.backoffBase')} / {t('qu.backoffMax')}</dt><dd>{q.backoffBaseSec} / {q.backoffMaxSec}</dd>
+          <dt>{t('qu.delivery')}</dt><dd class="small">{#if q.push}<span class="mono truncate" title={q.push.url}>{q.push.url}</span> · {t('qu.pushConcurrency')}: {q.push.concurrency}{:else}{t('qu.pull')}{/if}</dd>
           {#each Object.entries(d.counters) as [k, v] (k)}<dt>{t(`qu.c.${k}`)}</dt><dd>{fmt.int(/** @type {number} */ (v))}</dd>{/each}
         </dl>
       </Panel>

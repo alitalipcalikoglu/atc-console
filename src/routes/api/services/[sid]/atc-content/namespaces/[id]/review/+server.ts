@@ -1,0 +1,3 @@
+import { ContentClient, Schemas } from '#lib/server/m4-contract.js';
+import { jsonRoute, record } from '#lib/server/m4.js';
+export const POST = jsonRoute({ auth: 'admin', params: Schemas.serviceIdParams, body: Schemas.contentReview, handler: async (context) => { const output = await context.runtime.clients.get(context.params.sid, ContentClient).review(context.params.id, context.body) as any; record(context, 'atc-content.value.review', context.params.id, { service: context.params.sid, decision: context.body.decision, updated: output?.updated, skipped: output?.skipped?.length }); return output; } });

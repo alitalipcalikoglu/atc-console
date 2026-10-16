@@ -21,6 +21,23 @@ const fake = createServer((req, res) => {
     if (p === '/ready') return res.writeHead(200).end('{"status":"ok"}');
     if (p === '/v1/info') return json(200, { service: 'fake', version: '1.2.3', apiVersion: 'v1', capabilities: ['x'], schemaVersion: 4, serviceCore: '1.10.0' });
     if (p === '/openapi.yaml') return res.writeHead(200, { 'content-type': 'text/yaml' }).end('openapi: 3.1.0\ninfo:\n  title: fake\n  version: 1.0.0\npaths: {}\n');
+    // v1.29 operations (approvals, quarantine, disputes, maintenance, subscribers, incident updates, review).
+    const CHG = 'chg_mv8abcde0123456789ab';
+    if (p === '/v1/changes') return json(200, { items: [{ id: CHG, key: 'checkout.new', env: 'prod', status: 'pending' }], protectedEnvs: ['prod'] });
+    if (p === `/v1/changes/${CHG}/approve`) return json(200, { change: { id: CHG, key: 'checkout.new', env: 'prod', status: 'approved' } });
+    if (p === `/v1/changes/${CHG}/reject`) return json(200, { change: { id: CHG, key: 'checkout.new', env: 'prod', status: 'rejected', note: JSON.parse(body || '{}').note ?? null } });
+    if (p === '/v1/quarantine') return json(200, { items: [{ id: 'q_mv8abcde0123456789ab', name: 'bad.csv', signature: 'Eicar' }] });
+    if (p === '/v1/quarantine/q_mv8abcde0123456789ab' && req.method === 'DELETE') return res.writeHead(204).end();
+    if (p === '/v1/disputes') return json(200, { items: [{ id: 'dp_1Abcdef', status: 'needs_response' }], nextCursor: null });
+    if (p === '/v1/disputes/dp_1Abcdef/evidence') return json(200, { dispute: { id: 'dp_1Abcdef', status: JSON.parse(body).submit ? 'under_review' : 'needs_response' } });
+    if (p === '/v1/disputes/dp_1Abcdef/accept') return json(200, { dispute: { id: 'dp_1Abcdef', status: 'lost' } });
+    if (p === '/v1/maintenance' && req.method === 'GET') return json(200, { current: [], past: [] });
+    if (p === '/v1/maintenance' && req.method === 'POST') return json(201, { maintenance: { id: 'mnt_mv8abcde0123456789ab', ...JSON.parse(body) } });
+    if (p === '/v1/maintenance/mnt_mv8abcde0123456789ab' && req.method === 'DELETE') return res.writeHead(204).end();
+    if (p === '/v1/incidents/inc_mv8abcde0123456789abcdef/updates') return json(201, { incident: { id: 'inc_mv8abcde0123456789abcdef' }, updates: [JSON.parse(body)] });
+    if (p === '/v1/subscribers' && req.method === 'GET') return json(200, { items: [{ id: 'sub_mv8abcde0123456789ab', email: 'a@example.com', confirmed: true }], counts: { total: 1, confirmed: 1 }, enabled: true });
+    if (p === '/v1/subscribers/sub_mv8abcde0123456789ab' && req.method === 'DELETE') return res.writeHead(204).end();
+    if (p === '/v1/namespaces/web/review') return json(200, { updated: JSON.parse(body).items.length, skipped: [] });
     if (String(req.headers.authorization).endsWith('p'.repeat(40))) {
       if (p === '/v1/stats') return json(200, { templates: 2, last24h: { renders: 40, succeeded: 39, failed: 1, avgMs: 35, pages: 90, bytes: 9000, stored: 3, errors: {}, byTemplate: {} }, active: 0, concurrency: 4 });
       if (p === '/v1/templates' && req.method === 'GET') return json(200, { items: [{ name: 'invoice', latestVersion: 2 }] });
@@ -985,7 +1002,7 @@ test('render: templates, versions, preview relay (attachment, sandbox, validatio
   assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-render.template.delete', 'atc-render.document.preview', 'atc-render.version.create', 'atc-render.template.update', 'atc-render.template.create']);
 });
 
-test('acting admin: X-Actor carries the signed-in username to content, export and render only; document routes take 2 MiB', async () => {
+test('acting admin: X-Actor carries the signed-in username to content, export, render and flags only; document routes take 2 MiB', async () => {
   const { cookie } = await signIn(t, { username: 'ayse.k' });
   seen.length = 0;
   await t.app.inject({ url: '/api/services/atc-content/atc-content/namespaces', headers: { cookie } });
@@ -995,6 +1012,8 @@ test('acting admin: X-Actor carries the signed-in username to content, export an
   await t.app.inject({ url: '/api/services/atc-render/atc-render/templates', headers: { cookie } });
   assert.equal(seen.at(-1)?.headers['x-actor'], 'ayse.k');
   await t.app.inject({ url: '/api/services/atc-flags/atc-flags/stats', headers: { cookie } });
+  assert.equal(seen.at(-1)?.headers['x-actor'], 'ayse.k', 'flags approvals are four-eyes per person');
+  await t.app.inject({ url: '/api/services/atc-queue/atc-queue/stats', headers: { cookie } });
   assert.equal(seen.at(-1)?.headers['x-actor'], undefined, 'other services never receive it');
   const big = { locale: 'tr', strings: Object.fromEntries(Array.from({ length: 4000 }, (_, i) => [`k${i}`, 'x'.repeat(40)])) };
   assert.ok(JSON.stringify(big).length > 64 * 1024 && JSON.stringify(big).length < 2 * 1024 * 1024);
@@ -1083,7 +1102,7 @@ test('status: monitors, check now, checks, incidents, edit, delete (audited, adm
   assert.equal((await t.app.inject({ url: `${B}/monitors/shop`, headers: { cookie: viewer.cookie } })).json().uptime['24h'].uptime, 90);
   assert.equal((await t.app.inject({ method: 'PUT', url: `${B}/monitors/shop`, headers: { cookie: viewer.cookie, ...CSRF }, payload: { paused: true } })).statusCode, 403);
   assert.equal((await t.app.inject({ method: 'PUT', url: `${B}/monitors/Bad`, headers: { cookie, ...CSRF }, payload: {} })).statusCode, 400);
-  assert.equal((await t.app.inject({ method: 'PUT', url: `${B}/monitors/shop`, headers: { cookie, ...CSRF }, payload: { url: 'ftp://x' } })).statusCode, 400);
+  assert.equal((await t.app.inject({ method: 'PUT', url: `${B}/monitors/shop`, headers: { cookie, ...CSRF }, payload: { url: 'x'.repeat(2001) } })).statusCode, 400);
   assert.equal((await t.app.inject({ method: 'PUT', url: `${B}/monitors/shop`, headers: { cookie, ...CSRF }, payload: { name: 'Shop API', expectStatus: [200, 204] } })).json().monitor.name, 'Shop API');
   assert.equal((await t.app.inject({ method: 'POST', url: `${B}/monitors/shop/check`, headers: { cookie: viewer.cookie, ...CSRF } })).statusCode, 403);
   assert.equal((await t.app.inject({ method: 'POST', url: `${B}/monitors/shop/check`, headers: { cookie, ...CSRF } })).json().check.status, 503);
@@ -1129,4 +1148,38 @@ test('payments: list, detail, sync, cancel, refund with an idempotency key heade
   assert.deepEqual([res.statusCode, res.json().error.code], [409, 'INVALID_STATE']);
   const log = await t.app.inject({ url: '/api/audit?action=atc-payments.', headers: { cookie } });
   assert.deepEqual(log.json().items.map((/** @type {any} */ e) => e.action), ['atc-payments.payment.sync', 'atc-payments.refund.create']);
+});
+
+test('v1.29 routes: approvals, quarantine, disputes, maintenance, subscribers, incident updates, review (audited, admin only)', async () => {
+  const { cookie } = await signIn(t);
+  const viewer = await signIn(t, { username: 'viewer29', role: 'viewer' });
+  const H = { cookie, ...CSRF };
+  const V = { cookie: viewer.cookie, ...CSRF };
+  const svc = (/** @type {string} */ type) => `/api/services/${type}/${type}`;
+  const CHG = 'chg_mv8abcde0123456789ab';
+  assert.equal((await t.app.inject({ url: `${svc('atc-flags')}/changes?status=pending`, headers: { cookie: viewer.cookie } })).json().protectedEnvs[0], 'prod');
+  assert.equal((await t.app.inject({ url: `${svc('atc-flags')}/changes?status=maybe`, headers: { cookie } })).statusCode, 400);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${svc('atc-flags')}/changes/${CHG}/approve`, headers: V })).statusCode, 403);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${svc('atc-flags')}/changes/${CHG}/approve`, headers: H })).json().change.status, 'approved');
+  assert.equal((await t.app.inject({ method: 'POST', url: `${svc('atc-flags')}/changes/${CHG}/reject`, headers: H, payload: { note: 'not now' } })).json().change.note, 'not now');
+  assert.equal((await t.app.inject({ method: 'POST', url: `${svc('atc-flags')}/changes/nope/approve`, headers: H })).statusCode, 400);
+  assert.equal((await t.app.inject({ url: `${svc('atc-media')}/quarantine`, headers: { cookie } })).json().items.length, 1);
+  assert.equal((await t.app.inject({ method: 'DELETE', url: `${svc('atc-media')}/quarantine/q_mv8abcde0123456789ab`, headers: V })).statusCode, 403);
+  assert.equal((await t.app.inject({ method: 'DELETE', url: `${svc('atc-media')}/quarantine/q_mv8abcde0123456789ab`, headers: H })).statusCode, 204);
+  assert.equal((await t.app.inject({ url: `${svc('atc-payments')}/disputes?open=true`, headers: { cookie } })).json().items[0].id, 'dp_1Abcdef');
+  assert.equal((await t.app.inject({ method: 'POST', url: `${svc('atc-payments')}/disputes/dp_1Abcdef/evidence`, headers: H, payload: { evidence: { customer_name: 'A' }, submit: true } })).json().dispute.status, 'under_review');
+  assert.equal((await t.app.inject({ method: 'POST', url: `${svc('atc-payments')}/disputes/dp_1Abcdef/evidence`, headers: H, payload: { evidence: {} } })).statusCode, 400);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${svc('atc-payments')}/disputes/dp_1Abcdef/accept`, headers: V })).statusCode, 403);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${svc('atc-payments')}/disputes/dp_1Abcdef/accept`, headers: H })).json().dispute.status, 'lost');
+  assert.equal((await t.app.inject({ method: 'POST', url: `${svc('atc-status')}/maintenance`, headers: H, payload: { title: 'DB', startsAt: '2030-01-01T00:00:00.000Z', endsAt: '2030-01-01T01:00:00.000Z' } })).statusCode, 201);
+  assert.equal((await t.app.inject({ method: 'DELETE', url: `${svc('atc-status')}/maintenance/mnt_mv8abcde0123456789ab`, headers: H })).statusCode, 204);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${svc('atc-status')}/incidents/inc_mv8abcde0123456789abcdef/updates`, headers: H, payload: { status: 'resolved', message: 'fixed' } })).statusCode, 201);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${svc('atc-status')}/incidents/inc_mv8abcde0123456789abcdef/updates`, headers: H, payload: { status: 'done', message: 'x' } })).statusCode, 400);
+  assert.equal((await t.app.inject({ url: `${svc('atc-status')}/subscribers`, headers: { cookie: viewer.cookie } })).statusCode, 403, 'subscriber addresses are admin only');
+  assert.equal((await t.app.inject({ url: `${svc('atc-status')}/subscribers`, headers: { cookie } })).json().items.length, 1);
+  assert.equal((await t.app.inject({ method: 'DELETE', url: `${svc('atc-status')}/subscribers/sub_mv8abcde0123456789ab`, headers: H })).statusCode, 204);
+  assert.equal((await t.app.inject({ method: 'POST', url: `${svc('atc-content')}/namespaces/web/review`, headers: H, payload: { decision: 'approve', items: [{ key: 'a', locale: 'tr' }] } })).json().updated, 1);
+  const log = await t.app.inject({ url: '/api/audit?limit=50', headers: { cookie } });
+  const actions = log.json().items.map((/** @type {any} */ e) => e.action);
+  for (const a of ['atc-flags.change.approve', 'atc-flags.change.reject', 'atc-media.quarantine.delete', 'atc-payments.dispute.evidence', 'atc-payments.dispute.accept', 'atc-status.maintenance.create', 'atc-status.maintenance.delete', 'atc-status.incident.update', 'atc-status.subscriber.delete', 'atc-content.value.review']) assert.ok(actions.includes(a), a);
 });

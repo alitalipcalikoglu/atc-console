@@ -11328,6 +11328,658 @@ paths:
           $ref: "#/components/responses/Unreachable"
         default:
           $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-flags/changes:
+    get:
+      operationId: atc-console.atc-flags.changes.list
+      tags:
+        - atc-flags
+      summary: "Change requests of protected environments."
+      description: >-
+        Typed pass-through to the **flags** service instance named by `sid` — console relays this to its `GET
+        /v1/changes`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - name: status
+          in: query
+          required: false
+          schema: {"type":"string","enum":["pending","approved","rejected"]}
+        - name: key
+          in: query
+          required: false
+          schema: {"type":"string","maxLength":80}
+        - name: limit
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^([1-9]|[1-9][0-9]|100)$"}
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the flags service's own `GET /v1/changes` response body, relayed
+            unchanged. See the flags service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-flags/changes/{id}/approve:
+    post:
+      operationId: atc-console.atc-flags.changes.approve
+      tags:
+        - atc-flags
+      summary: "Approve and apply a change request."
+      description: >-
+        Typed pass-through to the **flags** service instance named by `sid` — console relays this to its `POST
+        /v1/changes/{id}/approve`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the flags service's own `POST /v1/changes/{id}/approve` response body, relayed
+            unchanged. See the flags service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-flags/changes/{id}/reject:
+    post:
+      operationId: atc-console.atc-flags.changes.reject
+      tags:
+        - atc-flags
+      summary: "Reject a change request."
+      description: >-
+        Typed pass-through to the **flags** service instance named by `sid` — console relays this to its `POST
+        /v1/changes/{id}/reject`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"properties":{"note":{"type":"string","maxLength":500}}}
+      responses:
+        "200":
+          description: Pass-through of the flags service's own `POST /v1/changes/{id}/reject` response body, relayed
+            unchanged. See the flags service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-status/maintenance:
+    get:
+      operationId: atc-console.atc-status.maintenance.list
+      tags:
+        - atc-status
+      summary: "Current, planned and past maintenance windows."
+      description: >-
+        Typed pass-through to the **status** service instance named by `sid` — console relays this to its `GET
+        /v1/maintenance`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the status service's own `GET /v1/maintenance` response body, relayed
+            unchanged. See the status service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+    post:
+      operationId: atc-console.atc-status.maintenance.create
+      tags:
+        - atc-status
+      summary: "Plan a maintenance window."
+      description: >-
+        Typed pass-through to the **status** service instance named by `sid` — console relays this to its `POST
+        /v1/maintenance`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["title","startsAt","endsAt"],"properties":{"title":{"type":"string","minLength":1,"maxLength":120},"message":{"type":"string","maxLength":1000},"monitors":{"type":["array","null"],"maxItems":100,"items":{"type":"string","pattern":"^[a-z0-9][a-z0-9-]{0,63}$"}},"startsAt":{"type":"string","format":"date-time"},"endsAt":{"type":"string","format":"date-time"}}}
+      responses:
+        "201":
+          description: Pass-through of the status service's own `POST /v1/maintenance` response body, relayed
+            unchanged. See the status service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-status/maintenance/{id}:
+    delete:
+      operationId: atc-console.atc-status.maintenance.delete
+      tags:
+        - atc-status
+      summary: "Delete a maintenance window."
+      description: >-
+        Typed pass-through to the **status** service instance named by `sid` — console relays this to its
+        `DELETE /v1/maintenance/{id}`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "204":
+          description: Done. console discards status's response body.
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-status/incidents/{id}/updates:
+    post:
+      operationId: atc-console.atc-status.incidents.addUpdate
+      tags:
+        - atc-status
+      summary: "Post a public update on an incident."
+      description: >-
+        Typed pass-through to the **status** service instance named by `sid` — console relays this to its `POST
+        /v1/incidents/{id}/updates`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["status","message"],"properties":{"status":{"type":"string","enum":["investigating","identified","monitoring","resolved"]},"message":{"type":"string","minLength":1,"maxLength":2000}}}
+      responses:
+        "201":
+          description: Pass-through of the status service's own `POST /v1/incidents/{id}/updates` response body, relayed
+            unchanged. See the status service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-status/subscribers:
+    get:
+      operationId: atc-console.atc-status.subscribers.list
+      tags:
+        - atc-status
+      summary: "E-mail subscribers of the status page."
+      description: >-
+        Typed pass-through to the **status** service instance named by `sid` — console relays this to its `GET
+        /v1/subscribers`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the status service's own `GET /v1/subscribers` response body, relayed
+            unchanged. See the status service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-status/subscribers/{id}:
+    delete:
+      operationId: atc-console.atc-status.subscribers.delete
+      tags:
+        - atc-status
+      summary: "Remove a subscriber."
+      description: >-
+        Typed pass-through to the **status** service instance named by `sid` — console relays this to its
+        `DELETE /v1/subscribers/{id}`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "204":
+          description: Done. console discards status's response body.
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-media/quarantine:
+    get:
+      operationId: atc-console.atc-media.quarantine.list
+      tags:
+        - atc-media
+      summary: "Uploads the virus scan rejected."
+      description: >-
+        Typed pass-through to the **media** service instance named by `sid` — console relays this to its `GET
+        /v1/quarantine`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the media service's own `GET /v1/quarantine` response body, relayed
+            unchanged. See the media service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-media/quarantine/{id}:
+    delete:
+      operationId: atc-console.atc-media.quarantine.delete
+      tags:
+        - atc-media
+      summary: "Delete a quarantined upload."
+      description: >-
+        Typed pass-through to the **media** service instance named by `sid` — console relays this to its `DELETE
+        /v1/quarantine/{id}`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "204":
+          description: Done. console discards media's response body.
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-payments/disputes:
+    get:
+      operationId: atc-console.atc-payments.disputes.list
+      tags:
+        - atc-payments
+      summary: "Disputes (chargebacks), newest first."
+      description: >-
+        Typed pass-through to the **payments** service instance named by `sid` — console relays this to its `GET
+        /v1/disputes`. There is no generic proxy anywhere in console: this route is hand-written, individually
+        schema-validated and individually role-gated.
+
+
+        Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - name: status
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^[a-z_]{2,40}$"}
+        - name: open
+          in: query
+          required: false
+          schema: {"type":"string","enum":["true","false"]}
+        - name: payment
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^pay_[0-9a-z]{6,12}[0-9a-f]{16}$"}
+        - name: limit
+          in: query
+          required: false
+          schema: {"type":"string","pattern":"^([1-9]|[1-9][0-9]|100)$"}
+        - name: cursor
+          in: query
+          required: false
+          schema: {"type":"string","maxLength":120}
+      x-required-role: session
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the payments service's own `GET /v1/disputes` response body, relayed
+            unchanged. See the payments service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-payments/disputes/{id}/evidence:
+    post:
+      operationId: atc-console.atc-payments.disputes.evidence
+      tags:
+        - atc-payments
+      summary: "Save or submit text evidence on a dispute."
+      description: >-
+        Typed pass-through to the **payments** service instance named by `sid` — console relays this to its
+        `POST /v1/disputes/{id}/evidence`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["evidence"],"properties":{"evidence":{"type":"object","minProperties":1,"maxProperties":18,"additionalProperties":{"type":"string","maxLength":20000}},"submit":{"type":"boolean"}}}
+      responses:
+        "200":
+          description: Pass-through of the payments service's own `POST /v1/disputes/{id}/evidence` response body, relayed
+            unchanged. See the payments service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-payments/disputes/{id}/accept:
+    post:
+      operationId: atc-console.atc-payments.disputes.accept
+      tags:
+        - atc-payments
+      summary: "Accept (concede) a dispute."
+      description: >-
+        Typed pass-through to the **payments** service instance named by `sid` — console relays this to its
+        `POST /v1/disputes/{id}/accept`. There is no generic proxy anywhere in console: this route is
+        hand-written, individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      responses:
+        "200":
+          description: Pass-through of the payments service's own `POST /v1/disputes/{id}/accept` response body, relayed
+            unchanged. See the payments service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
+  /api/services/{sid}/atc-content/namespaces/{id}/review:
+    post:
+      operationId: atc-console.atc-content.values.review
+      tags:
+        - atc-content
+      summary: "Approve or reject draft values."
+      description: >-
+        Typed pass-through to the **content** service instance named by `sid` — console relays this to its `POST
+        /v1/namespaces/{id}/review`. There is no generic proxy anywhere in console: this route is hand-written,
+        individually schema-validated and individually role-gated.
+
+
+        **Requires the `admin` role** (`requireAdmin`): a signed-in `viewer` gets `403 FORBIDDEN`.
+
+
+        Recorded in console's own activity log (`GET /api/audit`).
+      parameters:
+        - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/IdParam"
+        - $ref: "#/components/parameters/CsrfHeader"
+      x-required-role: admin
+      x-stack-visibility: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {"type":"object","additionalProperties":false,"required":["items","decision"],"properties":{"decision":{"type":"string","enum":["approve","reject"]},"note":{"type":"string","maxLength":500},"items":{"type":"array","minItems":1,"maxItems":500,"items":{"type":"object","additionalProperties":false,"required":["key","locale"],"properties":{"key":{"type":"string","pattern":"^[a-z0-9][a-z0-9._-]{0,127}$"},"locale":{"type":"string","minLength":2,"maxLength":35,"pattern":"^[A-Za-z0-9-]+$"},"value":{"type":"string","maxLength":1000000}}}}}}
+      responses:
+        "200":
+          description: Pass-through of the content service's own `POST /v1/namespaces/{id}/review` response body, relayed
+            unchanged. See the content service's own OpenAPI document for the authoritative body.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PassThrough"
+          x-stack-contract-confidence: low
+        "400":
+          $ref: "#/components/responses/ValidationFailed"
+        "401":
+          $ref: "#/components/responses/Unauthenticated"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/ProxyNotFound"
+        "502":
+          $ref: "#/components/responses/Unreachable"
+        default:
+          $ref: "#/components/responses/DownstreamDefault"
 components:
   securitySchemes:
     SessionCookie:

@@ -29,6 +29,16 @@ export class StatusClient extends ServiceClient {
   alerts(q) { return this.json('GET', `/v1/alerts?${StatusClient.params(q, ['state', 'limit', 'cursor'])}`); }
   /** @param {string} id */
   ackAlert(id) { return this.json('POST', `/v1/alerts/${StatusClient.seg(id)}/ack`); }
+  /** @param {string} id @param {{ status: string, message: string }} body */
+  postIncidentUpdate(id, body) { return this.json('POST', `/v1/incidents/${StatusClient.seg(id)}/updates`, { body }); }
+  maintenance() { return this.json('GET', '/v1/maintenance'); }
+  /** @param {object} body */
+  createMaintenance(body) { return this.json('POST', '/v1/maintenance', { body }); }
+  /** @param {string} id */
+  deleteMaintenance(id) { return this.json('DELETE', `/v1/maintenance/${StatusClient.seg(id)}`); }
+  subscribers() { return this.json('GET', '/v1/subscribers'); }
+  /** @param {string} id */
+  deleteSubscriber(id) { return this.json('DELETE', `/v1/subscribers/${StatusClient.seg(id)}`); }
   stats() { return this.json('GET', '/v1/stats'); }
 
   /** Overview card facts, from `/v1/stats`. */
