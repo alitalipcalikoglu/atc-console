@@ -7,11 +7,28 @@
   import { Services, services } from '#lib/client/services.svelte.js';
   import { useSession } from '#lib/client/session.svelte.js';
   import { Links } from '#lib/client/links.js';
+  import { NameSearch } from '#lib/client/name-search.js';
+  import { api } from '#lib/client/api.js';
   import { t } from '#lib/client/i18n.svelte.js';
   const session = useSession();
   /** @type {{ open: boolean }} */
   let { open = $bindable(false) } = $props();
   let q = $state('');
+  /** @type {Awaited<ReturnType<typeof NameSearch.query>>} */ let groups = $state([]);
+  let searching = $state(false);
+  let seq = 0;
+  // Names live in the services: ask them only once the typing pauses, never per keystroke.
+  $effect(() => {
+    const text = q.trim();
+    const mine = ++seq;
+    if (text.length < 2 || !open) { groups = []; searching = false; return; }
+    const timer = setTimeout(async () => {
+      searching = true;
+      const found = await NameSearch.query(text, services.items, { get: (path, o) => api.get(path, o) });
+      if (mine === seq) { groups = found; searching = false; }
+    }, 300);
+    return () => clearTimeout(timer);
+  });
   const ICONS = /** @type {Record<string, string>} */ (Services.ICONS);
   /** Every page the navigation offers, plus each service's second-level pages. */
   const pages = $derived([
@@ -53,15 +70,22 @@
     <input id="global-search" class="input grow" type="search" autocomplete="off" placeholder={t('links.placeholder')} bind:value={q} aria-label={t('links.search')} />
     <HelpTip text={t('help.search.query')} for="global-search" />
   </form>
-  {#if results.length}
+  {#if results.length || groups.length}
     <ul class="results">
       {#each results as r (r.href)}
         <li><a href={r.href} onclick={() => { open = false; q = ''; }}><Icon name={r.icon} size={16} /> <span class="truncate">{r.label}</span>{#if r.mono}<code class="xs truncate">{r.mono}</code>{/if}</a></li>
       {/each}
+      {#each groups as g (g.sid)}
+        <li class="group xs faint">{g.label}</li>
+        {#each g.items as it (it.href)}
+          <li><a href={it.href} onclick={() => { open = false; q = ''; }}><Icon name={ICONS[g.type] ?? 'info'} size={16} /> <code class="truncate">{it.name}</code></a></li>
+        {/each}
+      {/each}
     </ul>
   {:else}
-    <p class="small muted" style="margin:12px 0 0">{t('links.none')}</p>
+    <p class="small muted" style="margin:12px 0 0">{searching ? t('links.searching') : t('links.none')}</p>
   {/if}
+  {#if searching && (results.length || groups.length)}<p class="xs faint" style="margin:8px 0 0" aria-live="polite">{t('links.searching')}</p>{/if}
 </Dialog>
 
 <style>
@@ -70,4 +94,6 @@
   .results a:hover, .results a:focus-visible { background: var(--surface-2); }
   .results li:first-child a { background: var(--surface-2); }
   .results code { margin-left: auto; flex: none; max-width: 45%; }
+  .results a > code { margin-left: 0; max-width: none; }
+  .group { padding: 10px 10px 2px; text-transform: uppercase; letter-spacing: .04em; }
 </style>

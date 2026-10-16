@@ -14,11 +14,13 @@ Press **Ctrl+K** (Cmd+K on a Mac) or the magnifier in the app bar. The dialog ma
 | `fil_` | media file |
 | `pay_` | payment |
 | `exp_` | export |
+| `rnd_` | render job |
 | `bk_` | backup |
 | `run_` | scheduler run |
 | `sub_`, `dlv_` | webhook subscription, delivery |
 | `evt_` | webhook event and audit event (both are offered) |
 
+- **Names people chose**: after a short pause in typing (300 ms) the console asks the services the signed-in account may use, all at once, each with a 1.5 s timeout, for names that contain the text: flag keys, scheduler job names, webhook subscription names (the service filters these three itself), and search index, queue, content namespace, rate-limit policy and monitor names (filtered in the browser from the first page of the list). Results are grouped under the service's label, at most eight per service; a slow or unreachable service simply contributes nothing.
 - **Audit**: with an audit service configured, the last entry lists that service's events whose target is exactly what you typed (a payment id, a queue name, a monitor id, a flag key).
 
 Enter opens the first result. With several instances of one service type (media-eu, media-us), an id offers one entry per instance.
