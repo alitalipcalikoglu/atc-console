@@ -8,6 +8,7 @@ Walkthroughs for every feature of the admin console. Screens are described as th
 | [Access control](access-control.md) | Per-account service scope, mandatory two-factor, weak-password hint, admin-only downloads |
 | [Two-factor authentication](two-factor.md) | Enrolling with a QR code, the second step at sign-in, replay protection, disabling |
 | [Admins and roles](admins-and-roles.md) | Adding admins and viewers, what each can do, the last-admin guard |
+| [Global search and cross links](global-search.md) | Ctrl+K search for pages and ids, Audit buttons, links back from audit events |
 | [Connecting services](connecting-services.md) | `services.json`, dedicated keys, several instances, what breaks when a service is down |
 | [Operating notify](notify.md) | Reading the queue, retrying failures, sending a test message |
 | [Operating auth](auth.md) | Finding a user, revoking sessions, disabling, resending emails, deleting |

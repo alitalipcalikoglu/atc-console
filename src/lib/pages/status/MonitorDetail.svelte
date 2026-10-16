@@ -1,6 +1,7 @@
 <script>
   /** One monitor: state, uptime, settings, check history and incidents; check now, edit, pause, delete. */
   import Page from '#lib/components/Page.svelte';
+  import AuditLink from '#lib/components/AuditLink.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Stat from '#lib/components/Stat.svelte';
@@ -98,6 +99,7 @@
 
 <Page help={t('help.page.statusMonitor')} docs={sid} title={m ? m.name : t('stx.monitor')} back="/atc-status/{sid}">
   {#snippet actions()}
+    <AuditLink targetId={id} />
     {#if m && session.isAdmin}
       <button class="btn primary" onclick={checkNow} disabled={busy} aria-label={t('stx.checkNow')} title={t('stx.checkNow')}><Icon name="play" size={16} /><span class="hide-m"> {t('stx.checkNow')}</span></button>
       <RowMenu label={t('common.actions')} items={[

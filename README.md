@@ -53,6 +53,7 @@ npm run typecheck
 | Area | See | Do (admin role) |
 |---|---|---|
 | Overview | health, readiness, latency and headline numbers of every service; cards with auto-refresh enabled tick at their own interval | refresh one service at a time (no global refresh) |
+| Global search | Ctrl+K: every page, any generated id (`pay_`, `usr_`, …) straight to its detail page, audit events about any target; Audit buttons on payment, queue, monitor, file and user pages, and links back from audit events | – |
 | Service pages | – | auto-refresh per service (Off / 15 s / 30 s / 1 min / 5 min), stored in `services.json` |
 | Notify | queue counters, messages by status, delivery errors, attempts | retry failed messages, send a test message from a template |
 | Auth | users, verification state, MFA state, lockouts, sessions per device, audit trail | create user, disable/enable, delete, revoke one or all sessions, resend verification, send password reset, change email, export, anonymize, reset MFA |

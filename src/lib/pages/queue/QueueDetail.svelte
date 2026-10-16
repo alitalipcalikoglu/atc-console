@@ -1,6 +1,7 @@
 <script>
   /** One queue: depth, settings, messages by state, dead letters with redrive, send, purge, delete. */
   import Page from '#lib/components/Page.svelte';
+  import AuditLink from '#lib/components/AuditLink.svelte';
   import FieldLabel from '#lib/components/FieldLabel.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
@@ -97,6 +98,7 @@
 
 <Page help={t('help.page.queueDetail')} docs={sid} title={q ? q.name : t('qu.queue')} back="/atc-queue/{sid}">
   {#snippet actions()}
+    <AuditLink targetId={id} />
     {#if q && session.isAdmin}
       <button class="btn primary" onclick={() => { sendOpen = true; }} disabled={busy}><Icon name="plus" size={16} /><span class="hide-m"> {t('qu.send')}</span></button>
       {#if d.depth.dead}<button class="btn" onclick={() => { confirm = 'redriveAll'; }} disabled={busy}><Icon name="history" size={16} /><span class="hide-m"> {t('qu.redriveAll')}</span></button>{/if}

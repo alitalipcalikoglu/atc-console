@@ -4,6 +4,7 @@
   import Confirm from './Confirm.svelte';
   import HelpTip from './HelpTip.svelte';
   import ApiDocsButton from './ApiDocsButton.svelte';
+  import GlobalSearch from './GlobalSearch.svelte';
   import { afterNavigate, goto } from '$app/navigation';
   import { page as route } from '$app/state';
   import { useSession } from '#lib/client/session.svelte.js';
@@ -20,6 +21,7 @@
   /** @param {string} href */
   const active = (href) => (href === '/' ? current === '/' : current === href || current.startsWith(`${href}/`));
   let menuOpen = $state(false);
+  let searchOpen = $state(false);
   // Query-string updates are shallow navigations and must not close the drawer.
   afterNavigate(({ shallow }) => { if (!shallow) menuOpen = false; });
 </script>
@@ -57,6 +59,7 @@
         <div class="title-row"><h1 class="page-title truncate">{page.title}</h1>{#if page.help}<HelpTip text={page.help} />{/if}{#if page.docs}<ApiDocsButton sid={page.docs} />{/if}</div>
         {#if page.desc}<p class="page-desc truncate">{page.desc}</p>{/if}
       </div>
+      <button class="btn ghost icon sm" onclick={() => { searchOpen = true; }} aria-label={t('links.search')} title={`${t('links.search')} (Ctrl+K)`}><Icon name="search" /></button>
       {#if !pwa.online}<span class="badge warn"><Icon name="wifiOff" size={12} /> {t('common.offline')}</span>{/if}
       {#if session.admin?.role === 'viewer'}<span class="badge plain hide-mobile" title={t('common.viewerNote')}>{t('admins.viewer')}</span>{/if}
       {#if page.actions}<div class="page-actions many">{@render page.actions()}</div>{/if}
@@ -68,6 +71,8 @@
 
 </div>
 
+
+<GlobalSearch bind:open={searchOpen} />
 
 <Confirm open={session.logoutPending} title={t('account.logout')} message={t('account.logoutDesc')} confirmLabel={t('account.logout')} onconfirm={() => session.logout().then(() => goto('/login', { replace: true, refreshAll: true }))} oncancel={() => { session.logoutPending = false; }} />
 

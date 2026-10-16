@@ -10,6 +10,8 @@
   import { api } from '#lib/client/api.js';
   import { Resource } from '#lib/client/resource.svelte.js';
   import { t } from '#lib/client/i18n.svelte.js';
+  import { services } from '#lib/client/services.svelte.js';
+  import { Links } from '#lib/client/links.js';
   /** @type {{ sid: string, id: string }} */
   let { sid, id } = $props();
   const res = new Resource(() => api.get(`/services/${sid}/atc-audit/events/${id}`));
@@ -38,7 +40,7 @@
           <dt>{t('ev.receivedAt')}</dt><dd><Time value={e.receivedAt} mode="absolute" /></dd>
           <dt>{t('ev.source')}</dt><dd><a href={link({ source: e.source })}>{e.source}</a></dd>
           <dt>{t('ev.actor')}</dt><dd>{#if e.actor}<span class="mono">{e.actor.type}:{e.actor.id}</span>{#if e.actor.name} · {e.actor.name}{/if} <a class="small" href={link({ actorType: e.actor.type, actorId: e.actor.id })}>{t('ev.eventsOfActor')}</a>{:else}<span class="faint">–</span>{/if}</dd>
-          <dt>{t('ev.target')}</dt><dd>{#if e.target}<span class="mono">{e.target.type}:{e.target.id}</span>{#if e.target.name} · {e.target.name}{/if} <a class="small" href={link({ targetType: e.target.type, targetId: e.target.id })}>{t('ev.eventsOfTarget')}</a>{:else}<span class="faint">–</span>{/if}</dd>
+          <dt>{t('ev.target')}</dt><dd>{#if e.target}<span class="mono">{e.target.type}:{e.target.id}</span>{#if e.target.name} · {e.target.name}{/if} <a class="small" href={link({ targetType: e.target.type, targetId: e.target.id })}>{t('ev.eventsOfTarget')}</a>{#each Links.forId(e.target.id, services.items).filter((l) => l.type !== 'atc-audit') as l (l.href)} · <a class="small" href={l.href}>{t('links.open', { name: l.label })}</a>{/each}{:else}<span class="faint">–</span>{/if}</dd>
           <dt>{t('common.ip')}</dt><dd class="mono">{e.ip ?? '–'}</dd>
           <dt>{t('ev.userAgent')}</dt><dd class="small" style="word-break:break-all">{e.userAgent ?? '–'}</dd>
           <dt>{t('ev.requestId')}</dt><dd class="mono small">{#if e.requestId}{e.requestId} <a href={link({ requestId: e.requestId })}>{t('ev.sameRequest')}</a>{:else}–{/if}</dd>

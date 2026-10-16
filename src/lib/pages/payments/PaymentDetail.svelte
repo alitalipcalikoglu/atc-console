@@ -1,6 +1,7 @@
 <script>
   /** One payment: amounts, provider state, refunds and ledger entries; refund, sync and cancel through Confirm. */
   import Page from '#lib/components/Page.svelte';
+  import AuditLink from '#lib/components/AuditLink.svelte';
   import FieldLabel from '#lib/components/FieldLabel.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
@@ -69,6 +70,7 @@
 
 <Page help={t('help.page.paymentDetail')} docs={sid} title={p ? fmt.money(p.amount, p.currency) : t('pm.payment')} back="/atc-payments/{sid}">
   {#snippet actions()}
+    <AuditLink targetId={id} />
     {#if p && session.isAdmin}
       {#if d.refundable > 0}<button class="btn primary" onclick={openRefund} disabled={busy} aria-label={t('pm.refund')} title={t('pm.refund')}><Icon name="undo" size={16} /><span class="hide-m"> {t('pm.refund')}</span></button>{/if}
       <RowMenu label={t('common.actions')} items={[

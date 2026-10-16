@@ -1,5 +1,6 @@
 <script>
   import Page from '#lib/components/Page.svelte';
+  import AuditLink from '#lib/components/AuditLink.svelte';
   import FieldLabel from '#lib/components/FieldLabel.svelte';
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
@@ -48,6 +49,7 @@
 
 <Page help={t('help.page.authUser')} docs={sid} title={u?.email ?? t('auth.users')} back="/atc-auth/{sid}">
   {#snippet actions()}
+    <AuditLink targetId={id} />
     {#if u && session.isAdmin}
       {#if u.status === 'active'}<button class="btn danger" onclick={() => { confirm = 'disable'; }} disabled={busy}><Icon name="lock" size={16} /> {t('auth.disable')}</button>
       {:else}<button class="btn" onclick={() => run(() => api.patch(base, { status: 'active' }), t('auth.updated'))} disabled={busy}><Icon name="unlock" size={16} /> {t('auth.enable')}</button>{/if}

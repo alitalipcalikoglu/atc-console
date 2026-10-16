@@ -1,5 +1,6 @@
 <script>
   import Page from '#lib/components/Page.svelte';
+  import AuditLink from '#lib/components/AuditLink.svelte';
   import FieldLabel from '#lib/components/FieldLabel.svelte';
   import HelpTip from '#lib/components/HelpTip.svelte';
   import Panel from '#lib/components/Panel.svelte';
@@ -43,6 +44,7 @@
 
 <Page help={t('help.page.mediaFile')} docs={sid} title={f?.name ?? t('media.files')} back="/atc-media/{sid}">
   {#snippet actions()}
+    <AuditLink targetId={id} />
     {#if f && session.isAdmin}
       <button class="btn" onclick={() => { newName = f.name.replace(/\.[^.]+$/, ''); renameOpen = true; }} disabled={busy}>{t('media.rename')}</button>
       <button class="btn" onclick={() => run(() => api.patch(base, { visibility: f.visibility === 'public' ? 'private' : 'public' }), t('common.updated'))} disabled={busy}><Icon name={f.visibility === 'public' ? 'lock' : 'globe'} size={16} /> {f.visibility === 'public' ? t('media.private') : t('media.public')}</button>
