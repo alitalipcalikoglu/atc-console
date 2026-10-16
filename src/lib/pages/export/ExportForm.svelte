@@ -30,7 +30,7 @@
   <form class="stack" onsubmit={(e) => { e.preventDefault(); submit(); }}>
     {#if !sources.length}<p class="small muted">{t('ex.noSources')}</p>{:else}
       <div class="field"><FieldLabel for="xf-source" help={t('help.ex.source')}>{t('ex.source')}</FieldLabel>
-        <select id="xf-source" class="select" value={source} onchange={(e) => pickSource(/** @type {HTMLSelectElement} */ (e.currentTarget).value)}>{#each sources as s (s.id)}<option value={s.id}>{s.label} ({s.id})</option>{/each}</select></div>
+        <select id="xf-source" class="select" value={source} onchange={(e) => pickSource(/** @type {HTMLSelectElement} */ (e.currentTarget).value)}>{#each sources as s (s.id)}<option value={s.id}>{s.label} ({s.id}){s.personal ? ` · ${t('ex.personal')}` : ''}</option>{/each}</select></div>
       <div class="field"><span class="small field-label">{t('ex.format')}<HelpTip text={t('help.ex.format')} /></span>
         <div class="seg"><button type="button" aria-pressed={format === 'csv'} onclick={() => { format = 'csv'; }}>CSV</button><button type="button" aria-pressed={format === 'ndjson'} onclick={() => { format = 'ndjson'; }}>NDJSON</button></div></div>
       <fieldset class="stack plain">
