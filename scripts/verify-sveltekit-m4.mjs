@@ -150,7 +150,7 @@ try {
   assert.equal((await readBody(response)).error.code, 'FST_ERR_CTP_EMPTY_JSON_BODY');
   response = await fetch(`${origin}/api/services/atc-notify/atc-notify/messages`, json('POST', { channel: 'email', to: 'person@example.test' }, { cookie: admin, ...CSRF }));
   assert.equal(response.status, 202);
-  assert.deepEqual(JSON.parse(seen.findLast((entry) => entry.url === '/v1/messages' && entry.method === 'POST').body), { channel: 'email', to: 'person@example.test' });
+  assert.deepEqual(JSON.parse(seen.findLast((entry) => entry.url === '/v1/messages' && entry.method === 'POST').body), { channel: 'email', to: 'person@example.test', transactional: true });
 
   response = await fetch(`${origin}/api/services/atc-auth/atc-auth/users/user:1`, json('PATCH', { status: 'disabled', extra: true }, { cookie: admin, ...CSRF }));
   assert.equal(response.status, 400);
