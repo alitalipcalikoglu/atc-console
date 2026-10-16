@@ -31,11 +31,11 @@
   let extraRuns = $state([]);
   /** @type {string|null} */ let runBefore = $state(null);
   let runMore = $state(false);
-  $effect(() => { if (d) { extraRuns = []; runBefore = d.runsNextBefore; } });
+  $effect(() => { if (d) { extraRuns = []; runBefore = d.runsNextCursor; } });
   const allRuns = $derived([...(d?.runs ?? []), ...extraRuns]);
   async function loadMoreRuns() {
     runMore = true;
-    try { const r = /** @type {{ items: any[], nextBefore: string|null }} */ (await api.get(`${base}/runs?limit=20&before=${runBefore}`)); extraRuns = [...extraRuns, ...r.items]; runBefore = r.nextBefore; }
+    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`${base}/runs?limit=20&cursor=${runBefore}`)); extraRuns = [...extraRuns, ...r.items]; runBefore = r.nextCursor; }
     catch (e) { toasts.error(e); } finally { runMore = false; }
   }
   let busy = $state(false);

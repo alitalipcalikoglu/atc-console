@@ -52,9 +52,9 @@ export class WebhookOutClient extends ServiceClient {
     return this.json('POST', `/v1/subscriptions/${encodeURIComponent(id)}/replay`, { body });
   }
 
-  /** @param {{ status?: string, subscription?: string, event?: string, limit?: number, before?: string }} q */
+  /** @param {{ status?: string, subscription?: string, event?: string, limit?: number, cursor?: string }} q */
   deliveries(q) {
-    return this.json('GET', `/v1/deliveries?${WebhookOutClient.params(q, ['status', 'subscription', 'event', 'limit', 'before'])}`);
+    return this.json('GET', `/v1/deliveries?${WebhookOutClient.params(q, ['status', 'subscription', 'event', 'limit', 'cursor'])}`);
   }
 
   /** @param {string} id */
@@ -72,9 +72,9 @@ export class WebhookOutClient extends ServiceClient {
     return this.json('POST', `/v1/deliveries/${encodeURIComponent(id)}/cancel`);
   }
 
-  /** @param {{ type?: string, limit?: number, before?: string }} q */
+  /** @param {{ type?: string, limit?: number, cursor?: string }} q */
   events(q) {
-    return this.json('GET', `/v1/events?${WebhookOutClient.params(q, ['type', 'limit', 'before'])}`);
+    return this.json('GET', `/v1/events?${WebhookOutClient.params(q, ['type', 'limit', 'cursor'])}`);
   }
 
   /** @param {string} id */

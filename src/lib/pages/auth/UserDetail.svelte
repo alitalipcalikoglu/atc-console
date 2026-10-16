@@ -102,7 +102,7 @@
           {#if !d.events.length}<Empty icon="list" title={t('audit.emptyTitle')} />
           {:else}<div class="table-wrap"><table class="table">
             <thead><tr><th>{t('common.at')}</th><th>{t('audit.action')}</th><th class="hide-m">{t('common.ip')}</th><th class="hide-m">{t('common.details')}</th></tr></thead>
-            <tbody>{#each d.events as e (e.id)}<tr>
+            <tbody>{#each d.events as e (e.seq)}<tr>
               <td style="white-space:nowrap"><Time value={e.at} /></td>
               <td><code class="{/failed|locked|reuse/.test(e.type) ? 'danger-text' : ''}">{e.type}</code></td>
               <td class="mono small hide-m">{e.ip ?? '–'}</td>

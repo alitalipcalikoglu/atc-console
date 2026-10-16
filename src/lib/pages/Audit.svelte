@@ -18,11 +18,11 @@
   /** @type {any[]} */ let items = $state([]);
   /** @type {string|null} */ let before = $state(null);
   let more = $state(false);
-  const url = (/** @type {string|null} */ b) => `/audit?limit=50${action ? `&action=${encodeURIComponent(action)}` : ''}${b ? `&before=${b}` : ''}`;
-  const list = new Resource(async () => { const r = /** @type {{ items: any[], nextBefore: string|null }} */ (await api.get(url(null))); items = r.items; before = r.nextBefore; return r; });
+  const url = (/** @type {string|null} */ b) => `/audit?limit=50${action ? `&action=${encodeURIComponent(action)}` : ''}${b ? `&cursor=${b}` : ''}`;
+  const list = new Resource(async () => { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(url(null))); items = r.items; before = r.nextCursor; return r; });
   /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
   $effect(() => { action; clearTimeout(timer); timer = setTimeout(() => { Navigation.replaceQuery(route.url, { action }); list.load(); }, 250); return () => clearTimeout(timer); });
-  async function loadMore() { more = true; try { const r = /** @type {{ items: any[], nextBefore: string|null }} */ (await api.get(url(before))); items = [...items, ...r.items]; before = r.nextBefore; } catch (e) { toasts.error(e); } finally { more = false; } }
+  async function loadMore() { more = true; try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(url(before))); items = [...items, ...r.items]; before = r.nextCursor; } catch (e) { toasts.error(e); } finally { more = false; } }
   const QUICK = ['', 'login', 'admin.', 'atc-notify.', 'atc-auth.', 'atc-media.'];
 </script>
 
@@ -39,7 +39,7 @@
       {:else}
         <div class="table-wrap"><table class="table">
           <thead><tr><th>{t('common.at')}</th><th class="hide-m">{t('audit.actor')}</th><th>{t('audit.action')}</th><th>{t('audit.target')}</th><th class="hide-m">{t('common.details')}</th><th class="hide-m">{t('common.ip')}</th></tr></thead>
-          <tbody>{#each items as e (e.id)}<tr>
+          <tbody>{#each items as e (e.seq)}<tr>
             <td style="white-space:nowrap"><Time value={e.at} /></td><td class="small hide-m">{e.adminUsername ?? '–'}</td>
             <td><code class="nowrap {/failed|delete|revoke|disable/.test(e.action) ? 'danger-text' : ''}">{e.action}</code></td>
             <td class="mono small truncate" style="max-width:220px">{e.target ?? ''}</td>

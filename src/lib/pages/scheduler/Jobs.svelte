@@ -50,10 +50,10 @@
   /** @type {any[]} */ let runItems = $state([]);
   /** @type {string|null} */ let runBefore = $state(null);
   let runMore = $state(false);
-  const rqs = (/** @type {string|null} */ b) => { const p = new URLSearchParams({ limit: '20' }); if (runStatus) p.set('status', runStatus); if (b) p.set('before', b); return p.toString(); };
+  const rqs = (/** @type {string|null} */ b) => { const p = new URLSearchParams({ limit: '20' }); if (runStatus) p.set('status', runStatus); if (b) p.set('cursor', b); return p.toString(); };
   const runs = new Resource(async () => {
-    const r = /** @type {{ items: any[], nextBefore: string|null }} */ (await api.get(`/services/${sid}/atc-scheduler/runs?${rqs(null)}`));
-    runItems = r.items; runBefore = r.nextBefore; return r;
+    const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-scheduler/runs?${rqs(null)}`));
+    runItems = r.items; runBefore = r.nextCursor; return r;
   });
   /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
   $effect(() => { enabled; q; tag; clearTimeout(timer); timer = setTimeout(() => { Navigation.replaceQuery(route.url, { enabled, q, tag }); list.load(); }, 300); return () => clearTimeout(timer); });
@@ -66,7 +66,7 @@
   }
   async function loadMoreRuns() {
     runMore = true;
-    try { const r = /** @type {{ items: any[], nextBefore: string|null }} */ (await api.get(`/services/${sid}/atc-scheduler/runs?${rqs(runBefore)}`)); runItems = [...runItems, ...r.items]; runBefore = r.nextBefore; }
+    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-scheduler/runs?${rqs(runBefore)}`)); runItems = [...runItems, ...r.items]; runBefore = r.nextCursor; }
     catch (e) { toasts.error(e); } finally { runMore = false; }
   }
   const st = $derived(/** @type {any} */ (stats.data));

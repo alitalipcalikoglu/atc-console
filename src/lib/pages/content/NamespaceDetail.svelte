@@ -71,14 +71,14 @@
     }, t(decision === 'approve' ? 'ct.approved' : 'ct.rejected', { l: locale }));
   }
 
-  // ---- releases (newest first, nextBefore paging)
+  // ---- releases (newest first, nextCursor paging)
   /** @type {any[]} */ let releases = $state([]);
   /** @type {string|null} */ let before = $state(null);
   let moreReleases = $state(false);
   /** @param {string|null} from */
   async function loadReleases(from = null) {
     moreReleases = true;
-    try { const r = /** @type {any} */ (await api.get(`${base}/releases?limit=10${from ? `&before=${from}` : ''}`)); releases = from ? [...releases, ...r.items] : r.items; before = r.nextBefore; }
+    try { const r = /** @type {any} */ (await api.get(`${base}/releases?limit=10${from ? `&cursor=${from}` : ''}`)); releases = from ? [...releases, ...r.items] : r.items; before = r.nextCursor; }
     catch (e) { toasts.error(e); } finally { moreReleases = false; }
   }
   // Reload when the namespace changes; the loaders write state, so they run untracked.

@@ -160,7 +160,7 @@
           {#if !d.history.length}<p class="small faint" style="padding:16px;margin:0">–</p>{:else}
           <div class="table-wrap"><table class="table">
             <thead><tr><th>{t('common.at')}</th><th>{t('audit.action')}</th><th>{t('fl.environment')}</th><th class="hide-m">{t('audit.actor')}</th><th class="hide-m">{t('fl.changed')}</th></tr></thead>
-            <tbody>{#each d.history as h (h.id)}<tr><td style="white-space:nowrap"><Time value={h.at} /></td><td><code>{h.action}</code></td><td>{h.env ?? '–'}</td><td class="mono small hide-m">{h.actor}</td><td class="xs faint hide-m truncate" style="max-width:200px">{diff(h)}</td></tr>{/each}</tbody>
+            <tbody>{#each d.history as h (h.seq)}<tr><td style="white-space:nowrap"><Time value={h.at} /></td><td><code>{h.action}</code></td><td>{h.env ?? '–'}</td><td class="mono small hide-m">{h.actor}</td><td class="xs faint hide-m truncate" style="max-width:200px">{diff(h)}</td></tr>{/each}</tbody>
           </table></div>{/if}
         </Panel>
       </div>

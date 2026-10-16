@@ -51,9 +51,9 @@ export class FlagsClient extends ServiceClient {
     return this.json('POST', `/v1/flags/${encodeURIComponent(key)}/envs/${encodeURIComponent(from)}/copy`, { body: { to } });
   }
 
-  /** @param {string|null} key @param {{ limit?: number, before?: string }} q */
+  /** @param {string|null} key @param {{ limit?: number, cursor?: string }} q */
   history(key, q) {
-    const p = FlagsClient.params(q, ['limit', 'before']);
+    const p = FlagsClient.params(q, ['limit', 'cursor']);
     return this.json('GET', key === null ? `/v1/history?${p}` : `/v1/flags/${encodeURIComponent(key)}/history?${p}`);
   }
 

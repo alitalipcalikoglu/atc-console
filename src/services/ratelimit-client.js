@@ -51,9 +51,9 @@ export class RateLimitClient extends ServiceClient {
     return this.json('GET', `${RateLimitClient.#p(name)}/top?${RateLimitClient.params(q, ['window', 'limit'])}`);
   }
 
-  /** @param {string} name @param {{ limit?: number, offset?: number }} q */
+  /** @param {string} name @param {{ limit?: number, cursor?: string }} q */
   overrides(name, q) {
-    return this.json('GET', `${RateLimitClient.#p(name)}/overrides?${RateLimitClient.params(q, ['limit', 'offset'])}`);
+    return this.json('GET', `${RateLimitClient.#p(name)}/overrides?${RateLimitClient.params(q, ['limit', 'cursor'])}`);
   }
 
   /** @param {string} name @param {string} subject @param {object} body */

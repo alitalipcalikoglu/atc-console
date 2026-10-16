@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { Ids } from '@atc-web/atc-service-core/ids';
 import { ConfigError } from '@atc-web/atc-service-core/config';
 import { SecretBox } from '@atc-web/atc-service-core/secrets';
 
@@ -122,7 +122,7 @@ export class AdminStore {
    * @returns {AdminRow}
    */
   create(a, now = Date.now()) {
-    const id = randomUUID();
+    const id = Ids.create('adm');
     this.stmt.insert.run(id, AdminStore.normalizeUsername(a.username), a.name.trim(), a.passwordHash, a.role, a.services ? JSON.stringify(a.services) : null, now, now);
     return /** @type {AdminRow} */ (this.stmt.byId.get(id));
   }

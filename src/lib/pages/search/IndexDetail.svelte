@@ -45,19 +45,19 @@
   let more = $state(false);
   /** @type {unknown} */ let searchError = $state(null);
   let seq = 0;
-  /** @param {number} offset */
-  async function search(offset = 0) {
+  /** @param {string|null} [cursor] the previous page's nextCursor; none starts a new search */
+  async function search(cursor = null) {
     if (!x) return;
     const mine = ++seq;
-    if (offset === 0) searching = true; else more = true;
+    if (!cursor) searching = true; else more = true;
     try {
-      const r = /** @type {any} */ (await api.post(`${base}/search`, { q: q.trim(), filters, facets: facetKeys, limit: PAGE, offset, highlight: true, sort }));
+      const r = /** @type {any} */ (await api.post(`${base}/search`, { q: q.trim(), filters, facets: facetKeys, limit: PAGE, ...(cursor ? { cursor } : {}), highlight: true, sort }));
       if (mine !== seq) return;
-      result = r; hits = offset === 0 ? r.hits : [...hits, ...r.hits]; searchError = null;
-    } catch (e) { if (mine === seq) { searchError = e; if (offset === 0) { result = null; hits = []; } } } finally { if (mine === seq) { searching = false; more = false; } }
+      result = r; hits = cursor ? [...hits, ...r.items] : r.items; searchError = null;
+    } catch (e) { if (mine === seq) { searchError = e; if (!cursor) { result = null; hits = []; } } } finally { if (mine === seq) { searching = false; more = false; } }
   }
   /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
-  $effect(() => { q; sort; filters; x; clearTimeout(timer); timer = setTimeout(() => { Navigation.replaceQuery(route.url, { q, sort: sort === 'relevance' ? null : sort, f: Object.keys(filters).length ? JSON.stringify(filters) : null }); search(0); }, 250); return () => clearTimeout(timer); });
+  $effect(() => { q; sort; filters; x; clearTimeout(timer); timer = setTimeout(() => { Navigation.replaceQuery(route.url, { q, sort: sort === 'relevance' ? null : sort, f: Object.keys(filters).length ? JSON.stringify(filters) : null }); search(); }, 250); return () => clearTimeout(timer); });
   const activeFilters = $derived(Object.values(filters).reduce((a, v) => a + v.length, 0));
   /** @param {string} key @param {string} value */
   function toggle(key, value) {
@@ -93,7 +93,7 @@
     editOpen = false;
   }
   const clear = () => run(async () => { const r = /** @type {any} */ (await api.post(`${base}/clear`, {})); toasts.ok(t('se.cleared', { n: r.removed })); hits = []; result = null; }, null);
-  const deleteDoc = async () => { docBusy = true; try { await api.delete(`${base}/documents/${encodeURIComponent(doc.id)}`); toasts.ok(t('se.docDeleted')); confirm = null; doc = null; await Promise.all([res.load(), search(0)]); } catch (e) { toasts.error(e); } finally { docBusy = false; } };
+  const deleteDoc = async () => { docBusy = true; try { await api.delete(`${base}/documents/${encodeURIComponent(doc.id)}`); toasts.ok(t('se.docDeleted')); confirm = null; doc = null; await Promise.all([res.load(), search()]); } catch (e) { toasts.error(e); } finally { docBusy = false; } };
   /** @param {unknown} v */
   const attrText = (v) => (Array.isArray(v) ? v.join(', ') : String(v));
 </script>
@@ -108,7 +108,7 @@
         { label: t('se.delete'), icon: 'trash', danger: true, run: () => { confirm = 'delete'; } },
       ]} />
     {/if}
-    <button class="btn icon" onclick={() => { res.load(); search(0); }} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
+    <button class="btn icon" onclick={() => { res.load(); search(); }} aria-label={t('common.refresh')}><Icon name="refresh" size={16} /></button>
   {/snippet}
   {#if res.error}<ErrorBox error={res.error} onretry={() => res.load()} boxed />
   {:else if !x}<Skeleton rows={8} />
@@ -140,7 +140,7 @@
         {/if}
         <Panel title={result ? t('se.resultCount', { n: fmt.int(result.total) }) : t('se.results')} flush>
           {#snippet aside()}{#if result?.query}<span class="xs faint mono truncate" style="max-width:260px" title={t('se.query')}>{result.query}</span>{/if}{/snippet}
-          {#if searchError}<ErrorBox error={searchError} onretry={() => search(0)} />
+          {#if searchError}<ErrorBox error={searchError} onretry={() => search()} />
           {:else if searching && !hits.length}<Skeleton rows={5} />
           {:else if !hits.length}
             {#if x.documents === 0}<Empty icon="search" title={t('se.emptyIndex')} desc={t('se.emptyIndexDesc')} />{:else}<Empty icon="search" title={t('se.noResults')} desc={t('se.noResultsDesc')} />{/if}
@@ -154,7 +154,7 @@
                 </button></li>
               {/each}
             </ul>
-            <LoadMore cursor={result && hits.length < result.total ? String(hits.length) : null} busy={more} onmore={() => search(hits.length)} />
+            <LoadMore cursor={result?.nextCursor ?? null} busy={more} onmore={() => search(result.nextCursor)} />
           {/if}
         </Panel>
       </div>
@@ -162,7 +162,7 @@
   {/if}
 </Page>
 
-<DocumentsImport open={addOpen} {base} ondone={() => { addOpen = false; res.load(); search(0); }} onclose={() => { addOpen = false; }} />
+<DocumentsImport open={addOpen} {base} ondone={() => { addOpen = false; res.load(); search(); }} onclose={() => { addOpen = false; }} />
 <IndexForm open={editOpen} initial={x} busy={busy} onsubmit={save} onclose={() => { editOpen = false; }} />
 <Dialog help={t('help.dialog.seDocument')} open={doc !== null} title={doc?.title ?? t('se.document')} onclose={() => { doc = null; }} wide>
   {#if doc}

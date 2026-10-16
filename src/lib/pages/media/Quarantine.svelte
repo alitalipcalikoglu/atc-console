@@ -8,6 +8,7 @@
   import ErrorBox from '#lib/components/ErrorBox.svelte';
   import Time from '#lib/components/Time.svelte';
   import Confirm from '#lib/components/Confirm.svelte';
+  import LoadMore from '#lib/components/LoadMore.svelte';
   import { untrack } from 'svelte';
   import { api } from '#lib/client/api.js';
   import { Resource } from '#lib/client/resource.svelte.js';
@@ -20,9 +21,16 @@
   const session = useSession();
   const fmt = $derived(new Fmt(i18n.lang));
   const base = $derived(`/services/${sid}/atc-media/quarantine`);
-  const list = new Resource(() => api.get(base));
+  /** @type {any[]} */ let more = $state([]);
+  /** @type {string|null} */ let next = $state(null);
+  let moreBusy = $state(false);
+  const list = new Resource(async () => { const r = /** @type {any} */ (await api.get(base)); more = []; next = r.nextCursor; return r; });
   $effect(() => { sid; untrack(() => list.load()); });
-  const items = $derived(/** @type {any[]} */ (/** @type {any} */ (list.data)?.items ?? []));
+  const items = $derived(/** @type {any[]} */ ([...(/** @type {any} */ (list.data)?.items ?? []), ...more]));
+  async function loadMore() {
+    moreBusy = true;
+    try { const r = /** @type {any} */ (await api.get(`${base}?cursor=${encodeURIComponent(next ?? '')}`)); more = [...more, ...r.items]; next = r.nextCursor; } catch (e) { toasts.error(e); } finally { moreBusy = false; }
+  }
   /** @type {any} */ let removing = $state(null);
   let busy = $state(false);
   async function remove() {
@@ -52,6 +60,7 @@
           <td>{#if session.isAdmin}<button class="btn sm" onclick={() => { removing = q; }} disabled={busy}>{t('common.delete')}</button>{/if}</td>
         </tr>{/each}</tbody>
       </table></div>
+      <LoadMore cursor={next} busy={moreBusy} onmore={loadMore} />
     {/if}
   </Panel>
 </Page>

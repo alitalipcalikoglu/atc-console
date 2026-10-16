@@ -42,9 +42,9 @@ export class SchedulerClient extends ServiceClient {
     return this.json('POST', `/v1/jobs/${encodeURIComponent(name)}/run`);
   }
 
-  /** @param {string|null} job @param {{ status?: string, limit?: number, before?: string }} q */
+  /** @param {string|null} job @param {{ status?: string, limit?: number, cursor?: string }} q */
   runs(job, q) {
-    const p = SchedulerClient.params(q, ['status', 'limit', 'before']);
+    const p = SchedulerClient.params(q, ['status', 'limit', 'cursor']);
     return this.json('GET', job === null ? `/v1/runs?${p}` : `/v1/jobs/${encodeURIComponent(job)}/runs?${p}`);
   }
 

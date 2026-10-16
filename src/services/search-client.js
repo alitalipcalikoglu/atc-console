@@ -46,9 +46,9 @@ export class SearchClient extends ServiceClient {
     return this.json('POST', `/v1/indexes/${encodeURIComponent(name)}/search`, { body });
   }
 
-  /** @param {string} name @param {{ limit?: number, offset?: number }} q */
+  /** @param {string} name @param {{ limit?: number, cursor?: string }} q */
   browse(name, q) {
-    return this.json('GET', `/v1/indexes/${encodeURIComponent(name)}/documents?${SearchClient.params(q, ['limit', 'offset'])}`);
+    return this.json('GET', `/v1/indexes/${encodeURIComponent(name)}/documents?${SearchClient.params(q, ['limit', 'cursor'])}`);
   }
 
   /** @param {string} name @param {string} id */

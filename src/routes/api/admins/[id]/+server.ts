@@ -1,7 +1,7 @@
 import { Schemas } from '#lib/server/m4-contract.js';
 import { jsonRoute } from '#lib/server/m4.js';
 
-const params = { type: 'object', properties: { id: Schemas.uuid }, required: ['id'] };
+const params = { type: 'object', properties: { id: Schemas.adminId }, required: ['id'] };
 
 export const PATCH = jsonRoute({
   auth: 'admin', params, body: Schemas.patchAdmin,

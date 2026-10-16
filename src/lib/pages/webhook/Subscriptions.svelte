@@ -52,18 +52,18 @@
   /** @type {any[]} */ let dItems = $state([]);
   /** @type {string|null} */ let dBefore = $state(null);
   let dMore = $state(false);
-  const dqs = (/** @type {string|null} */ b) => { const p = new URLSearchParams({ limit: '20' }); if (dstatus) p.set('status', dstatus); if (b) p.set('before', b); return p.toString(); };
+  const dqs = (/** @type {string|null} */ b) => { const p = new URLSearchParams({ limit: '20' }); if (dstatus) p.set('status', dstatus); if (b) p.set('cursor', b); return p.toString(); };
   const deliveries = new Resource(async () => {
-    const r = /** @type {{ items: any[], nextBefore: string|null }} */ (await api.get(`${base}/deliveries?${dqs(null)}`));
-    dItems = r.items; dBefore = r.nextBefore; return r;
+    const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`${base}/deliveries?${dqs(null)}`));
+    dItems = r.items; dBefore = r.nextCursor; return r;
   });
   /** @type {any[]} */ let eItems = $state([]);
   /** @type {string|null} */ let eBefore = $state(null);
   let eMore = $state(false);
-  const eqs = (/** @type {string|null} */ b) => { const p = new URLSearchParams({ limit: '20' }); if (etype) p.set('type', etype); if (b) p.set('before', b); return p.toString(); };
+  const eqs = (/** @type {string|null} */ b) => { const p = new URLSearchParams({ limit: '20' }); if (etype) p.set('type', etype); if (b) p.set('cursor', b); return p.toString(); };
   const events = new Resource(async () => {
-    const r = /** @type {{ items: any[], nextBefore: string|null }} */ (await api.get(`${base}/events?${eqs(null)}`));
-    eItems = r.items; eBefore = r.nextBefore; return r;
+    const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`${base}/events?${eqs(null)}`));
+    eItems = r.items; eBefore = r.nextCursor; return r;
   });
   const types = new Resource(() => api.get(`${base}/event-types`));
   /** @type {ReturnType<typeof setTimeout>|undefined} */ let timer;
@@ -80,12 +80,12 @@
   }
   async function loadMoreDeliveries() {
     dMore = true;
-    try { const r = /** @type {{ items: any[], nextBefore: string|null }} */ (await api.get(`${base}/deliveries?${dqs(dBefore)}`)); dItems = [...dItems, ...r.items]; dBefore = r.nextBefore; }
+    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`${base}/deliveries?${dqs(dBefore)}`)); dItems = [...dItems, ...r.items]; dBefore = r.nextCursor; }
     catch (e) { toasts.error(e); } finally { dMore = false; }
   }
   async function loadMoreEvents() {
     eMore = true;
-    try { const r = /** @type {{ items: any[], nextBefore: string|null }} */ (await api.get(`${base}/events?${eqs(eBefore)}`)); eItems = [...eItems, ...r.items]; eBefore = r.nextBefore; }
+    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`${base}/events?${eqs(eBefore)}`)); eItems = [...eItems, ...r.items]; eBefore = r.nextCursor; }
     catch (e) { toasts.error(e); } finally { eMore = false; }
   }
   const st = $derived(/** @type {any} */ (stats.data));

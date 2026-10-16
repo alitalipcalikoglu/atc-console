@@ -36,7 +36,8 @@ export class StatusClient extends ServiceClient {
   createMaintenance(body) { return this.json('POST', '/v1/maintenance', { body }); }
   /** @param {string} id */
   deleteMaintenance(id) { return this.json('DELETE', `/v1/maintenance/${StatusClient.seg(id)}`); }
-  subscribers() { return this.json('GET', '/v1/subscribers'); }
+  /** @param {{ cursor?: string }} [q] */
+  subscribers(q = {}) { return this.json('GET', `/v1/subscribers?${StatusClient.params(q, ['cursor'])}`); }
   /** @param {string} id */
   deleteSubscriber(id) { return this.json('DELETE', `/v1/subscribers/${StatusClient.seg(id)}`); }
   stats() { return this.json('GET', '/v1/stats'); }

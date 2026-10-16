@@ -5,6 +5,7 @@
   import Panel from '#lib/components/Panel.svelte';
   import Icon from '#lib/components/Icon.svelte';
   import Stat from '#lib/components/Stat.svelte';
+  import LoadMore from '#lib/components/LoadMore.svelte';
   import Empty from '#lib/components/Empty.svelte';
   import Skeleton from '#lib/components/Skeleton.svelte';
   import ErrorBox from '#lib/components/ErrorBox.svelte';
@@ -25,7 +26,19 @@
   const fmt = $derived(new Fmt(i18n.lang));
   const base = $derived(`/services/${sid}/atc-status`);
   const windows = new Resource(() => api.get(`${base}/maintenance`));
-  const subs = new Resource(() => (session.isAdmin ? api.get(`${base}/subscribers`) : Promise.resolve(null)));
+  /** @type {any[]} */ let moreSubs = $state([]);
+  /** @type {string|null} */ let subsNext = $state(null);
+  let subsBusy = $state(false);
+  const subs = new Resource(async () => {
+    if (!session.isAdmin) return null;
+    const r = /** @type {any} */ (await api.get(`${base}/subscribers`));
+    moreSubs = []; subsNext = r.nextCursor;
+    return r;
+  });
+  async function loadMoreSubs() {
+    subsBusy = true;
+    try { const r = /** @type {any} */ (await api.get(`${base}/subscribers?cursor=${encodeURIComponent(subsNext ?? '')}`)); moreSubs = [...moreSubs, ...r.items]; subsNext = r.nextCursor; } catch (e) { toasts.error(e); } finally { subsBusy = false; }
+  }
   const load = () => Promise.all([windows.load(), subs.load()]);
   $effect(() => { sid; untrack(load); });
   const w = $derived(/** @type {any} */ (windows.data));
@@ -106,13 +119,14 @@
         {:else}
           <div class="table-wrap"><table class="table">
             <thead><tr><th>{t('stx.subEmail')}</th><th>{t('stx.mntState')}</th><th class="hide-m">{t('common.created')}</th><th></th></tr></thead>
-            <tbody>{#each sb.items as s (s.id)}<tr>
+            <tbody>{#each [...sb.items, ...moreSubs] as s (s.id)}<tr>
               <td class="mono small truncate" style="max-width:260px" title={s.email}>{s.email}</td>
               <td><StatusBadge status={s.confirmed ? 'confirmed' : 'unconfirmed'} label={t(s.confirmed ? 'stx.subConfirmedOne' : 'stx.subPendingOne')} /></td>
               <td class="small nowrap hide-m"><Time value={s.createdAt} /></td>
               <td><button class="btn sm" disabled={busy} onclick={() => { removing = { kind: 'subscriber', id: s.id, label: s.email }; }}>{t('stx.subRemove')}</button></td>
             </tr>{/each}</tbody>
           </table></div>
+          <LoadMore cursor={subsNext} busy={subsBusy} onmore={loadMoreSubs} />
         {/if}
       {/if}
     </Panel>

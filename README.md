@@ -225,6 +225,12 @@ SvelteKit filesystem routes are the application boundary. `src/lib/server/runtim
 | `RateLimiter`, `Maintenance` | `src/` | Login throttling, hourly purge |
 | `AdminCli` | `scripts/admin.js` | Create/list/reset administrators |
 
+## Conventions
+
+- Lists answer `{ items, nextCursor }`; pass `nextCursor` back as `cursor`. The console's own lists (admins, sessions, services, docs) are complete (`nextCursor: null`); the activity log pages newest first and carries `seq` (its log position). Every relayed service list uses the same parameters, so the console never sends `before` or `offset`.
+- Admin accounts have `adm_<time><random>` ids (the platform's one id format); the upgrade maps existing UUIDs and ends open sessions once.
+- The console's own API does not cache answers by `Idempotency-Key`. It forwards `X-Actor` to every service, so a service that replays by key scopes the stored answer to the signed-in person; refunds send one key per opened dialog.
+
 ## Examples
 
 Scenario walkthroughs for every feature live in [examples/](examples/README.md).

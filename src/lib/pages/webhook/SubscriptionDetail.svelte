@@ -35,11 +35,11 @@
   /** @type {any[]} */ let extra = $state([]);
   /** @type {string|null} */ let before = $state(null);
   let moreBusy = $state(false);
-  $effect(() => { if (d) { extra = []; before = d.deliveriesNextBefore; } });
+  $effect(() => { if (d) { extra = []; before = d.deliveriesNextCursor; } });
   const all = $derived([...(d?.deliveries ?? []), ...extra]);
   async function loadMore() {
     moreBusy = true;
-    try { const r = /** @type {{ items: any[], nextBefore: string|null }} */ (await api.get(`/services/${sid}/atc-webhook-out/deliveries?subscription=${encodeURIComponent(id)}&limit=20&before=${before}`)); extra = [...extra, ...r.items]; before = r.nextBefore; }
+    try { const r = /** @type {{ items: any[], nextCursor: string|null }} */ (await api.get(`/services/${sid}/atc-webhook-out/deliveries?subscription=${encodeURIComponent(id)}&limit=20&cursor=${before}`)); extra = [...extra, ...r.items]; before = r.nextCursor; }
     catch (e) { toasts.error(e); } finally { moreBusy = false; }
   }
   let busy = $state(false);

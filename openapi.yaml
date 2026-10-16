@@ -363,7 +363,11 @@ paths:
                 type: object
                 required:
                   - items
+                  - nextCursor
                 properties:
+                  nextCursor:
+                    type: "null"
+                    description: Always null; the list is complete.
                   items:
                     type: array
                     items:
@@ -636,7 +640,11 @@ paths:
                 type: object
                 required:
                   - items
+                  - nextCursor
                 properties:
+                  nextCursor:
+                    type: "null"
+                    description: Always null; the list is complete.
                   items:
                     type: array
                     items:
@@ -928,7 +936,7 @@ paths:
         console's local log of what administrators did in this console — distinct from the audit service
         reached through `/api/services/{sid}/atc-audit/*`. Entries are also forwarded to the first configured
         audit service when one has a write-capable key. Keyset pagination: pass the previous page's
-        `nextBefore` as `before`. Default page size 50.
+        `nextCursor` as `cursor`. Default page size 50.
 
 
         Query validation uses console's shared `paging` schema — the one query schema in the service with
@@ -942,7 +950,6 @@ paths:
         - $ref: "#/components/parameters/Paging_cursor"
         - $ref: "#/components/parameters/Paging_status"
         - $ref: "#/components/parameters/Paging_email"
-        - $ref: "#/components/parameters/Paging_before"
         - $ref: "#/components/parameters/Paging_action"
       x-required-role: session
       x-stack-visibility: operator
@@ -955,13 +962,13 @@ paths:
                 type: object
                 required:
                   - items
-                  - nextBefore
+                  - nextCursor
                 properties:
                   items:
                     type: array
                     items:
                       $ref: "#/components/schemas/AuditEntry"
-                  nextBefore:
+                  nextCursor:
                     type:
                       - string
                       - "null"
@@ -985,8 +992,9 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [items]
+                required: [items, nextCursor]
                 properties:
+                  nextCursor: { type: "null", description: Always null; the list is complete. }
                   items:
                     type: array
                     items: { $ref: "#/components/schemas/DocumentationService" }
@@ -1052,7 +1060,11 @@ paths:
                 type: object
                 required:
                   - items
+                  - nextCursor
                 properties:
+                  nextCursor:
+                    type: "null"
+                    description: Always null; the list is complete.
                   items:
                     type: array
                     items:
@@ -1082,7 +1094,11 @@ paths:
                 type: object
                 required:
                   - items
+                  - nextCursor
                 properties:
+                  nextCursor:
+                    type: "null"
+                    description: Always null; the list is complete.
                   items:
                     type: array
                     items:
@@ -1107,7 +1123,11 @@ paths:
                 type: object
                 required:
                   - items
+                  - nextCursor
                 properties:
+                  nextCursor:
+                    type: "null"
+                    description: Always null; the list is complete.
                   items:
                     type: array
                     items:
@@ -1241,7 +1261,6 @@ paths:
         - $ref: "#/components/parameters/Paging_cursor"
         - $ref: "#/components/parameters/Paging_status"
         - $ref: "#/components/parameters/Paging_email"
-        - $ref: "#/components/parameters/Paging_before"
         - $ref: "#/components/parameters/Paging_action"
       x-required-role: session
       x-stack-visibility: operator
@@ -1465,7 +1484,6 @@ paths:
         - $ref: "#/components/parameters/Paging_cursor"
         - $ref: "#/components/parameters/Paging_status"
         - $ref: "#/components/parameters/Paging_email"
-        - $ref: "#/components/parameters/Paging_before"
         - $ref: "#/components/parameters/Paging_action"
       x-required-role: session
       x-stack-visibility: operator
@@ -1704,7 +1722,7 @@ paths:
         individually schema-validated and individually role-gated.
 
 
-        Of the accepted query parameters only `limit`, `before` are forwarded downstream; the rest belong to
+        Of the accepted query parameters only `limit`, `cursor` are forwarded downstream; the rest belong to
         the shared query schema this route reuses and are ignored here.
 
 
@@ -1721,7 +1739,6 @@ paths:
         - $ref: "#/components/parameters/Paging_cursor"
         - $ref: "#/components/parameters/Paging_status"
         - $ref: "#/components/parameters/Paging_email"
-        - $ref: "#/components/parameters/Paging_before"
         - $ref: "#/components/parameters/Paging_action"
       x-required-role: session
       x-stack-visibility: operator
@@ -2021,7 +2038,6 @@ paths:
         - $ref: "#/components/parameters/Paging_cursor"
         - $ref: "#/components/parameters/Paging_status"
         - $ref: "#/components/parameters/Paging_email"
-        - $ref: "#/components/parameters/Paging_before"
         - $ref: "#/components/parameters/Paging_action"
       x-required-role: session
       x-stack-visibility: operator
@@ -3372,7 +3388,6 @@ paths:
         - $ref: "#/components/parameters/FlagsQ_archived"
         - $ref: "#/components/parameters/FlagsQ_limit"
         - $ref: "#/components/parameters/FlagsQ_cursor"
-        - $ref: "#/components/parameters/FlagsQ_before"
       x-required-role: session
       x-stack-visibility: operator
       responses:
@@ -3630,7 +3645,7 @@ paths:
         individually schema-validated and individually role-gated.
 
 
-        Of the accepted query parameters only `limit`, `before` are forwarded downstream; the rest belong to
+        Of the accepted query parameters only `limit`, `cursor` are forwarded downstream; the rest belong to
         the shared query schema this route reuses and are ignored here.
 
 
@@ -3644,7 +3659,6 @@ paths:
         - $ref: "#/components/parameters/FlagsQ_archived"
         - $ref: "#/components/parameters/FlagsQ_limit"
         - $ref: "#/components/parameters/FlagsQ_cursor"
-        - $ref: "#/components/parameters/FlagsQ_before"
       x-required-role: session
       x-stack-visibility: operator
       responses:
@@ -3679,7 +3693,7 @@ paths:
         schema-validated and individually role-gated.
 
 
-        Of the accepted query parameters only `limit`, `before` are forwarded downstream; the rest belong to
+        Of the accepted query parameters only `limit`, `cursor` are forwarded downstream; the rest belong to
         the shared query schema this route reuses and are ignored here.
 
 
@@ -3692,7 +3706,6 @@ paths:
         - $ref: "#/components/parameters/FlagsQ_archived"
         - $ref: "#/components/parameters/FlagsQ_limit"
         - $ref: "#/components/parameters/FlagsQ_cursor"
-        - $ref: "#/components/parameters/FlagsQ_before"
       x-required-role: session
       x-stack-visibility: operator
       responses:
@@ -4069,7 +4082,6 @@ paths:
         - $ref: "#/components/parameters/SchedulerQ_job"
         - $ref: "#/components/parameters/SchedulerQ_limit"
         - $ref: "#/components/parameters/SchedulerQ_cursor"
-        - $ref: "#/components/parameters/SchedulerQ_before"
         - $ref: "#/components/parameters/SchedulerQ_cron"
         - $ref: "#/components/parameters/SchedulerQ_timezone"
         - $ref: "#/components/parameters/SchedulerQ_count"
@@ -4117,7 +4129,6 @@ paths:
         - $ref: "#/components/parameters/SchedulerQ_job"
         - $ref: "#/components/parameters/SchedulerQ_limit"
         - $ref: "#/components/parameters/SchedulerQ_cursor"
-        - $ref: "#/components/parameters/SchedulerQ_before"
         - $ref: "#/components/parameters/SchedulerQ_cron"
         - $ref: "#/components/parameters/SchedulerQ_timezone"
         - $ref: "#/components/parameters/SchedulerQ_count"
@@ -4542,7 +4553,7 @@ paths:
         individually schema-validated and individually role-gated.
 
 
-        Of the accepted query parameters only `status`, `limit`, `before` are forwarded downstream; the rest
+        Of the accepted query parameters only `status`, `limit`, `cursor` are forwarded downstream; the rest
         belong to the shared query schema this route reuses and are ignored here.
 
 
@@ -4557,7 +4568,6 @@ paths:
         - $ref: "#/components/parameters/SchedulerQ_job"
         - $ref: "#/components/parameters/SchedulerQ_limit"
         - $ref: "#/components/parameters/SchedulerQ_cursor"
-        - $ref: "#/components/parameters/SchedulerQ_before"
         - $ref: "#/components/parameters/SchedulerQ_cron"
         - $ref: "#/components/parameters/SchedulerQ_timezone"
         - $ref: "#/components/parameters/SchedulerQ_count"
@@ -4595,7 +4605,7 @@ paths:
         individually schema-validated and individually role-gated.
 
 
-        Of the accepted query parameters only `job`, `status`, `limit`, `before` are forwarded downstream; the
+        Of the accepted query parameters only `job`, `status`, `limit`, `cursor` are forwarded downstream; the
         rest belong to the shared query schema this route reuses and are ignored here.
 
 
@@ -4609,7 +4619,6 @@ paths:
         - $ref: "#/components/parameters/SchedulerQ_job"
         - $ref: "#/components/parameters/SchedulerQ_limit"
         - $ref: "#/components/parameters/SchedulerQ_cursor"
-        - $ref: "#/components/parameters/SchedulerQ_before"
         - $ref: "#/components/parameters/SchedulerQ_cron"
         - $ref: "#/components/parameters/SchedulerQ_timezone"
         - $ref: "#/components/parameters/SchedulerQ_count"
@@ -4813,7 +4822,6 @@ paths:
         - $ref: "#/components/parameters/WebhookQ_subscription"
         - $ref: "#/components/parameters/WebhookQ_limit"
         - $ref: "#/components/parameters/WebhookQ_cursor"
-        - $ref: "#/components/parameters/WebhookQ_before"
       x-required-role: session
       x-stack-visibility: operator
       responses:
@@ -5240,7 +5248,7 @@ paths:
         individually schema-validated and individually role-gated.
 
 
-        Of the accepted query parameters only `status`, `subscription`, `event`, `limit`, `before` are
+        Of the accepted query parameters only `status`, `subscription`, `event`, `limit`, `cursor` are
         forwarded downstream; the rest belong to the shared query schema this route reuses and are ignored
         here.
 
@@ -5255,7 +5263,6 @@ paths:
         - $ref: "#/components/parameters/WebhookQ_subscription"
         - $ref: "#/components/parameters/WebhookQ_limit"
         - $ref: "#/components/parameters/WebhookQ_cursor"
-        - $ref: "#/components/parameters/WebhookQ_before"
       x-required-role: session
       x-stack-visibility: operator
       responses:
@@ -5416,7 +5423,7 @@ paths:
         individually schema-validated and individually role-gated.
 
 
-        Of the accepted query parameters only `type`, `limit`, `before` are forwarded downstream; the rest
+        Of the accepted query parameters only `type`, `limit`, `cursor` are forwarded downstream; the rest
         belong to the shared query schema this route reuses and are ignored here.
 
 
@@ -5430,7 +5437,6 @@ paths:
         - $ref: "#/components/parameters/WebhookQ_subscription"
         - $ref: "#/components/parameters/WebhookQ_limit"
         - $ref: "#/components/parameters/WebhookQ_cursor"
-        - $ref: "#/components/parameters/WebhookQ_before"
       x-required-role: session
       x-stack-visibility: operator
       responses:
@@ -5894,10 +5900,10 @@ paths:
                   type: integer
                   minimum: 1
                   maximum: 100
-                offset:
-                  type: integer
-                  minimum: 0
-                  maximum: 10000
+                cursor:
+                  type: string
+                  maxLength: 64
+                  description: Opaque `nextCursor` of the previous page.
                 highlight:
                   type: boolean
                 sort:
@@ -5940,7 +5946,7 @@ paths:
         hand-written, individually schema-validated and individually role-gated.
 
 
-        Of the accepted query parameters only `limit`, `offset` are forwarded downstream; the rest belong to
+        Of the accepted query parameters only `limit`, `cursor` are forwarded downstream; the rest belong to
         the shared query schema this route reuses and are ignored here.
 
 
@@ -5949,7 +5955,7 @@ paths:
         - $ref: "#/components/parameters/SidParam"
         - $ref: "#/components/parameters/IdParam"
         - $ref: "#/components/parameters/OffsetQ_limit"
-        - $ref: "#/components/parameters/OffsetQ_offset"
+        - $ref: "#/components/parameters/OffsetQ_cursor"
       x-required-role: session
       x-stack-visibility: operator
       responses:
@@ -6530,7 +6536,7 @@ paths:
         - $ref: "#/components/parameters/SidParam"
         - $ref: "#/components/parameters/IdParam"
         - $ref: "#/components/parameters/OffsetQ_limit"
-        - $ref: "#/components/parameters/OffsetQ_offset"
+        - $ref: "#/components/parameters/OffsetQ_cursor"
       x-required-role: session
       x-stack-visibility: operator
       responses:
@@ -7676,7 +7682,7 @@ paths:
         - $ref: "#/components/parameters/SidParam"
         - $ref: "#/components/parameters/IdParam"
         - $ref: "#/components/parameters/OffsetQ_limit"
-        - $ref: "#/components/parameters/OffsetQ_offset"
+        - $ref: "#/components/parameters/OffsetQ_cursor"
       x-required-role: session
       x-stack-visibility: operator
       responses:
@@ -8492,7 +8498,7 @@ paths:
           in: query
           required: false
           schema: {"type":"string","pattern":"^([1-9]|[1-9][0-9]|100)$"}
-        - name: before
+        - name: cursor
           in: query
           required: false
           schema: {"type":"string","pattern":"^[0-9]{1,10}$"}
@@ -8657,7 +8663,7 @@ paths:
         - name: cursor
           in: query
           required: false
-          schema: {"type":"string","pattern":"^exp_[0-9a-z]{9}[0-9a-f]{12}$"}
+          schema: {"type":"string","pattern":"^exp_[0-9a-z]{6,12}[0-9a-f]{16}$"}
       x-required-role: session
       x-stack-visibility: operator
       responses:
@@ -11652,6 +11658,7 @@ paths:
         Recorded in console's own activity log (`GET /api/audit`).
       parameters:
         - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/Paging_cursor"
       x-required-role: admin
       x-stack-visibility: operator
       responses:
@@ -11727,6 +11734,7 @@ paths:
         Requires any signed-in session (`requireSession`); both `admin` and `viewer` may call it.
       parameters:
         - $ref: "#/components/parameters/SidParam"
+        - $ref: "#/components/parameters/Paging_cursor"
       x-required-role: session
       x-stack-visibility: operator
       responses:
@@ -12022,13 +12030,6 @@ components:
       schema:
         type: string
         maxLength: 254
-    Paging_before:
-      name: before
-      in: query
-      schema:
-        type: string
-        maxLength: 30
-      description: Keyset bound for `before`-paginated downstream lists.
     Paging_action:
       name: action
       in: query
@@ -12252,12 +12253,6 @@ components:
       schema:
         type: string
         maxLength: 80
-    FlagsQ_before:
-      name: before
-      in: query
-      schema:
-        type: string
-        pattern: ^[0-9]{1,15}$
     SchedulerQ_q:
       name: q
       in: query
@@ -12309,12 +12304,6 @@ components:
       schema:
         type: string
         maxLength: 80
-    SchedulerQ_before:
-      name: before
-      in: query
-      schema:
-        type: string
-        pattern: ^[1-9][0-9]{0,15}$
     SchedulerQ_cron:
       name: cron
       in: query
@@ -12386,24 +12375,19 @@ components:
       schema:
         type: string
         maxLength: 80
-    WebhookQ_before:
-      name: before
-      in: query
-      schema:
-        type: string
-        pattern: ^[1-9][0-9]{0,15}$
     OffsetQ_limit:
       name: limit
       in: query
       schema:
         type: string
         pattern: ^([1-9]|[1-9][0-9]|100)$
-    OffsetQ_offset:
-      name: offset
+    OffsetQ_cursor:
+      name: cursor
       in: query
+      description: Opaque `nextCursor` of the previous page.
       schema:
         type: string
-        pattern: ^(0|[1-9][0-9]{0,4})$
+        maxLength: 1200
     RlStatsQ_hours:
       name: hours
       in: query
@@ -12619,10 +12603,10 @@ components:
       name: id
       in: path
       required: true
-      description: Console administrator id (UUID).
+      description: Console administrator id (`adm_<time><random>`).
       schema:
         type: string
-        format: uuid
+        pattern: ^adm_[0-9a-z]{6,12}[0-9a-f]{16}$
     CsrfHeader:
       name: x-console-request
       in: header
@@ -12909,7 +12893,7 @@ components:
             type: string
         id:
           type: string
-          format: uuid
+          pattern: ^adm_[0-9a-z]{6,12}[0-9a-f]{16}$
         username:
           type: string
           description: Sign-in name, stored trimmed and lower-cased.
@@ -12979,7 +12963,7 @@ components:
       type: object
       description: One entry of console's own local admin-activity log (distinct from the audit service).
       required:
-        - id
+        - seq
         - adminId
         - adminUsername
         - action
@@ -12988,13 +12972,13 @@ components:
         - ip
         - at
       properties:
-        id:
+        seq:
           type: integer
+          description: Log position; the keyset cursor.
         adminId:
           type:
             - string
             - "null"
-          format: uuid
         adminUsername:
           type:
             - string
@@ -13196,11 +13180,11 @@ components:
             type: object
             additionalProperties: true
           description: The `items` array of auth's events response, first page of 50.
-        eventsNextBefore:
+        eventsNextCursor:
           type:
             - string
             - "null"
-          description: The events response's `nextBefore` cursor, for `GET .../atc-auth/users/{id}/events`.
+          description: The events response's `nextCursor`, for `GET .../atc-auth/users/{id}/events`.
     FlagDetail:
       type: object
       additionalProperties: true
@@ -13218,11 +13202,11 @@ components:
             type: object
             additionalProperties: true
           description: The `items` array of the flag's change history, first page of 20.
-        historyNextBefore:
+        historyNextCursor:
           type:
             - string
             - "null"
-          description: The history response's `nextBefore` cursor, for `GET .../atc-flags/flags/{id}/history`.
+          description: The history response's `nextCursor`, for `GET .../atc-flags/flags/{id}/history`.
     JobDetail:
       type: object
       additionalProperties: true
@@ -13240,11 +13224,11 @@ components:
             type: object
             additionalProperties: true
           description: The `items` array of the job's runs, first page of 20.
-        runsNextBefore:
+        runsNextCursor:
           type:
             - string
             - "null"
-          description: The runs response's `nextBefore` cursor, for `GET .../atc-scheduler/jobs/{id}/runs`.
+          description: The runs response's `nextCursor`, for `GET .../atc-scheduler/jobs/{id}/runs`.
     SubscriptionDetail:
       type: object
       additionalProperties: true
@@ -13263,11 +13247,11 @@ components:
             type: object
             additionalProperties: true
           description: The `items` array of the subscription's deliveries, first page of 20.
-        deliveriesNextBefore:
+        deliveriesNextCursor:
           type:
             - string
             - "null"
-          description: The deliveries response's `nextBefore` cursor, for `GET
+          description: The deliveries response's `nextCursor`, for `GET
             .../atc-webhook-out/deliveries?subscription=...`.
     LinkDetail:
       type: object

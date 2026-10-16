@@ -3,7 +3,7 @@ import { jsonRoute } from '#lib/server/m4.js';
 
 export const GET = jsonRoute({
   auth: 'session',
-  handler: ({ runtime }) => ({ items: runtime.adminService.list() }),
+  handler: ({ runtime }) => ({ items: runtime.adminService.list(), nextCursor: null }),
 });
 
 export const POST = jsonRoute({

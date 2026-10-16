@@ -33,14 +33,15 @@
   let total = $state(0);
   let loading = $state(false);
   /** @type {unknown} */ let listError = $state(null);
-  /** @param {number} offset */
-  async function loadPlaces(offset = 0) {
+  /** @type {string|null} */ let placesNext = $state(null);
+  /** @param {string|null} [cursor] */
+  async function loadPlaces(cursor = null) {
     loading = true;
-    try { const r = /** @type {any} */ (await api.get(`${base}/places?limit=${PAGE}&offset=${offset}`)); places = offset ? [...places, ...r.items] : r.items; total = r.total; listError = null; }
+    try { const r = /** @type {any} */ (await api.get(`${base}/places?limit=${PAGE}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`)); places = cursor ? [...places, ...r.items] : r.items; total = r.total; placesNext = r.nextCursor; listError = null; }
     catch (e) { listError = e; } finally { loading = false; }
   }
-  $effect(() => { res.load(); loadPlaces(0); });
-  const reloadAll = () => { res.load(); loadPlaces(0); };
+  $effect(() => { res.load(); loadPlaces(); });
+  const reloadAll = () => { res.load(); loadPlaces(); };
 
   // ---- nearby test
   let lat = $state('');
@@ -76,9 +77,9 @@
   let uploadOpen = $state(false);
   let uploadText = $state('');
   const parsed = $derived.by(() => { try { const v = JSON.parse(uploadText); const arr = Array.isArray(v) ? v : Array.isArray(v?.places) ? v.places : null; return arr && arr.length ? arr : null; } catch { return null; } });
-  const upload = () => run(async () => { const r = /** @type {any} */ (await api.put(`${base}/places`, { places: parsed })); toasts.ok(t('ge.uploaded', { c: r.created, u: r.updated })); uploadOpen = false; uploadText = ''; await Promise.all([res.load(), loadPlaces(0)]); }, null);
-  const clear = () => run(async () => { const r = /** @type {any} */ (await api.post(`${base}/clear`, {})); toasts.ok(t('ge.cleared', { n: r.removed })); near = null; await Promise.all([res.load(), loadPlaces(0)]); }, null);
-  const deletePlace = () => run(async () => { await api.delete(`${base}/places/${encodeURIComponent(target.id)}`); await Promise.all([res.load(), loadPlaces(0)]); }, t('ge.placeDeleted'));
+  const upload = () => run(async () => { const r = /** @type {any} */ (await api.put(`${base}/places`, { places: parsed })); toasts.ok(t('ge.uploaded', { c: r.created, u: r.updated })); uploadOpen = false; uploadText = ''; await Promise.all([res.load(), loadPlaces()]); }, null);
+  const clear = () => run(async () => { const r = /** @type {any} */ (await api.post(`${base}/clear`, {})); toasts.ok(t('ge.cleared', { n: r.removed })); near = null; await Promise.all([res.load(), loadPlaces()]); }, null);
+  const deletePlace = () => run(async () => { await api.delete(`${base}/places/${encodeURIComponent(target.id)}`); await Promise.all([res.load(), loadPlaces()]); }, t('ge.placeDeleted'));
   /** @param {Record<string, unknown>} attrs */
   const attrText = (attrs) => Object.entries(attrs).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : String(v)}`);
 </script>
@@ -121,7 +122,7 @@
         </Panel>
 
         <Panel title={total ? t('ge.placeCount', { n: fmt.int(total) }) : t('ge.places')} flush>
-          {#if listError}<ErrorBox error={listError} onretry={() => loadPlaces(0)} />
+          {#if listError}<ErrorBox error={listError} onretry={() => loadPlaces()} />
           {:else if loading && !places.length}<Skeleton rows={4} />
           {:else if !places.length}<Empty icon="globe" title={t('ge.noPlaces')} desc={t('ge.noPlacesDesc')} />
           {:else}
@@ -138,7 +139,7 @@
                 {/each}
               </tbody>
             </table></div>
-            <LoadMore cursor={places.length < total ? String(places.length) : null} busy={loading} onmore={() => loadPlaces(places.length)} />
+            <LoadMore cursor={placesNext} busy={loading} onmore={() => loadPlaces(placesNext)} />
           {/if}
         </Panel>
       </div>

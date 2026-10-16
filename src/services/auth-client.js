@@ -61,11 +61,11 @@ export class AuthClient extends ServiceClient {
     return this.json('DELETE', `/v1/users/${encodeURIComponent(id)}/sessions`);
   }
 
-  /** @param {string} id @param {{ limit?: number, before?: string }} q */
+  /** @param {string} id @param {{ limit?: number, cursor?: string }} q */
   events(id, q) {
     const p = new URLSearchParams();
     if (q.limit) p.set('limit', String(q.limit));
-    if (q.before) p.set('before', q.before);
+    if (q.cursor) p.set('cursor', q.cursor);
     return this.json('GET', `/v1/users/${encodeURIComponent(id)}/events?${p}`);
   }
 

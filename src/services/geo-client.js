@@ -104,9 +104,9 @@ export class GeoClient extends ServiceClient {
     return this.json('PUT', `${GeoClient.#c(name)}/places`, { body: { places } });
   }
 
-  /** @param {string} name @param {{ limit?: number, offset?: number }} q */
+  /** @param {string} name @param {{ limit?: number, cursor?: string }} q */
   places(name, q) {
-    return this.json('GET', `${GeoClient.#c(name)}/places?${GeoClient.params(q, ['limit', 'offset'])}`);
+    return this.json('GET', `${GeoClient.#c(name)}/places?${GeoClient.params(q, ['limit', 'cursor'])}`);
   }
 
   /** @param {string} name @param {string} id */

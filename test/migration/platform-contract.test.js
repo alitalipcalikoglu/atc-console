@@ -56,7 +56,7 @@ test('operational oracle: health, readiness and service identity remain exact', 
   assert.deepEqual(await response.json(), {
     service: 'atc-console', version: PACKAGE_VERSION, apiVersion: 'v1',
     capabilities: ['totp', 'admin-roles', 'audit-trail', 'service-proxy'],
-    schemaVersion: 4, serviceCore: SERVICE_CORE_VERSION,
+    schemaVersion: 5, serviceCore: SERVICE_CORE_VERSION,
   });
 });
 
@@ -151,7 +151,7 @@ test('process oracle: configured port, ready IPC, identity and graceful SIGTERM'
     const info = await response.json();
     assert.equal(info.service, 'atc-console');
     assert.equal(info.version, PACKAGE_VERSION);
-    assert.equal(info.schemaVersion, 4);
+    assert.equal(info.schemaVersion, 5);
     child.kill('SIGTERM');
     assert.deepEqual(await childExit(child), { code: 0, signal: null });
   } finally {

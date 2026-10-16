@@ -51,10 +51,11 @@
   let ovTotal = $state(0);
   let ovLoading = $state(false);
   /** @type {unknown} */ let ovError = $state(null);
-  /** @param {number} offset */
-  async function loadOverrides(offset = 0) {
+  /** @type {string|null} */ let ovNext = $state(null);
+  /** @param {string|null} [cursor] */
+  async function loadOverrides(cursor = null) {
     ovLoading = true;
-    try { const r = /** @type {any} */ (await api.get(`${base}/overrides?limit=${PAGE}&offset=${offset}`)); overrides = offset ? [...overrides, ...r.items] : r.items; ovTotal = r.total; ovError = null; }
+    try { const r = /** @type {any} */ (await api.get(`${base}/overrides?limit=${PAGE}${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`)); overrides = cursor ? [...overrides, ...r.items] : r.items; ovTotal = r.total; ovNext = r.nextCursor; ovError = null; }
     catch (e) { ovError = e; } finally { ovLoading = false; }
   }
 
@@ -72,10 +73,10 @@
   /** @param {string} s */
   function pick(s) { lookupInput = s; lookup(); }
 
-  $effect(() => { res.load(); loadOverrides(0); top.load(); });
+  $effect(() => { res.load(); loadOverrides(); top.load(); });
   $effect(() => { hours; Navigation.replaceQuery(route.url, { h: hours === 24 ? null : String(hours) }); stats.load(); });
   $effect(() => { if (subject) usage.load(); });
-  const reloadAll = () => { res.load(); stats.load(); loadOverrides(0); top.load(); if (subject) usage.load(); };
+  const reloadAll = () => { res.load(); stats.load(); loadOverrides(); top.load(); if (subject) usage.load(); };
 
   // ---- actions
   /** @type {'delete'|'deleteOverride'|'reset'|null} */ let confirm = $state(null);
@@ -98,10 +99,10 @@
   let ovSubject = $state('');
   /** @param {string} s @param {any} body */
   async function saveOverride(s, body) {
-    await run(async () => { await api.put(`${base}/overrides/${encodeURIComponent(s)}`, body); await Promise.all([res.load(), loadOverrides(0)]); if (subject === s) usage.load(); }, t('rl.overrideSaved'));
+    await run(async () => { await api.put(`${base}/overrides/${encodeURIComponent(s)}`, body); await Promise.all([res.load(), loadOverrides()]); if (subject === s) usage.load(); }, t('rl.overrideSaved'));
     ovOpen = false;
   }
-  const deleteOverride = () => run(async () => { await api.delete(`${base}/overrides/${encodeURIComponent(target.subject)}`); await Promise.all([res.load(), loadOverrides(0)]); if (subject === target.subject) usage.load(); }, t('rl.overrideDeleted'));
+  const deleteOverride = () => run(async () => { await api.delete(`${base}/overrides/${encodeURIComponent(target.subject)}`); await Promise.all([res.load(), loadOverrides()]); if (subject === target.subject) usage.load(); }, t('rl.overrideDeleted'));
   const resetSubject = () => run(async () => { const r = /** @type {any} */ (await api.delete(`${base}/subjects/${encodeURIComponent(subject)}/usage`)); toasts.ok(t('rl.resetDone', { n: r.removed })); await Promise.all([usage.load(), top.load(), res.load()]); }, null);
 </script>
 
@@ -181,7 +182,7 @@
         </div>
 
         <Panel title={ovTotal ? t('rl.overrideCount', { n: fmt.int(ovTotal) }) : t('rl.overrides')} flush>
-          {#if ovError}<ErrorBox error={ovError} onretry={() => loadOverrides(0)} />
+          {#if ovError}<ErrorBox error={ovError} onretry={() => loadOverrides()} />
           {:else if ovLoading && !overrides.length}<Skeleton rows={3} />
           {:else if !overrides.length}<Empty icon="user" title={t('rl.noOverrides')} desc={t('rl.noOverridesDesc')} />
           {:else}
@@ -201,7 +202,7 @@
                 {/each}
               </tbody>
             </table></div>
-            <LoadMore cursor={overrides.length < ovTotal ? String(overrides.length) : null} busy={ovLoading} onmore={() => loadOverrides(overrides.length)} />
+            <LoadMore cursor={ovNext} busy={ovLoading} onmore={() => loadOverrides(ovNext)} />
           {/if}
         </Panel>
       </div>

@@ -174,7 +174,7 @@ test('validation oracle: body, query, path, enum, malformed JSON and normal-body
 
 test('not-found and common security headers remain observable contracts', async () => {
   const admin = await login('admin');
-  const missingId = '00000000-0000-4000-8000-000000000000';
+  const missingId = 'adm_mv8abcde0000000000000000';
   let actual = await observed(await fetch(`${consoleApp.origin}/api/admins/${missingId}`, { method: 'DELETE', headers: { cookie: admin.cookie, ...CSRF } }));
   assert.equal(actual.status, 404);
   assert.deepEqual(actual.body, { error: { code: 'NOT_FOUND', message: 'admin not found' } });

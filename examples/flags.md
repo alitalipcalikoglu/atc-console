@@ -42,7 +42,7 @@ The **Evaluate** panel asks the service what this flag returns for a given envir
 
 ## History
 
-The last 20 changes of the flag: time, action, environment, actor (API key id) and which fields changed. Older entries: `GET /api/services/:id/atc-flags/flags/:key/history?before=<id>`.
+The last 20 changes of the flag: time, action, environment, actor (API key id) and which fields changed. Older entries: `GET /api/services/:id/atc-flags/flags/:key/history?cursor=<nextCursor>`.
 
 ## Behind the scenes
 

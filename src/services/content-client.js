@@ -102,7 +102,7 @@ export class ContentClient extends ServiceClient {
 
   /** @param {string} ns @param {Record<string, string|number|undefined>} q */
   releases(ns, q) {
-    return this.json('GET', `/v1/namespaces/${ContentClient.seg(ns)}/releases?${ContentClient.params(q, ['limit', 'before'])}`);
+    return this.json('GET', `/v1/namespaces/${ContentClient.seg(ns)}/releases?${ContentClient.params(q, ['limit', 'cursor'])}`);
   }
 
   /** @param {string} ns @param {number} number */

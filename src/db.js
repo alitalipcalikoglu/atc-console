@@ -80,5 +80,16 @@ export class Database extends CoreDatabase {
     -- Per-account service scope: a JSON array of service ids the account may use, NULL = every service.
     ALTER TABLE admins ADD COLUMN services TEXT;
     `,
+    `
+    -- Admin ids take the platform id format (adm_<time><random>). Existing UUIDs map to adm_ plus 24 of
+    -- their hex digits, which keeps them unique; open sessions end, so everyone signs in again.
+    PRAGMA defer_foreign_keys = ON;
+    DELETE FROM sessions;
+    CREATE TEMP TABLE _admin_ids AS SELECT id AS old, 'adm_' || substr(replace(id, '-', ''), 1, 8) || substr(replace(id, '-', ''), 17, 16) AS new FROM admins WHERE substr(id, 1, 4) <> 'adm_';
+    UPDATE totp_used SET admin_id = (SELECT new FROM _admin_ids WHERE old = admin_id) WHERE admin_id IN (SELECT old FROM _admin_ids);
+    UPDATE audit SET admin_id = (SELECT new FROM _admin_ids WHERE old = admin_id) WHERE admin_id IN (SELECT old FROM _admin_ids);
+    UPDATE admins SET id = (SELECT new FROM _admin_ids WHERE old = admins.id) WHERE id IN (SELECT old FROM _admin_ids);
+    DROP TABLE _admin_ids;
+    `,
   ];
 }

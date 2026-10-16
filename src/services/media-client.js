@@ -15,8 +15,9 @@ export class MediaClient extends ServiceClient {
   }
 
   /** Uploads the virus scan rejected. */
-  quarantine() {
-    return this.json('GET', '/v1/quarantine');
+  /** @param {{ cursor?: string }} [q] */
+  quarantine(q = {}) {
+    return this.json('GET', `/v1/quarantine${q.cursor ? `?cursor=${encodeURIComponent(q.cursor)}` : ''}`);
   }
 
   /** @param {string} id */

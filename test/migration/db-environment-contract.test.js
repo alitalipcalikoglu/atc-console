@@ -27,7 +27,7 @@ test(`DB oracle: a current package (${PACKAGE_VERSION}) database reopens without
   const created = sessions.create({ adminId: admin.id, ttlMs: 60_000, totpPending: false, ip: '192.0.2.10', userAgent: 'migration-oracle' }, 1_700_000_000_300);
   new AuditStore(db).record({ adminId: admin.id, adminUsername: admin.username, action: 'fixture.created', target: 'compat', meta: { safe: true }, ip: '192.0.2.10' }, 1_700_000_000_400);
   const version = db.schemaVersion;
-  assert.equal(version, 4);
+  assert.equal(version, 5);
   db.close();
 
   db = new Database(path);
@@ -49,7 +49,7 @@ test(`DB oracle: a current package (${PACKAGE_VERSION}) database reopens without
     assert.deepEqual(audit.map((entry) => [entry.action, entry.target, entry.meta]), [['fixture.created', 'compat', '{"safe":true}']]);
     assert.deepEqual(
       db.prepare('SELECT version, name FROM schema_migrations ORDER BY version').all().map((row) => ({ ...row })),
-      [{ version: 1, name: 'v1' }, { version: 2, name: 'v2' }, { version: 3, name: 'v3' }, { version: 4, name: 'v4' }],
+      [{ version: 1, name: 'v1' }, { version: 2, name: 'v2' }, { version: 3, name: 'v3' }, { version: 4, name: 'v4' }, { version: 5, name: 'v5' }],
     );
   } finally {
     db.close();
